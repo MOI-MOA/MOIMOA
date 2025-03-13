@@ -79,6 +79,7 @@ export default function AutoTransferPage() {
           toast({
             title: `자동이체 ${newStatus === "active" ? "활성화" : "비활성화"}`,
             description: `${transfer.groupName} 자동이체가 ${newStatus === "active" ? "활성화" : "비활성화"} 되었습니다.`,
+            duration: 3000, // 3초 후 자동으로 사라짐
           })
           return { ...transfer, status: newStatus }
         }
