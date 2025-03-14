@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Header } from "@/components/Header"
-import { useState } from "react"
+import React, { use, useState } from "react"
 import { toast } from "@/components/ui/use-toast"
 import {
   Dialog,
@@ -18,9 +18,9 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
-export default function GroupDetailPage({ params }: { params: { groupId: string } }) {
+export default function GroupDetailPage({ params }: { params: Promise<{ groupId: string }> }) {
   const router = useRouter()
-
+  const { groupId } = use(params)
   // 상태 변수 추가 부분 수정
   const [hasManagerRequest, setHasManagerRequest] = useState(true) // 실제로는 API에서 확인해야 함
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -33,7 +33,7 @@ export default function GroupDetailPage({ params }: { params: { groupId: string 
 
   // Mock data for the group
   const groupData = {
-    id: params.groupId,
+    id: groupId,
     name: "회사 동료",
     description: "월간 회식 및 경비",
     totalMembers: 8,
@@ -255,7 +255,7 @@ export default function GroupDetailPage({ params }: { params: { groupId: string 
               <Button
                 variant="outline"
                 className="w-full mt-2"
-                onClick={() => router.push(`/group/${params.groupId}/members`)}
+                onClick={() => router.push(`/group/${groupId}/members`)}
               >
                 <Settings className="h-4 w-4 mr-2" />
                 회원 관리
@@ -265,7 +265,7 @@ export default function GroupDetailPage({ params }: { params: { groupId: string 
               <Button
                 variant="outline"
                 className="w-full mt-2"
-                onClick={() => router.push(`/group/${params.groupId}/member-list`)}
+                onClick={() => router.push(`/group/${groupId}/member-list`)}
               >
                 <Users className="h-4 w-4 mr-2" />
                 회원 목록
@@ -299,7 +299,7 @@ export default function GroupDetailPage({ params }: { params: { groupId: string 
         <Button
           variant="outline"
           className="w-full mt-2"
-          onClick={() => router.push(`/group/${params.groupId}/account-history`)}
+          onClick={() => router.push(`/group/${groupId}/account-history`)}
         >
           <Wallet className="h-4 w-4 mr-2" />
           모임통장 내역 보기
@@ -322,7 +322,7 @@ export default function GroupDetailPage({ params }: { params: { groupId: string 
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">일정</h2>
-            <Button onClick={() => router.push(`/group/${params.groupId}/create-schedule`)}>
+            <Button onClick={() => router.push(`/group/${groupId}/create-schedule`)}>
               <Plus className="h-4 w-4 mr-2" />새 일정 만들기
             </Button>
           </div>
@@ -331,7 +331,7 @@ export default function GroupDetailPage({ params }: { params: { groupId: string 
             <Card
               key={schedule.id}
               className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => router.push(`/group/${params.groupId}/schedule/${schedule.id}`)}
+              onClick={() => router.push(`/group/${groupId}/schedule/${schedule.id}`)}
             >
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">

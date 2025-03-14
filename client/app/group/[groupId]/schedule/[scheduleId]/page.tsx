@@ -1,5 +1,5 @@
 "use client"
-
+import React, { use } from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Calendar, Clock, MapPin, Users, DollarSign, MessageSquare } from "lucide-react"
@@ -9,14 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/Header"
 
-export default function ScheduleDetailPage({ params }: { params: { groupId: string; scheduleId: string } }) {
+export default function ScheduleDetailPage({ params }: { params: Promise<{ groupId: string; scheduleId: string }> }) {
   const router = useRouter()
   const [isAttending, setIsAttending] = useState(false)
+  const { groupId, scheduleId } = use(params)
 
   // 실제 구현에서는 이 데이터를 API에서 가져와야 합니다
   const scheduleData = {
-    id: params.scheduleId,
-    groupId: params.groupId, // 그룹 ID 파라미터 사용
+    id: scheduleId,
+    groupId: groupId, // 그룹 ID 파라미터 사용
     title: "3월 정기 회식",
     date: "2024년 3월 15일",
     time: "19:00 - 22:00",
@@ -104,7 +105,7 @@ export default function ScheduleDetailPage({ params }: { params: { groupId: stri
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => router.push(`/group/${scheduleData.groupId}/chat/${params.scheduleId}`)}
+          onClick={() => router.push(`/group/${scheduleData.groupId}/chat/${scheduleId}`)}
         >
           <MessageSquare className="h-5 w-5 mr-2" />
           채팅방 입장

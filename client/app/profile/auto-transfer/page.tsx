@@ -71,7 +71,7 @@ export default function AutoTransferPage() {
   const monthlyTotal = activeTransfers.reduce((sum, transfer) => sum + transfer.amount, 0)
 
   // 자동이체 상태 토글 함수
-  const toggleTransferStatus = (id) => {
+  const toggleTransferStatus = (id: number) => {
     setAutoTransfers((prevTransfers) =>
       prevTransfers.map((transfer) => {
         if (transfer.id === id) {
@@ -89,7 +89,7 @@ export default function AutoTransferPage() {
   }
 
   // 자동이체 수정 페이지로 이동
-  const handleEdit = (id) => {
+  const handleEdit = (id: number) => {
     router.push(`/profile/auto-transfer/edit/${id}`)
   }
 

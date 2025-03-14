@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, use } from "react"
 import { useRouter } from "next/navigation"
 import { Shield, Mail, Phone } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Header } from "@/components/Header"
 
-export default function GroupMemberListPage({ params }: { params: { groupId: string } }) {
+export default function GroupMemberListPage({ params }: { params: Promise<{ groupId: string }> }) {
   const router = useRouter()
-  const groupId = params.groupId
+  const {groupId} = use(params)
 
   // 모임 정보 (실제로는 API에서 가져와야 함)
   const [groupInfo, setGroupInfo] = useState({

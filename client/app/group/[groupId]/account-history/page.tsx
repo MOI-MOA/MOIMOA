@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 
-export default function AccountHistoryPage({ params }: { params: { groupId: string } }) {
+export default function AccountHistoryPage({ params }: { params: Promise<{ groupId: string }> }) {
   const router = useRouter()
-  const groupId = params.groupId
+
+  const { groupId } = use(params)
 
   // 상태 관리
   const [searchTerm, setSearchTerm] = useState("")
@@ -215,40 +216,6 @@ export default function AccountHistoryPage({ params }: { params: { groupId: stri
                 <SelectItem value="withdrawal">출금</SelectItem>
               </SelectContent>
             </Select>
-
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-[150px] justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRange.from ? (
-                    dateRange.to ? (
-                      <>
-                        {format(dateRange.from, "MM.dd")} - {format(dateRange.to, "MM.dd")}
-                      </>
-                    ) : (
-                      format(dateRange.from, "yyyy.MM.dd")
-                    )
-                  ) : (
-                    <span>기간 선택</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange.from}
-                  selected={dateRange}
-                  onSelect={(range) => {
-                    setDateRange(range)
-                    if (range.to) {
-                      setIsCalendarOpen(false)
-                    }
-                  }}
-                  numberOfMonths={2}
-                />
-              </PopoverContent>
-            </Popover>
           </div>
         </div>
 

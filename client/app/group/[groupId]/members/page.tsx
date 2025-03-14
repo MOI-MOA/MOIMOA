@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, use } from "react"
 import { useRouter } from "next/navigation"
 import { Shield, AlertCircle, Check, X, UserPlus, Link, Copy, Share2, Crown } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -19,9 +19,23 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
-export default function GroupMembersPage({ params }: { params: { groupId: string } }) {
+interface Member {
+  id: number;
+  name: string;
+  role?: string;
+  avatar: string;
+  balance: number;
+  deposit: number;
+  monthlyFee: {
+    amount: number;
+    status: string;
+  };
+  isManager?: boolean;
+}
+
+export default function GroupMembersPage({ params }: { params: Promise<{ groupId: string }> }) {
   const router = useRouter()
-  const groupId = params.groupId
+  const {groupId} = use(params)
 
   // 현재 사용자가 총무인지 여부 (실제로는 API에서 확인해야 함)
   const [isManager, setIsManager] = useState(true)
@@ -38,7 +52,7 @@ export default function GroupMembersPage({ params }: { params: { groupId: string
   const [password, setPassword] = useState("")
   const [pinCode, setPinCode] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
-
+  
   // Mock data for members
   const [members, setMembers] = useState([
     {
@@ -156,7 +170,7 @@ export default function GroupMembersPage({ params }: { params: { groupId: string
   }
 
   // 회원 클릭 함수
-  const handleMemberClick = (member) => {
+  const handleMemberClick = (member: Member) => {
     if (isManager && !member.isManager) {
       setSelectedMember(member)
     }
@@ -214,7 +228,7 @@ export default function GroupMembersPage({ params }: { params: { groupId: string
       setMembers((prev) =>
         prev.map((member) => {
           if (member.isManager) {
-            return { ...member, isManager: false, role: undefined }
+            return { ...member, isManager: false, role: "회원" }
           }
           if (member.id === selectedMember.id) {
             return { ...member, isManager: true, role: "총무" }
@@ -248,7 +262,7 @@ export default function GroupMembersPage({ params }: { params: { groupId: string
   }
 
   // 신청 수락 함수
-  const handleAccept = (memberId) => {
+  const handleAccept = (memberId: number) => {
     // 실제로는 API 호출로 처리해야 함
     const memberToAccept = pendingMembers.find((m) => m.id === memberId)
 
@@ -279,9 +293,8 @@ export default function GroupMembersPage({ params }: { params: { groupId: string
       })
     }
   }
-
   // 신청 거절 함수
-  const handleReject = (memberId) => {
+  const handleReject = (memberId: number) => {
     // 실제로는 API 호출로 처리해야 함
     const memberToReject = pendingMembers.find((m) => m.id === memberId)
 
