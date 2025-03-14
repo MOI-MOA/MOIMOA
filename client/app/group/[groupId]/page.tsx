@@ -210,7 +210,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       })
     }
     setIsLeaveDialogOpen(false)
+
   }
+
 
   return (
     <>
