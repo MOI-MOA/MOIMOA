@@ -11,7 +11,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "모임 돈관리 앱",
   description: "모임별 일정 및 정산 관리 애플리케이션",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -20,9 +19,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ko">
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <html lang="ko" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <div className="max-w-md mx-auto min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-white">
             {children}
             <Footer />
@@ -34,6 +33,3 @@ export default function RootLayout({
   )
 }
 
-
-
-import './globals.css'

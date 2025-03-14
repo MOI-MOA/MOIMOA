@@ -72,7 +72,7 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
     }
   }, [transferId, router])
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -80,17 +80,15 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
     }))
   }
 
-  const handleStatusChange = (checked) => {
+  const handleStatusChange = (checked: boolean) => {
     setFormData((prev) => ({
       ...prev,
       status: checked ? "active" : "inactive",
     }))
   }
 
-  const handleSave = async (e) => {
-    e.preventDefault()
+  const saveData = async () => {
     setIsLoading(true)
-
     try {
       // 실제 구현에서는 API 호출로 데이터 저장
       // await fetch(`/api/auto-transfers/${transferId}`, {
@@ -119,6 +117,15 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
     }
   }
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    saveData()
+  }
+
+  const handleSaveClick = () => {
+    saveData()
+  }
+
   return (
     <>
       <Header title="자동이체 수정" showBackButton />
@@ -129,7 +136,7 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
             <CardDescription>자동이체 정보를 수정하세요</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSave} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="groupName">모임 이름</Label>
                 <Input
@@ -192,7 +199,7 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
             <Button variant="outline" onClick={() => router.push("/profile/auto-transfer")} disabled={isLoading}>
               취소
             </Button>
-            <Button onClick={handleSave} disabled={isLoading}>
+            <Button onClick={handleSaveClick} disabled={isLoading}>
               {isLoading ? "저장 중..." : "저장하기"}
             </Button>
           </CardFooter>

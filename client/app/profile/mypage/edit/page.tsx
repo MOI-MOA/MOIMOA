@@ -22,7 +22,7 @@ export default function EditProfilePage() {
     avatar: "/placeholder.svg?height=100&width=100",
   })
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setUserInfo((prev) => ({
       ...prev,

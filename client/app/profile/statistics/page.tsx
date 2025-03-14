@@ -112,8 +112,8 @@ export default function StatisticsPage() {
                 <LineChart data={monthlyExpenseData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => (value / 10000).toFixed(0)} />
-                  <Tooltip formatter={(value) => [`${(value / 10000).toFixed(1)}만원`, "금액"]} />
+                  <YAxis tickFormatter={(value: number) => (value / 10000).toFixed(0)} />
+                  <Tooltip formatter={(value: number) => [`${(value / 10000).toFixed(1)}만원`, "금액"]} />
                   <Line
                     type="monotone"
                     dataKey="amount"
@@ -139,8 +139,8 @@ export default function StatisticsPage() {
                 <LineChart data={groupExpenseData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => (value / 10000).toFixed(0)} />
-                  <Tooltip formatter={(value) => [`${(value / 10000).toFixed(1)}만원`, "금액"]} />
+                  <YAxis tickFormatter={(value: number) => (value / 10000).toFixed(0)} />
+                  <Tooltip formatter={(value: number) => [`${(value / 10000).toFixed(1)}만원`, "금액"]} />
                   <Line
                     type="monotone"
                     dataKey="amount"

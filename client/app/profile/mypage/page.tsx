@@ -26,7 +26,7 @@ export default function MyPage() {
     },
   })
 
-  const handleNotificationChange = (type, checked) => {
+  const handleNotificationChange = (type: string, checked: boolean) => {
     // 상태 업데이트
     setUserInfo((prev) => ({
       ...prev,

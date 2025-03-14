@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, MapPin, Clock, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,17 @@ export default function HomePage() {
   const unconfirmedSchedules = 3
 
   // 일정 데이터 (2025년 3월 데이터)
-  const scheduleData = {
+  type Schedule = {
+    id: number;
+    groupId: number;
+    title: string;
+    time: string;
+    location: string;
+    group: string;
+    participants: number;
+  };
+  
+  const scheduleData: Record<string, Schedule[]> = {
     "2025-03-05": [
       {
         id: 1,

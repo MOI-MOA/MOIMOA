@@ -1,7 +1,5 @@
 "use client"
-
-import type React from "react"
-import { useState } from "react"
+import React, { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowRight, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,9 +13,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Header } from "@/components/Header"
 
-export default function CreateSchedulePage({ params }: { params: { groupId: string } }) {
+export default function CreateSchedulePage({ params }: { params: Promise<{ groupId: string }> }) {
   const router = useRouter()
-  const groupId = params.groupId
+  const {groupId} = use(params)
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     title: "",
@@ -126,7 +124,13 @@ export default function CreateSchedulePage({ params }: { params: { groupId: stri
             </div>
             <div>
               <Label htmlFor="date">날짜</Label>
-              <DatePicker selected={formData.date} onSelect={(date) => setFormData((prev) => ({ ...prev, date }))} />
+              {/* [수정] DatePicker에 onSelect 대신 onChange와 매개변수 타입 명시 */}
+              <DatePicker
+                selected={formData.date}
+                onChange={(date: Date | null) =>
+                  setFormData((prev) => ({ ...prev, date }))
+                }
+              />
             </div>
             <div>
               <Label htmlFor="participants">예상 참여 인원</Label>
@@ -190,9 +194,12 @@ export default function CreateSchedulePage({ params }: { params: { groupId: stri
             </div>
             <div>
               <Label htmlFor="paybackDate">페이백 적용 날짜</Label>
+              {/* [수정] DatePicker에 onSelect 대신 onChange와 매개변수 타입 명시 */}
               <DatePicker
                 selected={formData.paybackDate}
-                onSelect={(date) => setFormData((prev) => ({ ...prev, paybackDate: date }))}
+                onChange={(date: Date | null) =>
+                  setFormData((prev) => ({ ...prev, paybackDate: date }))
+                }
               />
             </div>
           </>
