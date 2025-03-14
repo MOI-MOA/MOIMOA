@@ -1,35 +1,13 @@
-## 1. OpenJDK 이미지 사용
-#FROM openjdk:17-jdk-alpine
-#
-## 2. 작업 디렉토리 설정
-#WORKDIR /app
-#
-## 3. JAR 파일 복사
-#ARG JAR_FILE=build/libs/*.jar
-#COPY ${JAR_FILE} app.jar
-#
-## 4. 실행 명령어 설정
-#EXPOSE 8080
-#ENTRYPOINT ["java", "-jar", "app.jar"]
-
-
-# 1. OpenJDK 이미지 사용
-FROM openjdk:17-jdk-alpine AS build
-
-# 2. 작업 디렉토리 설정
-WORKDIR /app
-
-# 3. 소스 코드 복사
-COPY . .
-
-# 4. Gradle 빌드 실행 (테스트 제외)
-RUN ./gradlew build -x test --no-daemon
-
-# 5. 런타임 이미지 생성
+# OpenJDK 이미지 사용
 FROM openjdk:17-jdk-alpine
-WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
 
-# 6. 실행 명령어 설정
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# JAR 파일 복사
+ARG JAR_FILE=build/libs/*.jar
+COPY ${JAR_FILE} app.jar
+
+# 실행 명령어 설정
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
