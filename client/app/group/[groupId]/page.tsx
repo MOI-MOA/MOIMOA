@@ -30,6 +30,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const [pinCode, setPinCode] = useState("")
   const [confirmPinCode, setConfirmPinCode] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
 
   // Mock data for the group
   const groupData = {
@@ -185,6 +186,30 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const openConfirmDialog = (action: "accept" | "reject") => {
     setConfirmAction(action)
     setIsConfirmDialogOpen(true)
+  }
+
+  // 모임 탈퇴 처리 함수
+  const handleLeaveGroup = async () => {
+    try {
+      // API 호출로 모임 탈퇴 처리
+      await fetch(`/api/groups/${groupId}/leave`, {
+        method: 'POST',
+      });
+      
+      toast({
+        title: "모임 탈퇴 완료",
+        description: "모임에서 탈퇴되었습니다.",
+      })
+      
+      router.push('/') // 메인 페이지로 이동
+    } catch (error) {
+      toast({
+        title: "오류 발생",
+        description: "탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      })
+    }
+    setIsLeaveDialogOpen(false)
   }
 
   return (
@@ -360,6 +385,15 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             </Card>
           ))}
         </div>
+
+        {/* 모임 탈퇴 버튼 */}
+        <Button
+          variant="outline"
+          className="w-full mt-4 border-red-200 text-red-600 hover:bg-red-50"
+          onClick={() => setIsLeaveDialogOpen(true)}
+        >
+          모임 탈퇴
+        </Button>
       </main>
 
       {/* 확인 다이얼로그 */}
@@ -461,6 +495,27 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
               {isProcessing ? "처리 중..." : "확인"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 모임 탈퇴 확인 다이얼로그 */}
+      <Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>모임 탈퇴</DialogTitle>
+            <DialogDescription>
+              정말로 {groupData.name} 모임을 탈퇴하시겠습니까?
+              탈퇴 시 모임 내역과 보증금이 삭제되며, 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsLeaveDialogOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={handleLeaveGroup}>
+              탈퇴하기
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
