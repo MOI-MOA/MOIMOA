@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/components/ui/use-toast"
+import axios from "axios"
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -131,20 +132,48 @@ export default function SignUpPage() {
     }
 
     try {
-      // 회원가입 API 호출 로직
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const response = await axios.post('/api/auth/signup', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        pin: parseInt(formData.pinPassword)
+      });
 
-      toast({
-        title: "회원가입 성공",
-        description: "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.",
-      })
-      router.push("/login")
+      if (response.status === 200) {
+        toast({
+          title: "회원가입 성공",
+          description: "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.",
+        })
+        setTimeout(() => {
+          router.push("/login")
+        }, 1500)
+      }
     } catch (error) {
-      toast({
-        title: "회원가입 실패",
-        description: "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive",
-      })
+      if (axios.isAxiosError(error)) {
+        toast({
+          title: "회원가입 실패",
+          description: error.response?.data?.message || "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "회원가입 실패",
+          description: "알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        })
+      }
+      setTimeout(() => {
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          pinPassword: "",
+          confirmPinPassword: "",
+        })
+        setStep(1)
+        setIsVerified(false)
+      }, 1500)
     } finally {
       setIsLoading(false)
     }
