@@ -29,8 +29,8 @@ services:
   my-db:
     image: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: jjeon110team
-      MYSQL_DATABASE: mydb
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: jjeonchongmu
     volumes:
       - ./mysql_data:/var/lib/mysql
     ports:
