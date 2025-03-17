@@ -162,7 +162,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get('/api/schedules');
+        const { data } = await axios.get('/api/v1/home');
         
         setUnconfirmedSchedules(data.unconfirmedSchedules || DEFAULT_UNCONFIRMED_SCHEDULES);
         setMonthlySchedules(data.monthlySchedules || DEFAULT_MONTHLY_SCHEDULES);
