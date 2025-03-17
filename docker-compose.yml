@@ -19,6 +19,7 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       # 추가 환경 변수가 필요하다면 여기에 추가
     depends_on:
       my-db:
@@ -29,8 +30,8 @@ services:
   my-db:
     image: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root1234
-      MYSQL_DATABASE: jjeonchongmu
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     volumes:
       - ./mysql_data:/var/lib/mysql
     ports:
