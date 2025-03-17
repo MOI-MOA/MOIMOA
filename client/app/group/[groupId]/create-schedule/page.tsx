@@ -1,22 +1,31 @@
-"use client"
-import React, { use, useState } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowRight, AlertCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { DatePicker } from "@/components/ui/date-picker"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Card, CardContent } from "@/components/ui/card"
-import { toast } from "@/components/ui/use-toast"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Header } from "@/components/Header"
+"use client";
+import React, { use, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Header } from "@/components/Header";
 
-export default function CreateSchedulePage({ params }: { params: Promise<{ groupId: string }> }) {
-  const router = useRouter()
-  const {groupId} = use(params)
-  const [step, setStep] = useState(1)
+export default function CreateSchedulePage({
+  params,
+}: {
+  params: Promise<{ groupId: string }>;
+}) {
+  const router = useRouter();
+  const { groupId } = use(params);
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: "",
     date: null as Date | null,
@@ -25,86 +34,102 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
     location: "",
     description: "",
     paybackDate: null as Date | null,
-  })
+  });
   const [insufficientMembers, setInsufficientMembers] = useState<
     Array<{
-      name: string
-      balance: number
-      avatar: string
-      insufficientAmount: number
-      status: string
+      name: string;
+      balance: number;
+      avatar: string;
+      insufficientAmount: number;
+      status: string;
     }>
-  >([])
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  >([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleNext = () => {
     if (step < 3) {
-      setStep((prev) => prev + 1)
+      setStep((prev) => prev + 1);
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (step > 1) {
-      setStep((prev) => prev - 1)
+      setStep((prev) => prev - 1);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // 폼 유효성 검사
-    const form = e.currentTarget.closest("form")
+    const form = e.currentTarget.closest("form");
     if (form && !form.checkValidity()) {
-      form.reportValidity()
-      return
+      form.reportValidity();
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Here you would typically send the data to your backend
-      console.log({ ...formData, groupId })
+      console.log({ ...formData, groupId });
       toast({
         title: "일정 생성 완료",
         description: "새로운 일정이 성공적으로 생성되었습니다.",
-      })
-      router.push(`/group/${groupId}`)
+      });
+      router.push(`/group/${groupId}`);
     } catch (error) {
-      console.error(error)
+      console.error(error);
       toast({
         title: "오류 발생",
         description: "일정 생성 중 문제가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const checkInsufficientMembers = () => {
     // This is a mock function. In a real app, you'd fetch this data from your backend.
     const mockMembers = [
-      { name: "김철수", balance: 50000, avatar: "/placeholder.svg?height=40&width=40" },
-      { name: "이영희", balance: 30000, avatar: "/placeholder.svg?height=40&width=40" },
-      { name: "박지성", balance: 70000, avatar: "/placeholder.svg?height=40&width=40" },
-      { name: "최민수", balance: 20000, avatar: "/placeholder.svg?height=40&width=40" },
-    ]
+      {
+        name: "김철수",
+        balance: 50000,
+        avatar: "/placeholder.svg?height=40&width=40",
+      },
+      {
+        name: "이영희",
+        balance: 30000,
+        avatar: "/placeholder.svg?height=40&width=40",
+      },
+      {
+        name: "박지성",
+        balance: 70000,
+        avatar: "/placeholder.svg?height=40&width=40",
+      },
+      {
+        name: "최민수",
+        balance: 20000,
+        avatar: "/placeholder.svg?height=40&width=40",
+      },
+    ];
 
-    const budgetPerPerson = Number(formData.budgetPerPerson)
+    const budgetPerPerson = Number(formData.budgetPerPerson);
     const membersWithStatus = mockMembers.map((member) => ({
       ...member,
       insufficientAmount: Math.max(0, budgetPerPerson - member.balance),
       status: member.balance >= budgetPerPerson ? "충분" : "부족",
-    }))
+    }));
 
-    setInsufficientMembers(membersWithStatus)
-    setIsDialogOpen(true)
-  }
+    setInsufficientMembers(membersWithStatus);
+    setIsDialogOpen(true);
+  };
 
   const renderStep = () => {
     switch (step) {
@@ -145,7 +170,7 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
               />
             </div>
           </>
-        )
+        );
       case 2:
         return (
           <>
@@ -178,7 +203,7 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
               />
             </div>
           </>
-        )
+        );
       case 3:
         return (
           <>
@@ -203,11 +228,11 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
               />
             </div>
           </>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <>
@@ -218,7 +243,10 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
             <div className="mb-6 text-center">
               <h2 className="text-xl font-semibold">Step {step} of 3</h2>
               <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${(step / 3) * 100}%` }}></div>
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full"
+                  style={{ width: `${(step / 3) * 100}%` }}
+                ></div>
               </div>
             </div>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
@@ -230,7 +258,11 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
                   </Button>
                 )}
                 {step < 3 ? (
-                  <Button type="button" onClick={handleNext} className="ml-auto">
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="ml-auto"
+                  >
                     다음
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -257,7 +289,10 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
           </DialogHeader>
           <div className="mt-4">
             {insufficientMembers.map((member, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+              <div
+                key={index}
+                className="flex items-center justify-between py-2 border-b last:border-b-0"
+              >
                 <div className="flex items-center">
                   <Avatar className="h-8 w-8 mr-2">
                     <AvatarImage src={member.avatar} />
@@ -266,14 +301,19 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
                   <span>{member.name}</span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-sm">{member.balance.toLocaleString()}원</span>
+                  <span className="text-sm">
+                    {member.balance.toLocaleString()}원
+                  </span>
                   {member.status === "부족" ? (
                     <Badge variant="destructive" className="mt-1">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       {member.insufficientAmount.toLocaleString()}원 부족
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="mt-1 bg-green-100 text-green-800">
+                    <Badge
+                      variant="secondary"
+                      className="mt-1 bg-green-100 text-green-800"
+                    >
                       충분
                     </Badge>
                   )}
@@ -284,6 +324,5 @@ export default function CreateSchedulePage({ params }: { params: Promise<{ group
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
-
