@@ -1,32 +1,20 @@
 spring:
-  config:
-    activate:
-      on-profile: dev
-    datasource:
-      url: jdbc:mysql://localhost:3306/jjeonchongmu?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      username: root
-      password: root
-      driver-class-name: com.mysql.cj.jdbc.Driver
-
-      jpa:
-        hibernate:
-          ddl-auto: create
-        properties:
-          hibernate:
-            format_sql: true
-            dialect: org.hibernate.dialect.MySQLDialect
-            id:
-              new_generator_mappings: true
-        defer-datasource-initialization: true
-
-      sql:
-        init:
-          mode: always
-
-      data:
-        redis:
-          host: localhost
-          port: 6379
+  datasource:
+    url: jdbc:mysql://my-db:3306/jjeonchongmu?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: jjeon
+    password: root1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    redis:
+      host: my-cache-server
+      port: 6379
 
 paging:
   default-page-size: 10
