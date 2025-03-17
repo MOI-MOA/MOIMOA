@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 import axios from "axios"
 
 export default function SignUpPage() {
@@ -28,14 +29,20 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (formData.pinPassword.length === 6 && step === 3) {
-      setStep(4)
+      toast({
+        title: "PIN 번호 입력 완료",
+        description: "PIN 번호를 한 번 더 입력해주세요.",
+      })
+      setTimeout(() => {
+        setStep(4)
+      }, 1000)
     }
 
     if (formData.confirmPinPassword.length === 6 && step === 4) {
       if (formData.confirmPinPassword !== formData.pinPassword) {
         toast({
-          title: "PIN 비밀번호 불일치",
-          description: "PIN 비밀번호가 일치하지 않습니다. 다시 입력해주세요.",
+          title: "PIN 번호 불일치",
+          description: "PIN 번호가 일치하지 않습니다. 다시 입력해주세요.",
           variant: "destructive",
         })
         setTimeout(() => {
@@ -44,8 +51,8 @@ export default function SignUpPage() {
         }, 1500)
       } else {
         toast({
-          title: "PIN 비밀번호 확인 완료",
-          description: "PIN 비밀번호가 성공적으로 설정되었습니다.",
+          title: "PIN 번호 확인 완료",
+          description: "PIN 번호가 성공적으로 설정되었습니다.",
         })
       }
     }
@@ -102,11 +109,11 @@ export default function SignUpPage() {
     if (step !== 4) return
 
     if (formData.pinPassword.length !== 6 || formData.confirmPinPassword.length !== 6) {
-      toast({
-        title: "PIN 비밀번호 미완료",
-        description: "PIN 비밀번호는 6자리여야 합니다.",
-        variant: "destructive",
-      })
+      // toast({
+      //   title: "PIN 비밀번호 미완료",
+      //   description: "PIN 비밀번호는 6자리여야 합니다.",
+      //   variant: "destructive",
+      // })
       return
     }
 
@@ -284,7 +291,8 @@ export default function SignUpPage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
+      <Toaster />
       <Header title="회원가입" showBackButton />
       <main className="flex-1 overflow-auto p-4 flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -327,7 +335,7 @@ export default function SignUpPage() {
           </form>
         </Card>
       </main>
-    </>
+    </div>
   )
 }
 
