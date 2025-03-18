@@ -5,6 +5,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class GroupDTO {
     private Long groupId;
     private String groupName;

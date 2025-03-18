@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.group.entity;
 
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
