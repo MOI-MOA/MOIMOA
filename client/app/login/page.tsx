@@ -52,6 +52,23 @@ export default function LoginPage() {
         router.push("/")
       }, 1500)
     } catch (error) {
+<<<<<<< HEAD
+      if (axios.isAxiosError(error)) {
+        toast({
+          title: "로그인 실패",
+          description: error.response?.data?.message || "이메일 또는 비밀번호가 올바르지 않습니다.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "로그인 실패",
+          description: "알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        })
+      }
+      
+=======
+>>>>>>> 08873a06ac8babdca01005679342496a6a41f855
       // 폼 데이터 초기화
       setFormData({
         email: "",
