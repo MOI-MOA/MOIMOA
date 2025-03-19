@@ -1,6 +1,5 @@
-package com.b110.jjeonchongmu.domain.group.entity;
+package com.b110.jjeonchongmu.domain.entity;
 
-import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +17,7 @@ public class Group {
 
     @ManyToOne
     @JoinColumn(name = "manager_id", nullable = false)
-    private User manager;
+    private PersonalAccount.User manager;
 
     @Column(name = "group_name", nullable = false, length = 255)
     private String groupName;
