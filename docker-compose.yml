@@ -1,4 +1,16 @@
 services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d        # 상대 경로로 변경
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - client
+      - server
+    restart: always
   client:
     build:
       context: ./client
