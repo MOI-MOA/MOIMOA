@@ -1,4 +1,4 @@
-package com.b110.jjeonchongmu.domain.notification.entity;
+package com.b110.jjeonchongmu.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,6 +1,5 @@
-package com.b110.jjeonchongmu.domain.schedule.entity;
+package com.b110.jjeonchongmu.domain.entity;
 
-import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,5 +21,5 @@ public class ScheduleMember {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private PersonalAccount.User user;
 }
