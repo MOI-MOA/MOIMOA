@@ -12,4 +12,5 @@ public class GroupMemberDTO {
     private String userId;
     private Integer groupAttendCount;
     private Integer groupMemberAccountBalance;
+    private Boolean group_payment_status;
 }
