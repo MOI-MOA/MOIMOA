@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequiredArgsConstructor;
  * 
  * [모든 사용자]
  * 4. 개인 일정목록 조회 - GET /api/v1/main/schedule/personal
- * 5. 이번달 일정 조회 - GET /api/v1/main/schedule/month
+ * 5. 이번달 일정 조회 - GET /api/v1/main/schedule/month/{year}/{month}
  * 6. 모임 일정목록 조회 - GET /api/v1/main/schedule/{gatheringId}/gathering
  * 7. 오늘 일정 조회 - GET /api/v1/main/schedule/day
  * 8. 일정 상세조회 - GET /api/v1/schedule/{scheduleId}
