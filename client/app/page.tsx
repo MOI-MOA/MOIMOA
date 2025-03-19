@@ -36,7 +36,7 @@ type MonthlySchedule = {
     scheduleTitle: string;
     scheduleDetail: string;
     schedulePlace: string;
-    scheduleStratTime: string;
+    scheduleStartTime: string;
     perBudget: number;
     totalBudget: number;
     penaltyApplyDate: string;
@@ -88,7 +88,7 @@ const DEFAULT_MONTHLY_SCHEDULES: MonthlySchedule[] = [
         scheduleTitle: "영어 스터디",
         scheduleDetail: "매주 영어 스터디 진행",
         schedulePlace: "스터디 카페",
-        scheduleStratTime: "2025-03-15T14:00:00",
+        scheduleStartTime: "2025-03-15T14:00:00",
         perBudget: 15000,
         totalBudget: 75000,
         penaltyApplyDate: "2025-03-16",
@@ -107,7 +107,7 @@ const DEFAULT_MONTHLY_SCHEDULES: MonthlySchedule[] = [
         scheduleTitle: "영어 스터디",
         scheduleDetail: "매주 영어 스터디 진행",
         schedulePlace: "스터디 카페",
-        scheduleStratTime: "2025-03-15T14:00:00",
+        scheduleStartTime: "2025-03-15T14:00:00",
         perBudget: 15000,
         totalBudget: 75000,
         penaltyApplyDate: "2025-03-16",
@@ -194,7 +194,6 @@ export default function HomePage() {
 
     fetchData();
   }, []);
-
   // 월별 일정 데이터 포맷 변환
   const scheduleData = useMemo(() => {
     const formattedData: Record<string, any[]> = {};
@@ -204,7 +203,7 @@ export default function HomePage() {
         id: event.scheduleId,
         groupId: event.groupId,
         title: event.scheduleTitle,
-        time: format(new Date(event.scheduleStratTime), "HH:mm"),
+        time: format(new Date(event.scheduleStartTime), "HH:mm"),
         location: event.schedulePlace,
         group: event.groupName,
         participants: event.attendeeCount,
@@ -213,7 +212,7 @@ export default function HomePage() {
 
     return formattedData;
   }, [monthlySchedules]);
-
+    console.log(scheduleData)
   // 선택된 날짜의 일정
   const selectedDateSchedules = useMemo(() => {
     if (!selectedDate) return [];
@@ -244,15 +243,14 @@ export default function HomePage() {
           <Card>
             <CardContent className="p-3">
               <Calendar
-                mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 className="rounded-md border"
                 schedules={scheduleData}
                 month={currentMonth}
                 onMonthChange={setCurrentMonth}
-                fromMonth={new Date(2025, 0)}
-                toMonth={new Date(2025, 11)}
+                fromMonth={new Date(2023, 0)}
+                toMonth={new Date(2030, 11)}
               />
             </CardContent>
           </Card>
