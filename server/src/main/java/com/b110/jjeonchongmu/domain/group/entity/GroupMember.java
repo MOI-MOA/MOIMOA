@@ -31,4 +31,7 @@ public class GroupMember {
 
     @Column(name = "group_member_account_deposit")
     private Integer groupMemberAccountDeposit;
+
+    @Column(name = "group_payment_status")
+    private Boolean groupPaymentStatus;
 }
