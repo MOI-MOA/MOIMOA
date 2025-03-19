@@ -21,8 +21,8 @@ public class AutoPayment {
     private PersonalAccount personalAccount;
 
     @ManyToOne
-    @JoinColumn(name = "group_account_id", nullable = false)
-    private GroupAccount groupAccount;
+    @JoinColumn(name = "gahtering_account_id", nullable = false)
+    private GatheringAccount gatheringAccount;
 
     @Column(name = "auto_payment_amount", nullable = true)
     private Integer autoPaymentAmount;

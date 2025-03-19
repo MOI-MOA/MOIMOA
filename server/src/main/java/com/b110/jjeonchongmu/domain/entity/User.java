@@ -4,18 +4,28 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
     
     @Id
     @Column(name = "user_id", nullable = false, length = 50)
     private String userId;
+
+    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    private List<GatheringAccount> GatheringAccount;
+
+    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    private List<Gathering> Gathering;
+
+    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    private List<Gathering> GatheringMember;
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -37,4 +47,7 @@ public class User {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+
+
 }
