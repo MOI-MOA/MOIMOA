@@ -1,4 +1,4 @@
-package com.b110.jjeonchongmu.domain.group.dto;
+package com.b110.jjeonchongmu.domain.gathering.dto;
 
 import lombok.*;
 
@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupDTO {
+public class GatheringDTO {
     private Long groupId;
     private String groupName;
     private String groupIntroduction;

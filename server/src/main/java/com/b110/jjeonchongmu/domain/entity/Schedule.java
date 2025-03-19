@@ -18,8 +18,8 @@ public class Schedule {
     private Long scheduleId;
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
+    @JoinColumn(name = "gahtering_id", nullable = false)
+    private Gathering Gathering;
 
     @ManyToOne
     @JoinColumn(name = "sub_manager_id", nullable = false)
