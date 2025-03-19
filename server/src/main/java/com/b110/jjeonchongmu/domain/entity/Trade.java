@@ -16,10 +16,6 @@ public class Trade {
     @Column(name = "trade_id", nullable = false)
     private Long tradeId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
     @Column(name = "trade_type", nullable = false)
     private String tradeType;
 

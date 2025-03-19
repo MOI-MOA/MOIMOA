@@ -17,6 +17,10 @@ public class Notification {
     @Column(name = "notification_id", nullable = false)
     private Long notificationId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column(name = "notification_content", nullable = true)
     private String notificationContent;
 
@@ -35,6 +39,5 @@ public class Notification {
     @Column(name = "notification_created_at", nullable = false)
     private LocalDateTime notificationCreatedAt;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+
 }

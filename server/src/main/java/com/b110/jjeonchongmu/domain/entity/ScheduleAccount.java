@@ -14,12 +14,13 @@ public class ScheduleAccount {
     @Column(name = "schedule_account_id", nullable = false)
     private Long scheduleAccountId;
 
-    @ManyToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
 
-    @Column(name = "schedule_account_name_id", nullable = false)
-    private Long scheduleAccountNameId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User scheduleAccountHolder;
 
     @Column(name = "schedule_account_no", nullable = true)
     private Long scheduleAccountNo;

@@ -3,6 +3,8 @@ package com.b110.jjeonchongmu.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "gathering")
 @Getter
@@ -17,11 +19,11 @@ public class Gathering {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User gatheringManager;
 
-    @ManyToOne
-    @JoinColumn(name = "manager_id", nullable = false)
-    private User manager;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gathering_account_id" , nullable = false)
+    private GatheringAccount gatheringAccount;
 
     @Column(name = "gahtering_name", nullable = false, length = 255)
     private String gahteringName;
@@ -44,6 +46,10 @@ public class Gathering {
     @Column(name = "gahtering_deposit", nullable = false)
     private Integer gahteringDeposit;
 
+    @OneToMany(mappedBy = "gathering" , fetch = FetchType.LAZY)
+    private List<Schedule> schedules;
 
+    @OneToMany(mappedBy = "gathering" , fetch = FetchType.LAZY)
+    private List<GatheringMember> gatheringMembers;
 
 }
