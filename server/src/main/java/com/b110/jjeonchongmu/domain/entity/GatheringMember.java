@@ -14,13 +14,13 @@ public class GatheringMember {
     @Column(name = "gathering_member_id", nullable = false)
     private Long gatheringMemberId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gathering_id", nullable = false)
-    private Gathering Gathering;
+    private Gathering gathering;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private PersonalAccount.User user;
+    private User gatheringMember;
 
     @Column(name = "gathering_attend_count")
     private Integer gatheringAttendCount;
@@ -34,9 +34,6 @@ public class GatheringMember {
     @Column(name = "gathering_payment_status")
     private Boolean gatheringPaymentStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
 
 }

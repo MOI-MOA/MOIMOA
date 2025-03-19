@@ -15,11 +15,11 @@ public class ScheduleMember {
     @Column(name = "schedule_member_id", nullable = false)
     private Long scheduleMemberId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private PersonalAccount.User user;
+    private User scheduleMember;
 }
