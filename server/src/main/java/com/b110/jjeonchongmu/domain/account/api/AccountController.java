@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
  *    - Request: accountType, accountId, accountPW
  * 
  * 3. 자동이체 현황 조회 - GET /api/v1/account/autopayment
+ *
  */
 @RestController
 @RequestMapping("/api/v1/account")
