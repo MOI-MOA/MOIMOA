@@ -35,7 +35,7 @@ interface AccountData {
 
 // 기본 데이터
 const DEFAULT_ACCOUNT_DATA: AccountData = {
-  gathering_name: "초등학교 동창",
+  gathering_name: "배한진",
   gathering_account_no: 12345678901234,
   gathering_account_balance: 500000,
   totaldeposit: 1200000,
@@ -131,12 +131,12 @@ export default function AccountHistoryPage() {
 
   return (
     <>
-      <Header title="모임통장 내역" showBackButton />
+      <Header title="내 계좌 내역" showBackButton />
       <main className="flex-1 overflow-auto p-4 space-y-4 pb-16">
         {/* 계좌 정보 */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{accountData.gathering_name} 모임통장</CardTitle>
+            <CardTitle className="text-lg">{accountData.gathering_name}님의 계좌</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-500 mb-2">{accountData.gathering_account_no}</p>

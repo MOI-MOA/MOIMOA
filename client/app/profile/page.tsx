@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { BarChart3, User, CreditCard, ArrowRight } from "lucide-react"
+import { BarChart3, User, CreditCard, ArrowRight, Banknote} from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Header } from "@/components/Header"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -37,6 +37,12 @@ export default function ProfilePage() {
       description: "정기 결제 및 자동이체 관리",
       icon: <CreditCard className="h-6 w-6 text-purple-500" />,
       path: "/profile/auto-transfer",
+    },
+    {
+      title: "내 계좌",
+      description: "거래내역 보기",
+      icon: <Banknote className="h-6 w-6 text-yellow-500" />,
+      path: "/profile/account-history",
     },
   ]
 
