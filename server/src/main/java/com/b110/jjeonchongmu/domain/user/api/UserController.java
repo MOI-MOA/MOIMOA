@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  *    - Response: refreshToken, accessToken
  * 
  * 2. 로그아웃 - POST /api/v1/logout
- * 
+ *
  * 3. 회원가입 - POST /api/v1/signup
  *    - Request: username, email, password, personalAccountPW
  * 
