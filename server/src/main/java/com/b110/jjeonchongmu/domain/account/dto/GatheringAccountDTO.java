@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupAccountDTO {
+public class GatheringAccountDTO {
     private Long groupAccountId;
     private Long groupId;
     private Long groupAccountNo;
