@@ -1,6 +1,6 @@
 "use client"
 
-import React, { use, useState } from "react"
+import React, { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
@@ -12,153 +12,121 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
+import axios from "axios"
+import { toast } from "@/components/ui/use-toast"
 
-export default function AccountHistoryPage({ params }: { params: Promise<{ groupId: string }> }) {
+// 기본 데이터 타입 정의
+interface Transaction {
+  tradeDetail: string
+  tradeTime: string
+  trade_amount: number
+  trade_balance: number
+  trade_partener_name: string
+}
+
+interface AccountData {
+  gathering_name: string
+  gathering_account_no: number
+  gathering_account_balance: number
+  totaldeposit: number
+  totalWithdrawal: number
+  tradeList: Transaction[]
+}
+
+// 기본 데이터
+const DEFAULT_ACCOUNT_DATA: AccountData = {
+  gathering_name: "초등학교 동창",
+  gathering_account_no: 12345678901234,
+  gathering_account_balance: 500000,
+  totaldeposit: 1200000,
+  totalWithdrawal: 700000,
+  tradeList: [
+    {
+      tradeDetail: "송금받음",
+      tradeTime: "2025-03-20T10:15:30",
+      trade_amount: 300000,
+      trade_balance: 500000,
+      trade_partener_name: "김철수"
+    },
+    {
+      tradeDetail: "편의점 결제",
+      tradeTime: "2025-03-19T18:45:10",
+      trade_amount: -5000,
+      trade_balance: 200000,
+      trade_partener_name: "GS25"
+    },
+    {
+      tradeDetail: "회비 입금",
+      tradeTime: "2025-03-18T14:30:00",
+      trade_amount: 500000,
+      trade_balance: 205000,
+      trade_partener_name: "이영희"
+    },
+    {
+      tradeDetail: "음식점 결제",
+      tradeTime: "2025-03-17T20:10:25",
+      trade_amount: -70000,
+      trade_balance: 5000,
+      trade_partener_name: "BBQ 치킨"
+    }
+  ]
+}
+
+export default function AccountHistoryPage() {
   const router = useRouter()
-
-  const { groupId } = use(params)
-
-  // 상태 관리
   const [searchTerm, setSearchTerm] = useState("")
   const [transactionType, setTransactionType] = useState("all")
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined
-    to: Date | undefined
-  }>({
-    from: undefined,
-    to: undefined,
-  })
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [accountData, setAccountData] = useState<AccountData>(DEFAULT_ACCOUNT_DATA)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // 모임 정보 (실제로는 API에서 가져와야 함)
-  const groupInfo = {
-    name: "회사 동료",
-    accountNumber: "신한은행 110-123-456789",
-    balance: 2400000,
-    totalDeposit: 3500000,
-    totalWithdrawal: 1100000,
-  }
-
-  // 거래 내역 데이터 (실제로는 API에서 가져와야 함)
-  const transactions = [
-    {
-      id: 1,
-      date: "2024-03-25",
-      time: "14:30",
-      type: "deposit",
-      description: "김철수 회비 입금",
-      amount: 30000,
-      balance: 2400000,
-      member: "김철수",
-    },
-    {
-      id: 2,
-      date: "2024-03-20",
-      time: "18:45",
-      type: "deposit",
-      description: "이영희 회비 입금",
-      amount: 30000,
-      balance: 2370000,
-      member: "이영희",
-    },
-    {
-      id: 3,
-      date: "2024-03-15",
-      time: "12:10",
-      type: "withdrawal",
-      description: "3월 정기 회식 결제",
-      amount: 250000,
-      balance: 2340000,
-      member: "김철수",
-    },
-    {
-      id: 4,
-      date: "2024-03-10",
-      time: "09:20",
-      type: "deposit",
-      description: "박지성 회비 입금",
-      amount: 30000,
-      balance: 2590000,
-      member: "박지성",
-    },
-    {
-      id: 5,
-      date: "2024-03-05",
-      time: "16:35",
-      type: "deposit",
-      description: "최민수 회비 입금",
-      amount: 30000,
-      balance: 2560000,
-      member: "최민수",
-    },
-    {
-      id: 6,
-      date: "2024-02-28",
-      time: "11:15",
-      type: "withdrawal",
-      description: "사무용품 구매",
-      amount: 45000,
-      balance: 2530000,
-      member: "김철수",
-    },
-    {
-      id: 7,
-      date: "2024-02-25",
-      time: "10:00",
-      type: "deposit",
-      description: "정다운 회비 입금",
-      amount: 30000,
-      balance: 2575000,
-      member: "정다운",
-    },
-    {
-      id: 8,
-      date: "2024-02-20",
-      time: "15:40",
-      type: "withdrawal",
-      description: "2월 정기 회식 결제",
-      amount: 200000,
-      balance: 2545000,
-      member: "김철수",
-    },
-  ]
-
-  // 필터링된 거래 내역
-  const filteredTransactions = transactions.filter((transaction) => {
-    // 검색어 필터링
-    const matchesSearch =
-      searchTerm === "" ||
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.member.toLowerCase().includes(searchTerm.toLowerCase())
-
-    // 거래 유형 필터링
-    const matchesType = transactionType === "all" || transaction.type === transactionType
-
-    // 날짜 범위 필터링
-    let matchesDateRange = true
-    if (dateRange.from) {
-      const transactionDate = new Date(transaction.date)
-      matchesDateRange = transactionDate >= dateRange.from
-
-      if (dateRange.to) {
-        matchesDateRange = matchesDateRange && transactionDate <= dateRange.to
+  // API 데이터 가져오기
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      try {
+        const response = await axios.get('/api/v1/account/history')
+        setAccountData(response.data)
+      } catch (error) {
+        console.error('계좌 내역을 불러오는데 실패했습니다:', error)
+        toast({
+          title: "데이터 로드 실패",
+          description: "기본 데이터를 표시합니다.",
+          variant: "destructive",
+        })
+        // 에러 시 기본 데이터 사용
+        setAccountData(DEFAULT_ACCOUNT_DATA)
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    return matchesSearch && matchesType && matchesDateRange
+    fetchAccountData()
+  }, [])
+
+  // 필터링된 거래 내역
+  const filteredTransactions = accountData.tradeList.filter((transaction) => {
+    // 검색어 필터링
+    const matchesSearch =
+      searchTerm === "" ||
+      transaction.tradeDetail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.trade_partener_name.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // 거래 유형 필터링
+    const matchesType =
+      transactionType === "all" ||
+      (transactionType === "deposit" && transaction.trade_amount > 0) ||
+      (transactionType === "withdrawal" && transaction.trade_amount < 0)
+
+    return matchesSearch && matchesType
   })
 
-  // 날짜 포맷 함수
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return format(date, "yyyy년 MM월 dd일", { locale: ko })
+  // 날짜/시간 포맷 함수
+  const formatDateTime = (dateTimeString: string) => {
+    const date = new Date(dateTimeString)
+    return format(date, "yyyy년 MM월 dd일 HH:mm", { locale: ko })
   }
 
-  // 필터 초기화 함수
-  const resetFilters = () => {
-    setSearchTerm("")
-    setTransactionType("all")
-    setDateRange({ from: undefined, to: undefined })
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">로딩 중...</div>
   }
 
   return (
@@ -168,19 +136,19 @@ export default function AccountHistoryPage({ params }: { params: Promise<{ group
         {/* 계좌 정보 */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{groupInfo.name} 모임통장</CardTitle>
+            <CardTitle className="text-lg">{accountData.gathering_name} 모임통장</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-2">{groupInfo.accountNumber}</p>
-            <div className="text-2xl font-bold">{groupInfo.balance.toLocaleString()}원</div>
+            <p className="text-sm text-gray-500 mb-2">{accountData.gathering_account_no}</p>
+            <div className="text-2xl font-bold">{accountData.gathering_account_balance.toLocaleString()}원</div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <p className="text-sm text-gray-500">총 입금액</p>
-                <p className="text-lg font-semibold text-green-600">+{groupInfo.totalDeposit.toLocaleString()}원</p>
+                <p className="text-lg font-semibold text-green-600">+{accountData.totaldeposit.toLocaleString()}원</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">총 출금액</p>
-                <p className="text-lg font-semibold text-red-600">-{groupInfo.totalWithdrawal.toLocaleString()}원</p>
+                <p className="text-lg font-semibold text-red-600">-{accountData.totalWithdrawal.toLocaleString()}원</p>
               </div>
             </div>
           </CardContent>
@@ -190,7 +158,10 @@ export default function AccountHistoryPage({ params }: { params: Promise<{ group
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">거래 내역</h2>
-            <Button variant="outline" size="sm" onClick={resetFilters}>
+            <Button variant="outline" size="sm" onClick={() => {
+              setSearchTerm("")
+              setTransactionType("all")
+            }}>
               필터 초기화
             </Button>
           </div>
@@ -222,27 +193,27 @@ export default function AccountHistoryPage({ params }: { params: Promise<{ group
         {/* 거래 내역 목록 */}
         <div className="space-y-3">
           {filteredTransactions.length > 0 ? (
-            filteredTransactions.map((transaction) => (
-              <Card key={transaction.id} className="hover:shadow-sm transition-shadow">
+            filteredTransactions.map((transaction, index) => (
+              <Card key={index} className="hover:shadow-sm transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-medium">{transaction.description}</div>
+                      <div className="font-medium">{transaction.tradeDetail}</div>
                       <div className="text-sm text-gray-500">
-                        {formatDate(transaction.date)} {transaction.time}
+                        {formatDateTime(transaction.tradeTime)}
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">처리자: {transaction.member}</div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {transaction.trade_partener_name}
+                      </div>
                     </div>
                     <div className="text-right">
-                      <div
-                        className={`font-semibold ${
-                          transaction.type === "deposit" ? "text-green-600" : "text-red-600"
-                        }`}
-                      >
-                        {transaction.type === "deposit" ? "+" : "-"}
-                        {transaction.amount.toLocaleString()}원
+                      <div className={`font-semibold ${transaction.trade_amount > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {transaction.trade_amount > 0 ? "+" : ""}
+                        {transaction.trade_amount.toLocaleString()}원
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">잔액: {transaction.balance.toLocaleString()}원</div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        잔액: {transaction.trade_balance.toLocaleString()}원
+                      </div>
                     </div>
                   </div>
                 </CardContent>

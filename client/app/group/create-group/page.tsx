@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
-import { toast } from "@/components/ui/use-toast"
-import { Header } from "@/components/Header"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { Header } from "@/components/Header";
 
 export default function CreateGroupPage() {
-  const router = useRouter()
-  const [step, setStep] = useState(1)
+  const router = useRouter();
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -22,50 +22,90 @@ export default function CreateGroupPage() {
     monthlyDepositDay: "",
     monthlyDepositAmount: "",
     depositAmount: "",
-  })
-  const [isLoading, setIsLoading] = useState(false)
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+
+    // monthlyDepositDay 입력값 검증
+    if (name === "monthlyDepositDay") {
+      const numValue = parseInt(value);
+      if (numValue < 1 || numValue > 31) {
+        return; // 유효하지 않은 값이면 상태 업데이트하지 않음
+      }
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleNext = () => {
-    if (step < 3) {
-      setStep((prev) => prev + 1)
+    // 각 단계별 필수 입력값 검증
+    switch (step) {
+      case 1:
+        if (!formData.title || !formData.description || !formData.members) {
+          toast({
+            title: "필수 입력",
+            description: "모임 이름, 소개, 참여 인원을 모두 입력해주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
+        break;
+      case 2:
+        if (!formData.paybackPercent || !formData.monthlyDepositDay) {
+          toast({
+            title: "필수 입력",
+            description: "페이백 퍼센트와 매월 입금일을 모두 입력해주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
+        break;
+      case 3:
+        if (!formData.monthlyDepositAmount || !formData.depositAmount) {
+          toast({
+            title: "필수 입력",
+            description: "매월 입금 금액과 보증금 금액을 모두 입력해주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
+        break;
     }
-  }
+
+    if (step < 3) {
+      setStep((prev) => prev + 1);
+    }
+  };
 
   const handlePrevious = () => {
     if (step > 1) {
-      setStep((prev) => prev - 1)
+      setStep((prev) => prev - 1);
     }
-  }
+  };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      // Here you would typically send the data to your backend
-      // const response = await fetch('/api/create-group', { method: 'POST', body: JSON.stringify(formData) })
-      // if (!response.ok) throw new Error('Failed to create group')
-      console.log(formData)
-      toast({
-        title: "모임 생성 완료",
-        description: "새로운 모임이 성공적으로 생성되었습니다.",
-      })
-      router.push("/")
+      const response = await fetch("/api/v1/gathering", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        // 성공 시 그룹 목록 페이지로 이동
+        router.push("/group");
+      }
     } catch (error) {
-      console.error(error)
-      toast({
-        title: "오류 발생",
-        description: "모임 생성 중 문제가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      console.error("그룹 생성 실패:", error);
     }
-  }
+  };
 
   const renderStep = () => {
     switch (step) {
@@ -107,7 +147,7 @@ export default function CreateGroupPage() {
               />
             </div>
           </>
-        )
+        );
       case 2:
         return (
           <>
@@ -140,7 +180,7 @@ export default function CreateGroupPage() {
               />
             </div>
           </>
-        )
+        );
       case 3:
         return (
           <>
@@ -169,11 +209,11 @@ export default function CreateGroupPage() {
               />
             </div>
           </>
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <>
@@ -184,19 +224,31 @@ export default function CreateGroupPage() {
             <div className="mb-6 text-center">
               <h2 className="text-xl font-semibold">Step {step} of 3</h2>
               <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${(step / 3) * 100}%` }}></div>
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full"
+                  style={{ width: `${(step / 3) * 100}%` }}
+                ></div>
               </div>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               {renderStep()}
               <div className="flex justify-between mt-6">
                 {step > 1 && (
-                  <Button type="button" onClick={handlePrevious} disabled={isLoading}>
+                  <Button
+                    type="button"
+                    onClick={handlePrevious}
+                    disabled={isLoading}
+                  >
                     이전
                   </Button>
                 )}
                 {step < 3 ? (
-                  <Button type="button" onClick={handleNext} className="ml-auto" disabled={isLoading}>
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="ml-auto"
+                    disabled={isLoading}
+                  >
                     다음
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -215,6 +267,5 @@ export default function CreateGroupPage() {
         </Card>
       </main>
     </>
-  )
+  );
 }
-

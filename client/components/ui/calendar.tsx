@@ -34,8 +34,8 @@ interface CustomCalendarProps {
  * 2. 달력이 가로로 꽉 차게 표시
  * 3. 현재 날짜에는 배경색으로 강조
  */
-export const Calendar: FC<CustomCalendarProps> = ({ 
-  schedules = {}, 
+export const Calendar: FC<CustomCalendarProps> = ({
+  schedules = {},
   selected,
   onSelect,
   mode = "single",
@@ -44,7 +44,7 @@ export const Calendar: FC<CustomCalendarProps> = ({
   fromMonth,
   toMonth,
   className,
-  ...props 
+  ...props
 }) => {
   const modifiers = {
     hasSchedule: (day: Date) => {
@@ -54,13 +54,13 @@ export const Calendar: FC<CustomCalendarProps> = ({
     today: (day: Date) => {
       const today = new Date();
       return format(day, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
-    }
+    },
   };
 
   const modifiersClassNames = {
     hasSchedule: "font-bold text-blue-600",
     today: "bg-blue-50",
-    selected: "bg-blue-100 text-blue-600"
+    selected: "bg-blue-100 text-blue-600",
   };
 
   return (

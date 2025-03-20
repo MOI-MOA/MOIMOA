@@ -153,7 +153,6 @@ export default function AccountHistoryPage() {
             </div>
           </CardContent>
         </Card>
-        
 
         {/* 필터 섹션 */}
         <div className="space-y-2">
