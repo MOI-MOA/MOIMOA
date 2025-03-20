@@ -34,8 +34,8 @@ interface CustomCalendarProps {
  * 2. 달력이 가로로 꽉 차게 표시
  * 3. 현재 날짜에는 배경색으로 강조
  */
-export const Calendar: FC<CustomCalendarProps> = ({ 
-  schedules = {}, 
+export const Calendar: FC<CustomCalendarProps> = ({
+  schedules = {},
   selected,
   onSelect,
   mode = "single",
@@ -44,7 +44,7 @@ export const Calendar: FC<CustomCalendarProps> = ({
   fromMonth,
   toMonth,
   className,
-  ...props 
+  ...props
 }) => {
   const modifiers = {
     hasSchedule: (day: Date) => {
@@ -54,43 +54,43 @@ export const Calendar: FC<CustomCalendarProps> = ({
     today: (day: Date) => {
       const today = new Date();
       return format(day, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
-    }
+    },
   };
 
   const modifiersClassNames = {
     hasSchedule: "font-bold text-blue-600",
     today: "bg-blue-50",
-    selected: "bg-blue-100 text-blue-600"
+    selected: "bg-blue-100 text-blue-600",
   };
 
   return (
     <div className="w-full flex justify-center items-center">
-        <DayPicker
-          mode="single"
-          selected={selected}
-          onSelect={onSelect}
-          month={month}
-          onMonthChange={onMonthChange}
-          fromMonth={fromMonth}
-          toMonth={toMonth}
-          locale={ko}
-          modifiers={modifiers}
-          modifiersClassNames={modifiersClassNames}
-          classNames={{
-            // root: "w-full",
-            // months: "w-full flex justify-center",
-            // month: "w-full",
-            // table: "w-full border-collapse",
-            // head: "w-full grid grid-cols-7",
-            // head_cell: "h-12 flex items-center justify-center text-lg font-semibold",
-            // row: "w-full grid grid-cols-7",
-            // cell: "w-full flex-1 aspect-square flex justify-center items-center",
-            day: "w-[100px]",
-            // selected: "bg-blue-100 text-blue-600",
-            // today: "bg-blue-50",
-          }}
-          {...props}
-        />
+      <DayPicker
+        mode="single"
+        selected={selected}
+        onSelect={onSelect}
+        month={month}
+        onMonthChange={onMonthChange}
+        fromMonth={fromMonth}
+        toMonth={toMonth}
+        locale={ko}
+        modifiers={modifiers}
+        modifiersClassNames={modifiersClassNames}
+        classNames={{
+          // root: "w-full",
+          // months: "w-full flex justify-center",
+          // month: "w-full",
+          // table: "w-full border-collapse",
+          // head: "w-full grid grid-cols-7",
+          // head_cell: "h-12 flex items-center justify-center text-lg font-semibold",
+          // row: "w-full grid grid-cols-7",
+          // cell: "w-full flex-1 aspect-square flex justify-center items-center",
+          day: "w-[100px]",
+          // selected: "bg-blue-100 text-blue-600",
+          // today: "bg-blue-50",
+        }}
+        {...props}
+      />
     </div>
   );
 };
