@@ -18,6 +18,6 @@ package com.b110.jjeonchongmu.domain.mypage.api;
 @RestController
 @RequestMapping("/api/v1/mypage")
 @RequiredArgsConstructor
-public class MyPageController {
+public class MypageController {
     // TODO: 구현 예정
 }

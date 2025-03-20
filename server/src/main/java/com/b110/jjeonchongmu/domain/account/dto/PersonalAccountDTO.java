@@ -7,6 +7,5 @@ import lombok.*;
 @Builder
 public class PersonalAccountDTO {
     private Long personalAccountId;
-    private String personalAccountNo;
-    private Integer personalAccountBalance;
+    private AccountDTO accountDTO;
 }

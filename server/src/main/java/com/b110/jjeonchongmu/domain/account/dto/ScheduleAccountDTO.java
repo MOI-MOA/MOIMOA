@@ -7,8 +7,5 @@ import lombok.*;
 @Builder
 public class ScheduleAccountDTO {
     private Long scheduleAccountId;
-    private Long scheduleId;
-    private Long scheduleAccountNameId;
-    private Long scheduleAccountNo;
-    private Integer scheduleAccountBalance;
+    private AccountDTO accountDTO;
 }
