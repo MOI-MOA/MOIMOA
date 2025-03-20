@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "schedule")
@@ -17,13 +18,13 @@ public class Schedule {
     @Column(name = "schedule_id", nullable = false)
     private Long scheduleId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gahtering_id", nullable = false)
     private Gathering Gathering;
 
-    @ManyToOne
-    @JoinColumn(name = "sub_manager_id", nullable = false)
-    private PersonalAccount.User subManager;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User subManager;
 
     @Column(name = "schedule_title", nullable = false)
     private String scheduleTitle;
@@ -48,4 +49,11 @@ public class Schedule {
 
     @Column(name = "schedule_status", nullable = true)
     private Integer scheduleStatus;
+
+    // cascade = CascadeType.REMOVE : schedule이 삭제되면 scheduleAccount 자동 삭제
+    @OneToOne(mappedBy = "schedule" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private ScheduleAccount scheduleAccount;
+
+    @OneToMany(mappedBy = "schedule" , fetch = FetchType.LAZY)
+    private List<ScheduleMember> scheduleMembers;
 }

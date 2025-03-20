@@ -16,11 +16,11 @@ public class AutoPayment {
     @Column(name = "auto_payment_id", nullable = false)
     private Long autoPaymentId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personal_account_id", nullable = false)
     private PersonalAccount personalAccount;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gahtering_account_id", nullable = false)
     private GatheringAccount gatheringAccount;
 
