@@ -85,7 +85,8 @@ export const Calendar: FC<CustomCalendarProps> = ({
             // head_cell: "h-12 flex items-center justify-center text-lg font-semibold",
             // row: "w-full grid grid-cols-7",
             // cell: "w-full flex-1 aspect-square flex justify-center items-center",
-            day: "w-[100px]",
+            day: "w-[100px] h-[50px]",
+            day_button: "w-full text-center",
             // selected: "bg-blue-100 text-blue-600",
             // today: "bg-blue-50",
           }}

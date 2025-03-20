@@ -1,7 +1,7 @@
 "use client"
 import React, { use, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Calendar, Clock, MapPin, Users, DollarSign, MessageSquare } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, DollarSign, MessageSquare, SendHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -18,6 +18,7 @@ interface Attendee {
 interface ScheduleManager {
   userId: number
   username: string
+  accountNumber?: string
 }
 
 interface ScheduleData {
@@ -44,7 +45,8 @@ const defaultScheduleData: ScheduleData = {
   scheduleDetail: "3월 정기 회식입니다. 모든 팀원들의 참석 바랍니다.",
   scheduleManager: {
     userId: 1,
-    username: "김철수"
+    username: "김철수",
+    accountNumber: "1234567890"
   },
   scheduleStartTime: "2024-03-15T19:00:00",
   schedulePlace: "강남역 OO식당",
@@ -52,6 +54,42 @@ const defaultScheduleData: ScheduleData = {
   totlaBudget: 400000,
   scheduleAttendStatus: true,
   attendees: [
+    {
+      userId: 1,
+      username: "김철수"
+    },
+    {
+      userId: 2,
+      username: "이영희"
+    },
+    {
+      userId: 3,
+      username: "박지성"
+    },
+    {
+      userId: 1,
+      username: "김철수"
+    },
+    {
+      userId: 2,
+      username: "이영희"
+    },
+    {
+      userId: 3,
+      username: "박지성"
+    },
+    {
+      userId: 1,
+      username: "김철수"
+    },
+    {
+      userId: 2,
+      username: "이영희"
+    },
+    {
+      userId: 3,
+      username: "박지성"
+    },
     {
       userId: 1,
       username: "김철수"
@@ -179,16 +217,19 @@ export default function ScheduleDetailPage({ params }: { params: Promise<{ group
 
             <div>
               <h3 className="font-semibold mb-2">참석자</h3>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 {scheduleData.attendees.map((attendee) => (
-                  <Avatar key={attendee.userId}>
-                    <AvatarImage src={`/placeholder.svg?height=32&width=32`} alt={attendee.username} />
-                    <AvatarFallback>{attendee.username[0]}</AvatarFallback>
-                  </Avatar>
+                  <p key={attendee.userId} className="text-gray-700">{attendee.username}</p>
                 ))}
               </div>
             </div>
-
+            <Button
+              onClick={() => router.push(`/profile/auto-transfer/send`)}
+              className="bg-gray-200 hover:bg-gray-400 text-black"
+            >
+              <SendHorizontal className="h-4 w-4 mr-2" />
+              송금하기
+            </Button>
             <div className="pt-4">
               <Button 
                 className={`w-full ${
@@ -203,15 +244,6 @@ export default function ScheduleDetailPage({ params }: { params: Promise<{ group
             </div>
           </CardContent>
         </Card>
-
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => router.push(`/group/${scheduleData.groupId}/chat/${scheduleData.scheduleId}`)}
-        >
-          <MessageSquare className="h-5 w-5 mr-2" />
-          채팅방 입장
-        </Button>
       </main>
     </>
   )
