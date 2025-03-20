@@ -17,6 +17,25 @@ import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
+import axios from "axios";
+
+interface Member {
+  name: string;
+  balance: number;
+  profileImage?: string;
+}
+
+interface MemberWithStatus {
+  name: string;
+  balance: number;
+  avatar: string;
+  insufficientAmount: number;
+  status: "충분" | "부족";
+}
+
+interface ApiResponse {
+  data: Member[];
+}
 
 export default function CreateSchedulePage({
   params,
@@ -36,13 +55,7 @@ export default function CreateSchedulePage({
     paybackDate: null as Date | null,
   });
   const [insufficientMembers, setInsufficientMembers] = useState<
-    Array<{
-      name: string;
-      balance: number;
-      avatar: string;
-      insufficientAmount: number;
-      status: string;
-    }>
+    MemberWithStatus[]
   >([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +80,6 @@ export default function CreateSchedulePage({
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    // 폼 유효성 검사
     const form = e.currentTarget.closest("form");
     if (form && !form.checkValidity()) {
       form.reportValidity();
@@ -76,8 +88,19 @@ export default function CreateSchedulePage({
 
     setIsLoading(true);
     try {
-      // Here you would typically send the data to your backend
-      console.log({ ...formData, groupId });
+      const scheduleData = {
+        scheduleTitle: formData.title,
+        scheduleDetail: formData.description,
+        schedulePlace: formData.location,
+        scheduleStartTime: formData.date?.toISOString(),
+        perBudget: Number(formData.budgetPerPerson),
+        totalBudget:
+          Number(formData.budgetPerPerson) * Number(formData.participants),
+        penaltyApplyDate: formData.paybackDate?.toISOString(),
+      };
+
+      const response = await axios.post(`/api/v1/schedule`, scheduleData);
+
       toast({
         title: "일정 생성 완료",
         description: "새로운 일정이 성공적으로 생성되었습니다.",
@@ -95,40 +118,33 @@ export default function CreateSchedulePage({
     }
   };
 
-  const checkInsufficientMembers = () => {
-    // This is a mock function. In a real app, you'd fetch this data from your backend.
-    const mockMembers = [
-      {
-        name: "김철수",
-        balance: 50000,
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      {
-        name: "이영희",
-        balance: 30000,
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      {
-        name: "박지성",
-        balance: 70000,
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      {
-        name: "최민수",
-        balance: 20000,
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-    ];
+  const checkInsufficientMembers = async () => {
+    try {
+      const { data } = await axios.get<ApiResponse>(
+        `/api/v1/group/${groupId}/members`
+      );
 
-    const budgetPerPerson = Number(formData.budgetPerPerson);
-    const membersWithStatus = mockMembers.map((member) => ({
-      ...member,
-      insufficientAmount: Math.max(0, budgetPerPerson - member.balance),
-      status: member.balance >= budgetPerPerson ? "충분" : "부족",
-    }));
+      const budgetPerPerson = Number(formData.budgetPerPerson);
+      const membersWithStatus: MemberWithStatus[] = data.data.map(
+        (member: Member) => ({
+          name: member.name,
+          balance: member.balance,
+          avatar: member.profileImage || "/placeholder.svg?height=40&width=40",
+          insufficientAmount: Math.max(0, budgetPerPerson - member.balance),
+          status: member.balance >= budgetPerPerson ? "충분" : "부족",
+        })
+      );
 
-    setInsufficientMembers(membersWithStatus);
-    setIsDialogOpen(true);
+      setInsufficientMembers(membersWithStatus);
+      setIsDialogOpen(true);
+    } catch (error) {
+      console.error("멤버 정보 조회 실패:", error);
+      toast({
+        title: "오류 발생",
+        description: "멤버 정보를 불러오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderStep = () => {
@@ -149,7 +165,6 @@ export default function CreateSchedulePage({
             </div>
             <div>
               <Label htmlFor="date">날짜</Label>
-              {/* [수정] DatePicker에 onSelect 대신 onChange와 매개변수 타입 명시 */}
               <DatePicker
                 selected={formData.date}
                 onChange={(date: Date | null) =>
@@ -219,7 +234,6 @@ export default function CreateSchedulePage({
             </div>
             <div>
               <Label htmlFor="paybackDate">페이백 적용 날짜</Label>
-              {/* [수정] DatePicker에 onSelect 대신 onChange와 매개변수 타입 명시 */}
               <DatePicker
                 selected={formData.paybackDate}
                 onChange={(date: Date | null) =>
