@@ -16,17 +16,17 @@ public class Trade {
     @Column(name = "trade_id", nullable = false)
     private Long tradeId;
 
-    @Column(name = "trade_type", nullable = false)
-    private String tradeType;
-
-    @Column(name = "account_type", nullable = false)
-    private String accountType;
-
     @Column(name = "from_account_id", nullable = false)
     private Long fromAccountId;
 
+    @Column(name = "from_account_type", nullable = false)
+    private Long fromAccountType;
+
     @Column(name = "to_account_id", nullable = false)
     private Long toAccountId;
+
+    @Column(name = "to_account_type", nullable = false)
+    private Long toAccountType;
 
     @Column(name = "trade_amount", nullable = true)
     private Integer tradeAmount;

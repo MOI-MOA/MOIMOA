@@ -26,6 +26,10 @@ public class Schedule {
     @JoinColumn(name = "user_id", nullable = false)
     private User subManager;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_account_id", nullable = false)
+    private ScheduleAccount scheduleAccount;
+
     @Column(name = "schedule_title", nullable = false)
     private String scheduleTitle;
 
@@ -49,10 +53,6 @@ public class Schedule {
 
     @Column(name = "schedule_status", nullable = true)
     private Integer scheduleStatus;
-
-    // cascade = CascadeType.REMOVE : schedule이 삭제되면 scheduleAccount 자동 삭제
-    @OneToOne(mappedBy = "schedule" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private ScheduleAccount scheduleAccount;
 
     @OneToMany(mappedBy = "schedule" , fetch = FetchType.LAZY)
     private List<ScheduleMember> scheduleMembers;

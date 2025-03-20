@@ -1,7 +1,7 @@
 package com.b110.jjeonchongmu.domain.account.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
-import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
+import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,16 +20,16 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RestController
-@RequestMapping("/api/v1/Gathering-account")
+@RequestMapping("/api/v1/schedule-account")
 @RequiredArgsConstructor
-public class GatheringAccountController {
-    private final GatheringAccountService gatheringAccountService;
+public class ScehduleAccountController {
+    private final ScheduleAccountService scheduleAccountService;
     /**
      * 계좌 송금
      */
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
-        String response = gatheringAccountService.transfer(requestDto);
+        String response = scheduleAccountService.transfer(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -38,7 +38,7 @@ public class GatheringAccountController {
      */
     @PostMapping("/password/check")
     public ResponseEntity<Boolean> checkPassword(@RequestBody PasswordCheckRequestDTO requestDto) {
-        Boolean response = gatheringAccountService.checkPassword(requestDto);
+        Boolean response = scheduleAccountService.checkPassword(requestDto);
         return ResponseEntity.ok(response);
     }
 
@@ -47,7 +47,7 @@ public class GatheringAccountController {
      */
     @DeleteMapping
     public ResponseEntity<String> deleteAccount(@RequestBody DeleteRequestDTO requestDTO) {
-        gatheringAccountService.deleteAccount(requestDTO);
+        scheduleAccountService.deleteAccount(requestDTO);
         return ResponseEntity.ok("계좌 삭제 성공");
     }
 }

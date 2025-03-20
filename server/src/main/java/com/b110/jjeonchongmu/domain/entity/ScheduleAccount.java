@@ -14,9 +14,6 @@ public class ScheduleAccount {
     @Column(name = "schedule_account_id", nullable = false)
     private Long scheduleAccountId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id", nullable = false)
-    private Schedule schedule;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -30,4 +27,8 @@ public class ScheduleAccount {
 
     @Column(name = "schedule_account_pw", nullable = false)
     private Integer scheduleAccountPw;
+
+    @OneToOne(mappedBy = "scheduleAccount" , fetch = FetchType.LAZY)
+    private Schedule schedule;
+
 }

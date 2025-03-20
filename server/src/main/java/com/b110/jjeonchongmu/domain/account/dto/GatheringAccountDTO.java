@@ -8,7 +8,5 @@ import lombok.*;
 @Builder
 public class GatheringAccountDTO {
     private Long groupAccountId;
-    private Long groupId;
-    private Long groupAccountNo;
-    private Integer groupAccountBalance;
+    private AccountDTO accountDTO;
 }
