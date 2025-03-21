@@ -1,15 +1,16 @@
 package com.b110.jjeonchongmu.domain.trade.api;
 
-import com.b110.jjeonchongmu.domain.trade.dto.request.TradeHistoryRequest;
-import com.b110.jjeonchongmu.domain.trade.dto.response.TradeHistoryResponse;
-import com.b110.jjeonchongmu.global.common.ApiResponse;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeRequestDTO;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeResponseDTO;
+import com.b110.jjeonchongmu.domain.trade.service.TradeService;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * 거래 내역 조회 API 컨트롤러
- * 
+ *
  * [구현 기능]
  * 1. 계좌 거래내역 조회 - GET /api/v1/trade
  *    - 요청 파라미터 검증
@@ -28,22 +29,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/trade")
 @RequiredArgsConstructor
+@Builder
 public class TradeController {
     private final TradeService tradeService;
 
     @GetMapping
-    public ResponseEntity<?> getTradeHistory(
-            @RequestParam String accountType,
-            @RequestParam Integer accountId,
-            @RequestParam Integer accountPw) {
-        
-        TradeHistoryRequest request = TradeHistoryRequest.builder()
-                .accountType(accountType)
-                .accountId(accountId)
-                .accountPw(accountPw)
-                .build();
+    public ResponseEntity<TradeResponseDTO> getTradeHistory(@RequestBody TradeRequestDTO request) {
 
-        TradeHistoryResponse response = tradeService.getTradeHistory(request);
-        return ResponseEntity.ok(new ApiResponse(200, "거래 내역 조회 성공", response));
+
+        TradeResponseDTO response = tradeService.getTradeHistory(request);
+        return ResponseEntity.ok(response);
     }
 }

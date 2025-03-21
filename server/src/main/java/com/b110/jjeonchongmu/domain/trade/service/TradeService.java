@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.trade.service;
 
+import com.b110.jjeonchongmu.domain.trade.dto.TradeRequestDTO;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +29,8 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class TradeService {
-    // TODO: 거래 내역 조회 서비스 구현
+    public TradeResponseDTO getTradeHistory(TradeRequestDTO request) {
+            // 거래내역 조회 기능 구현
+        return new TradeResponseDTO();
+    }
 }
