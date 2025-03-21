@@ -17,4 +17,5 @@ public class GatheringListResponseDTO {
     private Long gatheringDeposit;
 
     private List<GatheringDTO> gatherings;
+
 }
