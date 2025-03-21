@@ -1,9 +1,9 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.trade.entity;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.entity.Account;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity

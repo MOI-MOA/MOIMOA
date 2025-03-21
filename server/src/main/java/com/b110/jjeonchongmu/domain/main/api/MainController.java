@@ -1,9 +1,10 @@
 package com.b110.jjeonchongmu.domain.main.api;
 
-import lombok.Builder;
+import com.b110.jjeonchongmu.domain.main.dto.*;
+import com.b110.jjeonchongmu.domain.main.service.MainService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 홈 관련 API 컨트롤러
@@ -21,11 +22,50 @@ import org.springframework.web.bind.annotation.RestController;
  *
  */
 
-
 @RestController
-@RequestMapping("/api/v1/trade")
 @RequiredArgsConstructor
-@Builder
+@RequestMapping("/api/v1/main")
 public class MainController {
-    // TODO: 구현 예정
+
+    private final MainService mainService;
+
+    @GetMapping
+    public ResponseEntity<MainHomeResponse> getMainHome() {
+        return ResponseEntity.ok(mainService.getMainHome());
+    }
+
+    @GetMapping("/schedule/uncheck")
+    public ResponseEntity<ScheduleListResponse> getUncheckSchedules() {
+        return ResponseEntity.ok(mainService.getUncheckSchedules());
+    }
+
+    @GetMapping("/schedule/personal")
+    public ResponseEntity<ScheduleListResponse> getPersonalSchedules() {
+        return ResponseEntity.ok(mainService.getPersonalSchedules());
+    }
+
+    @GetMapping("/schedule/{year}/{month}")
+    public ResponseEntity<MonthlyScheduleResponse> getMonthlySchedules(
+            @PathVariable int year,
+            @PathVariable int month) {
+        return ResponseEntity.ok(mainService.getMonthlySchedules(year, month));
+    }
+
+    @GetMapping("/schedule/{year}/{month}/{date}")
+    public ResponseEntity<ScheduleListResponse> getDailySchedules(
+            @PathVariable int year,
+            @PathVariable int month,
+            @PathVariable int date) {
+        return ResponseEntity.ok(mainService.getDailySchedules(year, month, date));
+    }
+
+    @GetMapping("/schedule")
+    public ResponseEntity<ScheduleListResponse> getGatheringSchedules() {
+        return ResponseEntity.ok(mainService.getGatheringSchedules());
+    }
+
+    @GetMapping("/schedule/today")
+    public ResponseEntity<ScheduleListResponse> getTodaySchedules() {
+        return ResponseEntity.ok(mainService.getTodaySchedules());
+    }
 } 

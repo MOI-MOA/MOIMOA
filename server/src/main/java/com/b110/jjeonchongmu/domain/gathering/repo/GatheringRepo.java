@@ -1,6 +1,6 @@
 package com.b110.jjeonchongmu.domain.gathering.repo;
 
-import com.b110.jjeonchongmu.domain.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

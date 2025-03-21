@@ -1,5 +1,9 @@
 package com.b110.jjeonchongmu.domain.mypage.api;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 /**
  * 마이페이지 관련 API 컨트롤러
  * 
