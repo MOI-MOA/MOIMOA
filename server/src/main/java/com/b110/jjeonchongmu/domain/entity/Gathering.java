@@ -10,12 +10,13 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Gathering {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "gahtering_id", nullable = false)
-    private Long gahteringId;
+    private Long gatheringId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -25,17 +26,17 @@ public class Gathering {
     @JoinColumn(name = "gathering_account_id" , nullable = false)
     private GatheringAccount gatheringAccount;
 
-    @Column(name = "gahtering_name", nullable = false, length = 255)
-    private String gahteringName;
+    @Column(name = "gathering_name", nullable = false, length = 255)
+    private String gatheringName;
 
     @Column(name = "gahtering_introduction")
-    private String gahteringIntroduction;
+    private String gatheringIntroduction;
 
     @Column(name = "deposit_date")
     private String depositDate;
 
     @Column(name = "basic_fee")
-    private Integer basicFee;
+    private Long basicFee;
 
     @Column(name = "penalty_rate")
     private Integer penaltyRate;
@@ -43,13 +44,14 @@ public class Gathering {
     @Column(name = "member_count")
     private Integer memberCount;
 
-    @Column(name = "gahtering_deposit", nullable = false)
-    private Integer gahteringDeposit;
+    @Column(name = "gathering_deposit", nullable = false)
+    private Long gatheringDeposit;
 
     @OneToMany(mappedBy = "gathering" , fetch = FetchType.LAZY)
     private List<Schedule> schedules;
 
     @OneToMany(mappedBy = "gathering" , fetch = FetchType.LAZY)
     private List<GatheringMember> gatheringMembers;
+
 
 }

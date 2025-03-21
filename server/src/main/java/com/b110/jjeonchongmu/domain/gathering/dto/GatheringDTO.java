@@ -2,14 +2,18 @@ package com.b110.jjeonchongmu.domain.gathering.dto;
 
 import lombok.*;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+import java.util.Date;
+
 @Builder
+@Data
 public class GatheringDTO {
-    private Long groupId;
-    private String groupName;
-    private String groupIntroduction;
+    private Long gatheringId;
+    private String gatheringName;
+    private String gatheringIntroduction;
+    private String depositDate;
+    private Long basicFee;
+    private int penaltyRate;
     private Integer memberCount;
-    private Integer groupDeposit;
+    private Long gatheringDeposit;
+
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
  *
  * 3. 회원가입 - POST /api/v1/signup
  *    - Request: username, email, password, personalAccountPW
+ *    - 계좌생성. 
  * 
  * 4. 회원탈퇴
  * 
