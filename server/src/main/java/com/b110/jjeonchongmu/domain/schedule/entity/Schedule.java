@@ -1,5 +1,7 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.schedule.entity;
 
+import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +22,7 @@ public class Schedule {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gahtering_id", nullable = false)
-    private Gathering Gathering;
+    private com.b110.jjeonchongmu.domain.gathering.entity.Gathering Gathering;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

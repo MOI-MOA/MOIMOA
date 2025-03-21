@@ -1,8 +1,8 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.account.entity;
+import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity

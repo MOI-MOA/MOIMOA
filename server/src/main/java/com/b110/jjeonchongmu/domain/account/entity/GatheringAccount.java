@@ -1,4 +1,5 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.account.entity;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GatheringAccount extends Account{
+public class GatheringAccount extends Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

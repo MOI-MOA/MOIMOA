@@ -1,6 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.repo;
 
-import com.b110.jjeonchongmu.domain.entity.ScheduleAccount;
+import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

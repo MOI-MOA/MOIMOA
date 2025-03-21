@@ -1,6 +1,6 @@
 package com.b110.jjeonchongmu.domain.GatheringAccount.repo;
 
-import com.b110.jjeonchongmu.domain.entity.GatheringAccount;
+import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

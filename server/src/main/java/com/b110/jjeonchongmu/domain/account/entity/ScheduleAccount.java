@@ -1,4 +1,5 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.account.entity;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,7 +8,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ScheduleAccount extends Account{
+public class ScheduleAccount extends Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

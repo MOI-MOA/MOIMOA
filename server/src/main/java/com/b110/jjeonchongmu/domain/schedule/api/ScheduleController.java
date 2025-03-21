@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequiredArgsConstructor;
 
 /**
  * 일정 관련 API 컨트롤러

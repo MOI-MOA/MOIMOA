@@ -1,8 +1,8 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
 import com.b110.jjeonchongmu.domain.gathering.dto.*;
-import com.b110.jjeonchongmu.domain.entity.Gathering;
-import com.b110.jjeonchongmu.domain.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.global.exception.CustomException;
