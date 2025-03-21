@@ -1,7 +1,11 @@
 package com.b110.jjeonchongmu.domain.notification.api;
 
-import org.springframework.web.bind.annotation.*;
+import com.b110.jjeonchongmu.domain.notification.dto.*;
+import com.b110.jjeonchongmu.domain.notification.service.NotificationService;
+import com.b110.jjeonchongmu.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 알림 관련 API 컨트롤러
@@ -16,5 +20,24 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/notification")
 @RequiredArgsConstructor
 public class NotificationController {
-    // TODO: 구현 예정
+    private final NotificationService notificationService;
+
+    /**
+     * 알림 생성
+     */
+    @PostMapping
+    public ResponseEntity<ApiResponse> createNotification(@RequestBody NotificationCreateRequest request) {
+        notificationService.createNotification(request);
+        return ResponseEntity.status(201)
+                .body(new ApiResponse(201, "알림 생성 성공"));
+    }
+
+    /**
+     * 미확인 알림 조회
+     */
+    @GetMapping("/unread")
+    public ResponseEntity<ApiResponse> getUnreadNotifications() {
+        List<NotificationDTO> notifications = notificationService.getUnreadNotifications();
+        return ResponseEntity.ok(new ApiResponse(200, "미확인 알림 조회 성공", notifications));
+    }
 }
