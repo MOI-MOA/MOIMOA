@@ -7,13 +7,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MainService {
+    private final ScheduleRepo scheduleRepo;
+    private final JwtUtil jwtUtil;
 
     private final MainRepo mainRepo;
 
@@ -49,10 +53,6 @@ public class MainService {
         List<MonthlyScheduleResponse.DateDto> dates = mainRepo.findScheduleDatesForMonth(year, month).stream()
                 .map(date -> MonthlyScheduleResponse.DateDto.builder().date(date).build())
                 .collect(Collectors.toList());
-        
-        return MonthlyScheduleResponse.builder()
-                .datas(dates)
-                .build();
     }
 
     public ScheduleListResponse getDailySchedules(int year, int month, int date) {
