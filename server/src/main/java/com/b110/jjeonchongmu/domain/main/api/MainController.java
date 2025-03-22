@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 public class MainController {
 
     private final MainService mainService;
+//    private final JwtTokenProvider jwtTokenProvider;
+
     /**
      *  1. 홈 화면 조회 - GET /api/v1/home
      *    getMainHome()
@@ -36,11 +38,17 @@ public class MainController {
      *    - 이번달 일정 조회
      *    - 다가오는 일정 조회
      */
-    @GetMapping
-    public ResponseEntity<ApiResponse> getMainInfo() {
-        MainResponseDTO response = mainService.getMainInfo();
-        return ResponseEntity.ok(new ApiResponse(200, "메인 화면 정보 조회 성공", response));
-    }
+//    @GetMapping
+//    public ResponseEntity<MainHomeResponse> getMainHome(@RequestHeader("Authorization") String token) {
+//        // 1. "Bearer " 접두사 제거
+//        String jwtToken = token.replace("Bearer ", "");
+//
+//        // 2. JWT 토큰에서 사용자 정보 추출
+//        Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+//
+//        // 3. 사용자 정보를 포함하여 서비스 메서드 호출
+//        return ResponseEntity.ok(mainService.getMainHome(userId));
+//    }
 
 
     /**2. 미확인 일정목록 조회 - GET /api/v1/main/schdule/uncheck*/

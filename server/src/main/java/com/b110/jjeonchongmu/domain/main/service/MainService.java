@@ -89,12 +89,8 @@ public class MainService {
      */
     public ScheduleListResponseDTO getDailySchedules(int year, int month, int date) {
         LocalDate targetDate = LocalDate.of(year, month, date);
-        List<ScheduleDTO> schedules = mainRepo.findSchedulesByDate(targetDate).stream()
-                .map(ScheduleDTO::from)
-                .collect(Collectors.toList());
-
-        return ScheduleListResponseDTO.builder()
-                .schedules(schedules)
+        return ScheduleListResponse.builder()
+//                .datas(mainRepo.findSchedulesByDate(targetDate))
                 .build();
     }
 
