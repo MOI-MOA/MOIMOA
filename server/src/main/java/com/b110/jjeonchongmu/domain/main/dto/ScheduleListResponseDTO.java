@@ -8,15 +8,14 @@ import java.util.List;
 
 /**
  * 일정 목록 응답 DTO
- * - 일정 목록을 포함
  */
 @Getter
 @NoArgsConstructor
 public class ScheduleListResponseDTO {
-    private List<ScheduleDTO> schedules;    // 일정 목록
+    private List<ScheduleDTO> datas;    // 일정 목록 (API 명세에 맞춰 datas로 명명)
 
     @Builder
-    public ScheduleListResponseDTO(List<ScheduleDTO> schedules) {
-        this.schedules = schedules;
+    public ScheduleListResponseDTO(List<ScheduleDTO> datas) {
+        this.datas = datas;
     }
 } 

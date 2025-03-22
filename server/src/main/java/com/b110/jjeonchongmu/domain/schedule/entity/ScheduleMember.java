@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Table(name = "schedule_member")
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ScheduleMember {
 
     @Id
