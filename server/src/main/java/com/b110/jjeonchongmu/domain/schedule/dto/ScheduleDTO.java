@@ -1,7 +1,9 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @NoArgsConstructor
@@ -14,9 +16,11 @@ public class ScheduleDTO {
     private String scheduleTitle;
     private String scheduleDetail;
     private String schedulePlace;
-    private LocalDateTime scheduleStartTime;
+    private Timestamp scheduleStartTime;
     private Long perBudget;
     private Long totalBudget;
-    private LocalDateTime penaltyApplyDate;
+    private Date penaltyApplyDate;
     private Integer scheduleStatus;
+
+
 }

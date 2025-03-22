@@ -2,13 +2,13 @@ package com.b110.jjeonchongmu.domain.main.service;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleResponseDTO;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,14 +28,14 @@ public class MainService {
      * - 오늘의 일정
      * - 다가오는 일정
      */
-    public MainHomeResponseDTO getMainHome() {
+    public MainHomeResponseDTO getMainHome(Long userId) {
         // 오늘의 일정과 다가오는 일정 조회
-        List<ScheduleDTO> todaySchedules = mainRepo.findTodaySchedules().stream()
-                .map(ScheduleDTO::from)
+        List<ScheduleResponseDTO> todaySchedules = mainRepo.findTodaySchedules().stream()
+                .map(ScheduleResponseDTO::from)
                 .collect(Collectors.toList());
         
-        List<ScheduleDTO> upcomingSchedules = mainRepo.findUpcomingSchedules().stream()
-                .map(ScheduleDTO::from)
+        List<ScheduleResponseDTO> upcomingSchedules = mainRepo.findUpcomingSchedules().stream()
+                .map(ScheduleResponseDTO::from)
                 .collect(Collectors.toList());
 
         return MainHomeResponseDTO.builder()
@@ -46,12 +46,12 @@ public class MainService {
     /**
      * 미확인 일정 목록 조회
      */
-    public ScheduleListResponseDTO getUncheckSchedules() {
-        List<ScheduleDTO> schedules = mainRepo.findUncheckSchedules().stream()
-                .map(ScheduleDTO::from)
+    public ScheduleResponseDTO getUncheckSchedules(Long userId) {
+        List<ScheduleResponseDTO> schedules = mainRepo.findUncheckSchedules().stream()
+                .map(ScheduleResponseDTO::from)
                 .collect(Collectors.toList());
 
-        return ScheduleListResponseDTO.builder()
+        return ScheduleResponseDTO.builder()
                 .schedules(schedules)
                 .build();
     }
@@ -59,7 +59,7 @@ public class MainService {
     /**
      * 개인 일정 목록 조회
      */
-    public ScheduleListResponseDTO getPersonalSchedules() {
+    public ScheduleResponseDTO getPersonalSchedules() {
         List<ScheduleDTO> schedules = mainRepo.findPersonalSchedules().stream()
                 .map(ScheduleDTO::from)
                 .collect(Collectors.toList());

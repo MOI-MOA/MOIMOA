@@ -7,6 +7,7 @@ import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -45,7 +46,7 @@ public class Schedule {
     private String place;
 
     @Column(name = "schedule_start_time", nullable = true)
-    private LocalDateTime startTime;
+    private Timestamp startTime;
 
     @Column(name = "per_budget", nullable = true)
     private Long perBudget;
@@ -64,7 +65,7 @@ public class Schedule {
 
     @Builder
     public Schedule(Gathering gathering, User manager, String title, String detail,
-                   String place, LocalDateTime startTime, long perBudget,
+                   String place, Timestamp startTime, long perBudget,
                    long totalBudget, LocalDateTime penaltyApplyDate) {
         this.gathering = gathering;
         this.manager = manager;
@@ -82,7 +83,7 @@ public class Schedule {
         this.title = dto.getScheduleTitle();
         this.detail = dto.getScheduleDetail();
         this.place = dto.getSchedulePlace();
-        this.startTime = dto.getScheduleStartDate();
+//        this.startTime = dto.getScheduleStartDate();
 //        this.totalBudget = dto.getTotalBudget();
 //        this.penaltyApplyDate = dto.getPenaltyApplyDate();
     }
