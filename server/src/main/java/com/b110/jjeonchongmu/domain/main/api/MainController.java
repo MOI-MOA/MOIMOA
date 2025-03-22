@@ -29,9 +29,12 @@ import org.springframework.web.bind.annotation.*;
 public class MainController {
 
     private final MainService mainService;
-
     /**
-     * 메인 화면 정보 조회
+     *  1. 홈 화면 조회 - GET /api/v1/home
+     *    getMainHome()
+     *    - 미확인 일정 개수 조회
+     *    - 이번달 일정 조회
+     *    - 다가오는 일정 조회
      */
     @GetMapping
     public ResponseEntity<ApiResponse> getMainInfo() {
@@ -39,27 +42,22 @@ public class MainController {
         return ResponseEntity.ok(new ApiResponse(200, "메인 화면 정보 조회 성공", response));
     }
 
-    /**
-     * 미확인 일정 목록 조회
-     */
+
+    /**2. 미확인 일정목록 조회 - GET /api/v1/main/schdule/uncheck*/
     @GetMapping("/schedule/uncheck")
     public ResponseEntity<ApiResponse> getUncheckSchedules() {
         List<ScheduleDTO> response = mainService.getUncheckSchedules();
         return ResponseEntity.ok(new ApiResponse(200, "미확인 일정 목록 조회 성공", response));
     }
 
-    /**
-     * 개인 일정 목록 조회
-     */
+    /**3. 개인 일정목록 조회 - GET /api/v1/main/schedule/personal*/
     @GetMapping("/schedule/personal")
     public ResponseEntity<ApiResponse> getPersonalSchedules() {
         List<ScheduleDTO> response = mainService.getPersonalSchedules();
         return ResponseEntity.ok(new ApiResponse(201, "개인 일정 목록 조회 성공", response));
     }
 
-    /**
-     * 해당 달 일정 조회
-     */
+    /**4. 해당 달 일정 조회 - GET /api/v1/main/schedule/{year}/{month}*/
     @GetMapping("/schedule/{year}/{month}")
     public ResponseEntity<ApiResponse> getMonthSchedules(
             @PathVariable int year,
@@ -68,9 +66,7 @@ public class MainController {
         return ResponseEntity.ok(new ApiResponse(201, "월간 일정 조회 성공", response));
     }
 
-    /**
-     * 해당 일 일정 조회
-     */
+    /**5.  해당 일 일정 조회 - GET /api/v1/main/schedule/{year}/{month}/{date}*/
     @GetMapping("/schedule/{year}/{month}/{date}")
     public ResponseEntity<ApiResponse> getDaySchedules(
             @PathVariable int year,
@@ -80,21 +76,10 @@ public class MainController {
         return ResponseEntity.ok(new ApiResponse(201, "일간 일정 조회 성공", response));
     }
 
-    /**
-     * 모임 일정 목록 조회
-     */
-    @GetMapping("/schedule")
-    public ResponseEntity<ApiResponse> getGatheringSchedules() {
-        List<ScheduleDTO> response = mainService.getGatheringSchedules();
-        return ResponseEntity.ok(new ApiResponse(201, "모임 일정 목록 조회 성공", response));
-    }
-
-    /**
-     * 오늘 일정 조회
-     */
+    /**2. 오늘 일정 조회 - GET /api/v1/main/schedule/today*/
     @GetMapping("/schedule/today")
     public ResponseEntity<ApiResponse> getTodaySchedules() {
         List<ScheduleDTO> response = mainService.getTodaySchedules();
         return ResponseEntity.ok(new ApiResponse(201, "오늘 일정 조회 성공", response));
     }
-} 
+}

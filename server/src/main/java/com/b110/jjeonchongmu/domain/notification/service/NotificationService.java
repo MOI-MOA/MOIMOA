@@ -1,58 +1,51 @@
 package com.b110.jjeonchongmu.domain.notification.service;
 
-import com.b110.jjeonchongmu.domain.notification.dto.*;
+import com.b110.jjeonchongmu.domain.notification.dto.NotificationCreateDto;
+import com.b110.jjeonchongmu.domain.notification.dto.NotificationResponseDto;
 import com.b110.jjeonchongmu.domain.notification.entity.Notification;
 import com.b110.jjeonchongmu.domain.notification.repo.NotificationRepo;
-import com.b110.jjeonchongmu.global.util.JwtUtil;
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class NotificationService {
-    private final NotificationRepo notificationRepo;
-    private final JwtUtil jwtUtil;
 
-    /**
-     * 알림 생성
-     */
+    private final NotificationRepo notificationRepo;
+
     @Transactional
-    public void createNotification(NotificationCreateRequest request) {
-        Long userId = jwtUtil.getCurrentMemberId();
+    public void createNotification(NotificationCreateDto dto) {
+        User user = getCurrentUser(); // 현재 사용자 정보 가져오기
         
         Notification notification = Notification.builder()
-                .notificationContent(request.getNotificationContent())
-                .notificationType(request.getNotificationType())
-                .dataId(request.getDataId())
-                .dataType(request.getDataType())
-                .notificationCreatedAt(request.getNotificationCreatedAt())
-                .userId(userId)
-                .isRead(false)
+                .content(dto.getNotificationContent())
+                .notificationType(dto.getNotificationType())
+                .dataId(dto.getData_id())
+                .dataType(dto.getData_type())
+                .createdAt(dto.getNotificationCreatedAt())
+                .user(user)
                 .build();
-
+                
         notificationRepo.save(notification);
     }
 
-    /**
-     * 미확인 알림 조회
-     */
-    public List<NotificationDTO> getUnreadNotifications() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        List<Notification> notifications = notificationRepo.findByUserIdAndIsReadFalse(userId);
+    public List<NotificationResponseDto> getUnreadNotifications() {
+        Long userId = getCurrentUserId();
+        return notificationRepo.findUnreadNotifications(userId);
+    }
 
-        return notifications.stream()
-                .map(notification -> NotificationDTO.builder()
-                        .notificationContent(notification.getNotificationContent())
-                        .notificationType(notification.getNotificationType())
-                        .dataId(notification.getDataId())
-                        .dataType(notification.getDataType())
-                        .notificationCreatedAt(notification.getNotificationCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
+    private User getCurrentUser() {
+        // SecurityContext에서 현재 사용자 정보를 가져오는 로직 구현
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private Long getCurrentUserId() {
+        // SecurityContext에서 현재 사용자 ID를 가져오는 로직 구현
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

@@ -1,8 +1,12 @@
 package com.b110.jjeonchongmu.domain.mypage.api;
 
+import com.b110.jjeonchongmu.domain.mypage.dto.*;
+import com.b110.jjeonchongmu.domain.mypage.service.MypageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 마이페이지 관련 API 컨트롤러
@@ -20,8 +24,24 @@ import org.springframework.web.bind.annotation.RestController;
  *      - 최다 참석 모임
  */
 @RestController
-@RequestMapping("/api/v1/mypage")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class MypageController {
-    // TODO: 구현 예정
+    
+    private final MypageService myPageService;
+
+    @GetMapping("/{type}-account/autopayment")
+    public ResponseEntity<List<AutoPaymentResponse>> getAutoPayments(@PathVariable String type) {
+        return ResponseEntity.ok(myPageService.getAutoPayments(type));
+    }
+
+    @GetMapping("/mypage")
+    public ResponseEntity<MyPageResponse> getMyPage() {
+        return ResponseEntity.ok(myPageService.getMyPage());
+    }
+
+    @GetMapping("/mypage/statistics")
+    public ResponseEntity<StatisticsResponse> getStatistics() {
+        return ResponseEntity.ok(myPageService.getStatistics());
+    }
 }

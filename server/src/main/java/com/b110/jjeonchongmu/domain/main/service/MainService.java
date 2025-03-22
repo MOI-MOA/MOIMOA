@@ -1,9 +1,7 @@
 package com.b110.jjeonchongmu.domain.main.service;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
-import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
-import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
-import com.b110.jjeonchongmu.global.util.JwtUtil;
+import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,115 +19,52 @@ public class MainService {
     private final ScheduleRepo scheduleRepo;
     private final JwtUtil jwtUtil;
 
-    /**
-     * 메인 화면 정보 조회
-     */
-    public MainResponseDTO getMainInfo() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        LocalDate today = LocalDate.now();
+    private final MainRepo mainRepo;
 
-        return MainResponseDTO.builder()
-                .uncheckScheduleCount(scheduleRepo.countUncheckSchedules(userId))
-                .dateList(getDateList(today.getYear(), today.getMonthValue()))
-                .todayScheduleList(getTodaySchedules())
-                .upcommingScheduleList(getUpcomingSchedules())
+    public MainHomeResponse getMainHome() {
+        int uncheckCount = mainRepo.countUncheckSchedules();
+        List<MainHomeResponse.DateDto> dateList = mainRepo.findCurrentMonthDates().stream()
+                .map(date -> MainHomeResponse.DateDto.builder().date(date).build())
+                .collect(Collectors.toList());
+        List<ScheduleDto> todaySchedules = mainRepo.findTodaySchedules();
+        List<ScheduleDto> upcomingSchedules = mainRepo.findUpcomingSchedules();
+
+        return MainHomeResponse.builder()
+                .uncheckScheduleCount(uncheckCount)
+                .dateList(dateList)
+                .todayScheduleList(todaySchedules)
+                .upcommingScheduleList(upcomingSchedules)
                 .build();
     }
 
-    /**
-     * 미확인 일정 목록 조회
-     */
-    public List<ScheduleDTO> getUncheckSchedules() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        List<Schedule> schedules = scheduleRepo.findUncheckSchedules(userId);
-        return convertToScheduleDTOs(schedules);
-    }
-
-    /**
-     * 개인 일정 목록 조회
-     */
-    public List<ScheduleDTO> getPersonalSchedules() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        List<Schedule> schedules = scheduleRepo.findPersonalSchedules(userId);
-        return convertToScheduleDTOs(schedules);
-    }
-
-    /**
-     * 해당 달 일정 조회
-     */
-    public MonthScheduleDTO getMonthSchedules(int year, int month) {
-        return MonthScheduleDTO.builder()
-                .dates(getDateList(year, month))
+    public ScheduleListResponse getUncheckSchedules() {
+        return ScheduleListResponse.builder()
+                .datas(mainRepo.findUncheckSchedules())
                 .build();
     }
 
-    /**
-     * 해당 일 일정 조회
-     */
-    public DayScheduleDTO getDaySchedules(int year, int month, int date) {
-        Long userId = jwtUtil.getCurrentMemberId();
-        LocalDateTime startOfDay = LocalDateTime.of(year, month, date, 0, 0);
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-        List<Schedule> schedules = scheduleRepo.findByDateBetween(userId, startOfDay, endOfDay);
-        return DayScheduleDTO.builder()
-                .schedules(convertToScheduleDTOs(schedules))
+    public ScheduleListResponse getPersonalSchedules() {
+        return ScheduleListResponse.builder()
+                .datas(mainRepo.findPersonalSchedules())
                 .build();
     }
 
-    /**
-     * 모임 일정 목록 조회
-     */
-    public List<ScheduleDTO> getGatheringSchedules() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        List<Schedule> schedules = scheduleRepo.findGatheringSchedules(userId);
-        return convertToScheduleDTOs(schedules);
-    }
-
-    /**
-     * 오늘 일정 조회
-     */
-    public List<ScheduleDTO> getTodaySchedules() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-        List<Schedule> schedules = scheduleRepo.findByDateBetween(userId, startOfDay, endOfDay);
-        return convertToScheduleDTOs(schedules);
-    }
-
-    private List<DateDTO> getDateList(int year, int month) {
-        return IntStream.rangeClosed(1, LocalDate.of(year, month, 1).lengthOfMonth())
-                .mapToObj(day -> DateDTO.builder().date(day).build())
+    public MonthlyScheduleResponse getMonthlySchedules(int year, int month) {
+        List<MonthlyScheduleResponse.DateDto> dates = mainRepo.findScheduleDatesForMonth(year, month).stream()
+                .map(date -> MonthlyScheduleResponse.DateDto.builder().date(date).build())
                 .collect(Collectors.toList());
     }
 
-    private List<ScheduleDTO> convertToScheduleDTOs(List<Schedule> schedules) {
-        return schedules.stream()
-                .map(schedule -> ScheduleDTO.builder()
-                        .gatheringId(schedule.getGathering().getGatheringId())
-                        .gatheringName(schedule.getGathering().getGatheringName())
-                        .scheduleId(schedule.getScheduleId())
-                        .scheduleTitle(schedule.getScheduleTitle())
-                        .scheduleDetail(schedule.getScheduleDetail())
-                        .schedulePlace(schedule.getSchedulePlace())
-                        .scheduleStartTime(schedule.getScheduleStartTime())
-                        .perBudget(schedule.getPerBudget())
-                        .totalBudget(schedule.getTotalBudget())
-                        .penaltyApplyDate(schedule.getPenaltyApplyDate())
-                        .scheduleStatus(schedule.getScheduleStatus())
-                        .attendeeCount(schedule.getAttendeeCount())
-                        .build())
-                .collect(Collectors.toList());
+    public ScheduleListResponse getDailySchedules(int year, int month, int date) {
+        LocalDate targetDate = LocalDate.of(year, month, date);
+        return ScheduleListResponse.builder()
+                .datas(mainRepo.findSchedulesByDate(targetDate))
+                .build();
     }
 
-    private List<ScheduleDTO> getUpcomingSchedules() {
-        Long userId = jwtUtil.getCurrentMemberId();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneMonthLater = now.plusMonths(1);
-
-        List<Schedule> schedules = scheduleRepo.findByDateBetween(userId, now, oneMonthLater);
-        return convertToScheduleDTOs(schedules);
+    public ScheduleListResponse getTodaySchedules() {
+        return ScheduleListResponse.builder()
+                .datas(mainRepo.findTodaySchedules())
+                .build();
     }
 }

@@ -2,7 +2,10 @@ package com.b110.jjeonchongmu.domain.schedule.entity;
 
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "schedule_member")
@@ -14,7 +17,7 @@ public class ScheduleMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "schedule_member_id", nullable = false)
-    private Long scheduleMemberId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id", nullable = false)
