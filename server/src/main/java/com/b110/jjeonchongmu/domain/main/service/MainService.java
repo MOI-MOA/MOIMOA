@@ -58,7 +58,7 @@ public class MainService {
     public ScheduleListResponse getDailySchedules(int year, int month, int date) {
         LocalDate targetDate = LocalDate.of(year, month, date);
         return ScheduleListResponse.builder()
-                .datas(mainRepo.findSchedulesByDate(targetDate))
+//                .datas(mainRepo.findSchedulesByDate(targetDate))
                 .build();
     }
 

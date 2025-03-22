@@ -50,7 +50,7 @@ public class Schedule {
     @Column(name = "per_budget", nullable = true)
     private Long perBudget;
 
-    @Column(name = "total_budget", nullable = true)
+    @Column(name = "total_budgget", nullable = true)
     private Long totalBudget;
 
     @Column(name = "penalty_apply_date", nullable = true)
@@ -74,7 +74,7 @@ public class Schedule {
         this.startTime = startTime;
         this.perBudget = perBudget;
         this.totalBudget = totalBudget;
-        this.penaltyApplyDate = penaltyApplyDate;
+//        this.penaltyApplyDate = penaltyApplyDate;
         this.status = 0;
     }
 
@@ -83,7 +83,7 @@ public class Schedule {
         this.detail = dto.getScheduleDetail();
         this.place = dto.getSchedulePlace();
         this.startTime = dto.getScheduleStartDate();
-        this.totalBudget = dto.getTotalBudget();
-        this.penaltyApplyDate = dto.getPenaltyApplyDate();
+//        this.totalBudget = dto.getTotalBudget();
+//        this.penaltyApplyDate = dto.getPenaltyApplyDate();
     }
 }

@@ -23,11 +23,11 @@ public class NotificationService {
         User user = getCurrentUser(); // 현재 사용자 정보 가져오기
         
         Notification notification = Notification.builder()
-                .content(dto.getNotificationContent())
+//                .content(dto.getNotificationContent())
                 .notificationType(dto.getNotificationType())
                 .dataId(dto.getData_id())
                 .dataType(dto.getData_type())
-                .createdAt(dto.getNotificationCreatedAt())
+//                .createdAt(dto.getNotificationCreatedAt())
                 .user(user)
                 .build();
                 
