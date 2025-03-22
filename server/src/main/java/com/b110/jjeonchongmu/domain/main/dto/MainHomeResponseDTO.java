@@ -1,86 +1,73 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
-import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleResponseDTO;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 /**
  * 메인 홈 화면 응답 DTO
  * - 사용자의 모임 및 일정 정보를 포함
  */
+
 @Getter
 @NoArgsConstructor
+@Builder
 public class MainHomeResponseDTO {
     
-    /**
-     * 모임 정보 DTO
-     */
+    private int uncheckScheduleCount;
+    private List<DateDTO> dateList;
+    private List<ScheduleResponseDTO> todayScheduleList;
+    private List<ScheduleResponseDTO> upcommingScheduleList;
+
     @Getter
     @NoArgsConstructor
-    public static class GatheringDTO {
-        private Long gatheringId;          // 모임 ID
-        private String gatheringName;      // 모임 이름
-        private Integer memberCount;        // 모임 멤버 수
-        private LocalDateTime createdAt;    // 모임 생성일시
+    @AllArgsConstructor
+    @Builder
+    public static class DateDTO {
+        private int date;
 
-        @Builder
-        public GatheringDTO(Long gatheringId, String gatheringName, Integer memberCount, LocalDateTime createdAt) {
-            this.gatheringId = gatheringId;
-            this.gatheringName = gatheringName;
-            this.memberCount = memberCount;
-            this.createdAt = createdAt;
-        }
+        public static List<DateDTO> fromSchedules(List<Schedule> schedules) {
+            // 현재 월의 일정들만 필터링
+            LocalDateTime now = LocalDateTime.now();
+            int currentMonth = now.getMonthValue();
+            int currentYear = now.getYear();
 
-        public static GatheringDTO from(Gathering gathering) {
-            return GatheringDTO.builder()
-                    .gatheringId(gathering.getGatheringId())
-                    .gatheringName(gathering.getGatheringName())
-                    .memberCount(gathering.getGatheringMembers().size())
-                    .createdAt(gathering.getCreatedAt())
-                    .build();
-        }
-    }
-
-    /**
-     * 일정 정보 DTO
-     */
-    @Getter
-    @NoArgsConstructor
-    public static class ScheduleDTO {
-        private Long scheduleId;           // 일정 ID
-        private String scheduleName;       // 일정 이름
-        private LocalDateTime startDate;    // 시작일시
-        private LocalDateTime endDate;      // 종료일시
-
-        @Builder
-        public ScheduleDTO(Long scheduleId, String scheduleName, LocalDateTime startDate, LocalDateTime endDate) {
-            this.scheduleId = scheduleId;
-            this.scheduleName = scheduleName;
-            this.startDate = startDate;
-            this.endDate = endDate;
-        }
-
-        public static ScheduleDTO from(Schedule schedule) {
-            return ScheduleDTO.builder()
-                    .scheduleId(schedule.getScheduleId())
-                    .scheduleName(schedule.getScheduleName())
-                    .startDate(schedule.getStartDate())
-                    .endDate(schedule.getEndDate())
-                    .build();
+            return schedules.stream()
+                    .filter(schedule -> {
+                        if (schedule.getStartTime() == null) return false;
+                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDateTime();
+                        return scheduleTime.getMonthValue() == currentMonth && 
+                               scheduleTime.getYear() == currentYear;
+                    })
+                    .map(schedule -> {
+                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDateTime();
+                        return DateDTO.builder()
+                                .date(scheduleTime.getDayOfMonth())
+                                .build();
+                    })
+                    .distinct()  // 중복된 날짜 제거
+                    .sorted(Comparator.comparingInt(DateDTO::getDate))  // 날짜순 정렬
+                    .collect(Collectors.toList());
         }
     }
-
-    private List<GatheringDTO> gatherings;     // 사용자의 모임 목록
-    private List<ScheduleDTO> schedules;       // 사용자의 일정 목록
 
     @Builder
-    public MainHomeResponseDTO(List<GatheringDTO> gatherings, List<ScheduleDTO> schedules) {
-        this.gatherings = gatherings;
-        this.schedules = schedules;
+    public MainHomeResponseDTO(int uncheckScheduleCount, List<DateDTO> dateList,
+                             List<ScheduleResponseDTO> todayScheduleList, List<ScheduleResponseDTO> upcommingScheduleList) {
+        this.uncheckScheduleCount = uncheckScheduleCount;
+        this.dateList = dateList;
+        this.todayScheduleList = todayScheduleList;
+        this.upcommingScheduleList = upcommingScheduleList;
     }
 } 

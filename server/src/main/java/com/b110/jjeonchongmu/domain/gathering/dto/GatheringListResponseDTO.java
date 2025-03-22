@@ -1,11 +1,12 @@
 package com.b110.jjeonchongmu.domain.gathering.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import java.util.List;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Data
 public class GatheringListResponseDTO {
     private Long gatheringId;
     private String gatheringName;
@@ -15,7 +16,5 @@ public class GatheringListResponseDTO {
     private int penaltyRate;
     private Integer memberCount;
     private Long gatheringDeposit;
-
     private List<GatheringDTO> gatherings;
-
 }
