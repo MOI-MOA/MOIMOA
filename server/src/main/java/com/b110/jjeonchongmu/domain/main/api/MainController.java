@@ -28,22 +28,32 @@ import org.springframework.web.bind.annotation.*;
 public class MainController {
 
     private final MainService mainService;
-
+    /**
+     *  1. 홈 화면 조회 - GET /api/v1/home
+     *    getMainHome()
+     *    - 미확인 일정 개수 조회
+     *    - 이번달 일정 조회
+     *    - 다가오는 일정 조회
+     */
     @GetMapping
     public ResponseEntity<MainHomeResponse> getMainHome() {
         return ResponseEntity.ok(mainService.getMainHome());
     }
 
+
+    /**2. 미확인 일정목록 조회 - GET /api/v1/main/schdule/uncheck*/
     @GetMapping("/schedule/uncheck")
     public ResponseEntity<ScheduleListResponse> getUncheckSchedules() {
         return ResponseEntity.ok(mainService.getUncheckSchedules());
     }
 
+    /**3. 개인 일정목록 조회 - GET /api/v1/main/schedule/personal*/
     @GetMapping("/schedule/personal")
     public ResponseEntity<ScheduleListResponse> getPersonalSchedules() {
         return ResponseEntity.ok(mainService.getPersonalSchedules());
     }
 
+    /**4. 해당 달 일정 조회 - GET /api/v1/main/schedule/{year}/{month}*/
     @GetMapping("/schedule/{year}/{month}")
     public ResponseEntity<MonthlyScheduleResponse> getMonthlySchedules(
             @PathVariable int year,
@@ -51,6 +61,7 @@ public class MainController {
         return ResponseEntity.ok(mainService.getMonthlySchedules(year, month));
     }
 
+    /**5.  해당 일 일정 조회 - GET /api/v1/main/schedule/{year}/{month}/{date}*/
     @GetMapping("/schedule/{year}/{month}/{date}")
     public ResponseEntity<ScheduleListResponse> getDailySchedules(
             @PathVariable int year,
@@ -59,13 +70,9 @@ public class MainController {
         return ResponseEntity.ok(mainService.getDailySchedules(year, month, date));
     }
 
-    @GetMapping("/schedule")
-    public ResponseEntity<ScheduleListResponse> getGatheringSchedules() {
-        return ResponseEntity.ok(mainService.getGatheringSchedules());
-    }
-
+    /**2. 오늘 일정 조회 - GET /api/v1/main/schedule/today*/
     @GetMapping("/schedule/today")
     public ResponseEntity<ScheduleListResponse> getTodaySchedules() {
         return ResponseEntity.ok(mainService.getTodaySchedules());
     }
-} 
+}

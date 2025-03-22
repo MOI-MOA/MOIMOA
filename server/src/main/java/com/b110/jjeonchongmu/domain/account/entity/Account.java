@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "trade")
+@Table(name = "account")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
