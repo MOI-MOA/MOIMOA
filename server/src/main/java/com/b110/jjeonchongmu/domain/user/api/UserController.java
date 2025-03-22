@@ -1,12 +1,10 @@
 package com.b110.jjeonchongmu.domain.user.api;
 
-import com.b110.jjeonchongmu.domain.user.dto.LoginRequestDTO;
-import com.b110.jjeonchongmu.domain.user.dto.SignupRequestDTO;
-import com.b110.jjeonchongmu.domain.user.dto.request.LoginRequest;
-import com.b110.jjeonchongmu.domain.user.dto.request.PasswordChangeRequest;
-import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequest;
-import com.b110.jjeonchongmu.domain.user.dto.response.UserResponse;
-import com.b110.jjeonchongmu.domain.user.dto.response.TokenResponse;
+import com.b110.jjeonchongmu.domain.user.dto.request.LoginRequestDTO;
+import com.b110.jjeonchongmu.domain.user.dto.request.PasswordChangeRequestDTO;
+import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequestDTO;
+import com.b110.jjeonchongmu.domain.user.dto.response.TokenResponseDTO;
+import com.b110.jjeonchongmu.domain.user.dto.response.UserResponseDTO;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
 import com.b110.jjeonchongmu.global.common.ApiResponse;
 import jakarta.validation.Valid;
@@ -36,11 +34,11 @@ public class UserController {
 
     /**
      * 로그인 API
-     * 이메일, 비밀번호, PIN으로 로그인하고 토큰을 발급받습니다.
+     * 이메일과 비밀번호로 로그인하고 토큰을 발급받습니다.
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequestDTO request) {
-        TokenResponse tokenResponse = userService.login(request);
+    public ResponseEntity<ApiResponse<TokenResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
+        TokenResponseDTO tokenResponse = userService.login(request);
         return ResponseEntity.ok(ApiResponse.success(tokenResponse));
     }
 
@@ -58,9 +56,9 @@ public class UserController {
      * 사용자 정보 조회 API
      * 현재 로그인한 사용자의 정보를 조회합니다.
      */
-    @GetMapping("/mypage")
-    public ResponseEntity<ApiResponse<UserResponse>> getMyInfo() {
-        UserResponse response = userService.getMyPage();
+    @GetMapping("/user/me")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getMyInfo() {
+        UserResponseDTO response = userService.getMyInfo();
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -69,7 +67,7 @@ public class UserController {
      * 현재 비밀번호를 확인하고 새로운 비밀번호로 변경합니다.
      */
     @PatchMapping("/user/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody PasswordChangeRequestDTO request) {
         userService.changePassword(request);
         return ResponseEntity.ok(ApiResponse.success());
     }
@@ -81,16 +79,6 @@ public class UserController {
     @DeleteMapping("/user")
     public ResponseEntity<ApiResponse<Void>> withdraw() {
         userService.withdraw();
-        return ResponseEntity.ok(ApiResponse.success());
-    }
-
-    /**
-     * 알림 설정 변경 API
-     * 일정 알림 설정을 토글합니다.
-     */
-    @PatchMapping("/user/notification")
-    public ResponseEntity<ApiResponse<Void>> toggleNotification() {
-        userService.toggleNotification();
         return ResponseEntity.ok(ApiResponse.success());
     }
 }

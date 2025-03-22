@@ -10,10 +10,14 @@ import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,34 +32,30 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-
-    @Column(nullable = false, unique = true)
-    private String email;
+    private Integer userId;
 
     @Column(nullable = false)
-    private String name;
+    private String userEmail;
+
+    @Column(nullable = false)
+    private String userKey;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private Long personalAccountPW;  // 개인 계좌 비밀번호
+    @Column
+    private LocalDate birth;
 
-    @Column(nullable = false)
-    private Integer pin;  // PIN 번호
-
-    @Column(nullable = false)
-    private Boolean scheduleNotificationEnabled;  // 일정 알림 설정
-
-    @Column(name = "created_at", nullable = false)
+    @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     // cascade = CascadeType.REMOVE : user 삭제시 해당 personalAccount 자동삭제
@@ -86,14 +86,11 @@ public class User implements UserDetails {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public User(String email, String name, String password, Long personalAccountPW, 
-                 Integer pin, Boolean scheduleNotificationEnabled) {
-        this.email = email;
-        this.name = name;
+    public User(String userEmail, String userKey, String password, LocalDate birth) {
+        this.userEmail = userEmail;
+        this.userKey = userKey;
         this.password = password;
-        this.personalAccountPW = personalAccountPW;
-        this.pin = pin;
-        this.scheduleNotificationEnabled = scheduleNotificationEnabled;
+        this.birth = birth;
     }
 
     /**
@@ -101,13 +98,6 @@ public class User implements UserDetails {
      */
     public void changePassword(String newPassword) {
         this.password = newPassword;
-    }
-
-    /**
-     * 일정 알림 설정 변경
-     */
-    public void toggleScheduleNotification() {
-        this.scheduleNotificationEnabled = !this.scheduleNotificationEnabled;
     }
 
     // UserDetails 구현
@@ -119,6 +109,11 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return String.valueOf(this.userId);
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
     }
 
     @Override
