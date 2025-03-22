@@ -1,69 +1,70 @@
 package com.b110.jjeonchongmu.domain.main.repo;
 
-import com.b110.jjeonchongmu.domain.main.dto.ScheduleDto;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 메인 화면 관련 레포지토리
+ */
 public interface MainRepo extends JpaRepository<Schedule, Long> {
 
+    /**
+     * 미확인 일정 수 조회
+     */
     @Query("SELECT COUNT(s) FROM Schedule s WHERE s.checked = false")
     int countUncheckSchedules();
 
-    @Query("SELECT DISTINCT DAY(s.scheduleStartTime) FROM Schedule s " +
-           "WHERE YEAR(s.scheduleStartTime) = YEAR(CURRENT_DATE) " +
-           "AND MONTH(s.scheduleStartTime) = MONTH(CURRENT_DATE)")
-    List<Integer> findCurrentMonthDates();
+    /**
+     * 오늘의 일정 조회
+     */
+    @Query("SELECT s FROM Schedule s " +
+           "WHERE DATE(s.startDate) = CURRENT_DATE " +
+           "ORDER BY s.startDate")
+    List<Schedule> findTodaySchedules();
 
-    @Query("SELECT new com.b110.jjeonchongmu.domain.main.dto.response.ScheduleDto(" +
-           "s.gathering.id, s.gathering.name, s.id, s.title, s.detail, s.place, " +
-           "s.startTime, s.perBudget, s.totalBudget, s.penaltyApplyDate, s.status, " +
-           "(SELECT COUNT(a) FROM Attendee a WHERE a.schedule = s)) " +
-           "FROM Schedule s " +
-           "WHERE DATE(s.scheduleStartTime) = CURRENT_DATE")
-    List<ScheduleDto> findTodaySchedules();
+    /**
+     * 다가오는 일정 조회
+     */
+    @Query("SELECT s FROM Schedule s " +
+           "WHERE s.startDate > CURRENT_DATE " +
+           "ORDER BY s.startDate")
+    List<Schedule> findUpcomingSchedules();
 
-    @Query("SELECT new com.b110.jjeonchongmu.domain.main.dto.response.ScheduleDto(" +
-           "s.gathering.id, s.gathering.name, s.id, s.title, s.detail, s.place, " +
-           "s.startTime, s.perBudget, s.totalBudget, s.penaltyApplyDate, s.status, " +
-           "(SELECT COUNT(a) FROM Attendee a WHERE a.schedule = s)) " +
-           "FROM Schedule s " +
-           "WHERE s.scheduleStartTime > CURRENT_DATE " +
-           "ORDER BY s.scheduleStartTime")
-    List<ScheduleDto> findUpcomingSchedules();
+    /**
+     * 미확인 일정 조회
+     */
+    @Query("SELECT s FROM Schedule s " +
+           "WHERE s.checked = false " +
+           "ORDER BY s.startDate")
+    List<Schedule> findUncheckSchedules();
 
-    @Query("SELECT new com.b110.jjeonchongmu.domain.main.dto.response.ScheduleDto(" +
-           "s.gathering.id, s.gathering.name, s.id, s.title, s.detail, s.place, " +
-           "s.startTime, s.perBudget, s.totalBudget, s.penaltyApplyDate, s.status, " +
-           "(SELECT COUNT(a) FROM Attendee a WHERE a.schedule = s)) " +
-           "FROM Schedule s " +
-           "WHERE s.checked = false")
-    List<ScheduleDto> findUncheckSchedules();
+    /**
+     * 개인 일정 조회
+     */
+    @Query("SELECT s FROM Schedule s " +
+           "WHERE s.type = 'PERSONAL' " +
+           "ORDER BY s.startDate")
+    List<Schedule> findPersonalSchedules();
 
-    @Query("SELECT new com.b110.jjeonchongmu.domain.main.dto.response.ScheduleDto(" +
-           "s.gathering.id, s.gathering.name, s.id, s.title, s.detail, s.place, " +
-           "s.startTime, s.perBudget, s.totalBudget, s.penaltyApplyDate, s.status, " +
-           "(SELECT COUNT(a) FROM Attendee a WHERE a.schedule = s)) " +
-           "FROM Schedule s " +
-           "WHERE s.type = 'PERSONAL'")
-    List<ScheduleDto> findPersonalSchedules();
+    /**
+     * 특정 연월의 일정 조회
+     */
+    @Query("SELECT s FROM Schedule s " +
+           "WHERE YEAR(s.startDate) = :year " +
+           "AND MONTH(s.startDate) = :month " +
+           "ORDER BY s.startDate")
+    List<Schedule> findSchedulesByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
-    @Query("SELECT DISTINCT DAY(s.scheduleStartTime) FROM Schedule s " +
-           "WHERE YEAR(s.scheduleStartTime) = :year " +
-           "AND MONTH(s.scheduleStartTime) = :month")
-    List<Integer> findScheduleDatesForMonth(@Param("year") int year, @Param("month") int month);
-
-    @Query("SELECT new com.b110.jjeonchongmu.domain.main.dto.response.ScheduleDto(" +
-           "s.gathering.id, s.gathering.name, s.id, s.title, s.detail, s.place, " +
-           "s.startTime, s.perBudget, s.totalBudget, s.penaltyApplyDate, s.status, " +
-           "(SELECT COUNT(a) FROM Attendee a WHERE a.schedule = s)) " +
-           "FROM Schedule s " +
-           "WHERE DATE(s.scheduleStartTime) = :date")
-    List<ScheduleDto> findSchedulesByDate(@Param("date") Date date);
-
-
+    /**
+     * 특정 날짜의 일정 조회
+     */
+    @Query("SELECT s FROM Schedule s " +
+           "WHERE DATE(s.startDate) = :date " +
+           "ORDER BY s.startDate")
+    List<Schedule> findSchedulesByDate(@Param("date") LocalDate date);
 } 

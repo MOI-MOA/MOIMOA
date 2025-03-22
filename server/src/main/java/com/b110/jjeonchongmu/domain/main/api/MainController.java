@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.main.api;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.service.MainService;
+import com.b110.jjeonchongmu.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,36 +53,41 @@ public class MainController {
 
     /**2. 미확인 일정목록 조회 - GET /api/v1/main/schdule/uncheck*/
     @GetMapping("/schedule/uncheck")
-    public ResponseEntity<ScheduleListResponse> getUncheckSchedules() {
-        return ResponseEntity.ok(mainService.getUncheckSchedules());
+    public ResponseEntity<ApiResponse> getUncheckSchedules() {
+        List<ScheduleDTO> response = mainService.getUncheckSchedules();
+        return ResponseEntity.ok(new ApiResponse(200, "미확인 일정 목록 조회 성공", response));
     }
 
     /**3. 개인 일정목록 조회 - GET /api/v1/main/schedule/personal*/
     @GetMapping("/schedule/personal")
-    public ResponseEntity<ScheduleListResponse> getPersonalSchedules() {
-        return ResponseEntity.ok(mainService.getPersonalSchedules());
+    public ResponseEntity<ApiResponse> getPersonalSchedules() {
+        List<ScheduleDTO> response = mainService.getPersonalSchedules();
+        return ResponseEntity.ok(new ApiResponse(201, "개인 일정 목록 조회 성공", response));
     }
 
     /**4. 해당 달 일정 조회 - GET /api/v1/main/schedule/{year}/{month}*/
     @GetMapping("/schedule/{year}/{month}")
-    public ResponseEntity<MonthlyScheduleResponse> getMonthlySchedules(
+    public ResponseEntity<ApiResponse> getMonthSchedules(
             @PathVariable int year,
             @PathVariable int month) {
-        return ResponseEntity.ok(mainService.getMonthlySchedules(year, month));
+        MonthScheduleDTO response = mainService.getMonthSchedules(year, month);
+        return ResponseEntity.ok(new ApiResponse(201, "월간 일정 조회 성공", response));
     }
 
     /**5.  해당 일 일정 조회 - GET /api/v1/main/schedule/{year}/{month}/{date}*/
     @GetMapping("/schedule/{year}/{month}/{date}")
-    public ResponseEntity<ScheduleListResponse> getDailySchedules(
+    public ResponseEntity<ApiResponse> getDaySchedules(
             @PathVariable int year,
             @PathVariable int month,
             @PathVariable int date) {
-        return ResponseEntity.ok(mainService.getDailySchedules(year, month, date));
+        DayScheduleDTO response = mainService.getDaySchedules(year, month, date);
+        return ResponseEntity.ok(new ApiResponse(201, "일간 일정 조회 성공", response));
     }
 
     /**2. 오늘 일정 조회 - GET /api/v1/main/schedule/today*/
     @GetMapping("/schedule/today")
-    public ResponseEntity<ScheduleListResponse> getTodaySchedules() {
-        return ResponseEntity.ok(mainService.getTodaySchedules());
+    public ResponseEntity<ApiResponse> getTodaySchedules() {
+        List<ScheduleDTO> response = mainService.getTodaySchedules();
+        return ResponseEntity.ok(new ApiResponse(201, "오늘 일정 조회 성공", response));
     }
 }

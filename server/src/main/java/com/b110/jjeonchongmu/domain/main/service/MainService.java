@@ -2,69 +2,108 @@ package com.b110.jjeonchongmu.domain.main.service;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 메인 화면 관련 서비스
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MainService {
-
     private final MainRepo mainRepo;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public MainHomeResponse getMainHome() {
-        int uncheckCount = mainRepo.countUncheckSchedules();
-        List<MainHomeResponse.DateDto> dateList = mainRepo.findCurrentMonthDates().stream()
-                .map(date -> MainHomeResponse.DateDto.builder().date(date).build())
-                .collect(Collectors.toList());
-        List<ScheduleDto> todaySchedules = mainRepo.findTodaySchedules();
-        List<ScheduleDto> upcomingSchedules = mainRepo.findUpcomingSchedules();
-
-        return MainHomeResponse.builder()
-                .uncheckScheduleCount(uncheckCount)
-                .dateList(dateList)
-                .todayScheduleList(todaySchedules)
-                .upcommingScheduleList(upcomingSchedules)
-                .build();
-    }
-
-    public ScheduleListResponse getUncheckSchedules() {
-        return ScheduleListResponse.builder()
-                .datas(mainRepo.findUncheckSchedules())
-                .build();
-    }
-
-    public ScheduleListResponse getPersonalSchedules() {
-        return ScheduleListResponse.builder()
-                .datas(mainRepo.findPersonalSchedules())
-                .build();
-    }
-
-    public MonthlyScheduleResponse getMonthlySchedules(int year, int month) {
-        List<MonthlyScheduleResponse.DateDto> dates = mainRepo.findScheduleDatesForMonth(year, month).stream()
-                .map(date -> MonthlyScheduleResponse.DateDto.builder().date(date).build())
+    /**
+     * 메인 홈 화면 정보 조회
+     * - 미확인 일정 수
+     * - 오늘의 일정
+     * - 다가오는 일정
+     */
+    public MainHomeResponseDTO getMainHome() {
+        // 오늘의 일정과 다가오는 일정 조회
+        List<ScheduleDTO> todaySchedules = mainRepo.findTodaySchedules().stream()
+                .map(ScheduleDTO::from)
                 .collect(Collectors.toList());
         
-        return MonthlyScheduleResponse.builder()
-                .datas(dates)
+        List<ScheduleDTO> upcomingSchedules = mainRepo.findUpcomingSchedules().stream()
+                .map(ScheduleDTO::from)
+                .collect(Collectors.toList());
+
+        return MainHomeResponseDTO.builder()
+                .schedules(todaySchedules)
                 .build();
     }
 
-    public ScheduleListResponse getDailySchedules(int year, int month, int date) {
+    /**
+     * 미확인 일정 목록 조회
+     */
+    public ScheduleListResponseDTO getUncheckSchedules() {
+        List<ScheduleDTO> schedules = mainRepo.findUncheckSchedules().stream()
+                .map(ScheduleDTO::from)
+                .collect(Collectors.toList());
+
+        return ScheduleListResponseDTO.builder()
+                .schedules(schedules)
+                .build();
+    }
+
+    /**
+     * 개인 일정 목록 조회
+     */
+    public ScheduleListResponseDTO getPersonalSchedules() {
+        List<ScheduleDTO> schedules = mainRepo.findPersonalSchedules().stream()
+                .map(ScheduleDTO::from)
+                .collect(Collectors.toList());
+
+        return ScheduleListResponseDTO.builder()
+                .schedules(schedules)
+                .build();
+    }
+
+    /**
+     * 월별 일정 조회
+     */
+    public MonthlyScheduleResponseDTO getMonthlySchedules(int year, int month) {
+        List<ScheduleDTO> schedules = mainRepo.findSchedulesByYearAndMonth(year, month).stream()
+                .map(ScheduleDTO::from)
+                .collect(Collectors.toList());
+
+        return MonthlyScheduleResponseDTO.builder()
+                .year(year)
+                .month(month)
+                .schedules(schedules)
+                .build();
+    }
+
+    /**
+     * 특정 날짜의 일정 조회
+     */
+    public ScheduleListResponseDTO getDailySchedules(int year, int month, int date) {
         LocalDate targetDate = LocalDate.of(year, month, date);
         return ScheduleListResponse.builder()
 //                .datas(mainRepo.findSchedulesByDate(targetDate))
                 .build();
     }
 
-    public ScheduleListResponse getTodaySchedules() {
-        return ScheduleListResponse.builder()
-                .datas(mainRepo.findTodaySchedules())
+    /**
+     * 오늘의 일정 조회
+     */
+    public ScheduleListResponseDTO getTodaySchedules() {
+        List<ScheduleDTO> schedules = mainRepo.findTodaySchedules().stream()
+                .map(ScheduleDTO::from)
+                .collect(Collectors.toList());
+
+        return ScheduleListResponseDTO.builder()
+                .schedules(schedules)
                 .build();
     }
 }
