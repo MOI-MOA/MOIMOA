@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "notification")
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 public class Notification {
 
     @Id
@@ -31,7 +31,7 @@ public class Notification {
     private int notificationType;
 
     @Column(name = "data_id", nullable = false)
-    private Long dataId;
+    private int dataId;
 
     @Column(name = "data_type", nullable = false)
     private int dataType;

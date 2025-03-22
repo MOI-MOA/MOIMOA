@@ -159,4 +159,7 @@ public class User implements UserDetails {
         this.notifications.add(notification);
         notification.setUser(this);
     }
+
+    public String getName() {
+    }
 }
