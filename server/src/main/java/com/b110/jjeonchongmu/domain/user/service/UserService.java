@@ -36,12 +36,12 @@ public class UserService {
      */
     @Transactional
     public void signup(SignupRequestDTO request) {
-        if (userRepo.existsByUserEmail(request.getUserEmail())) {
+        if (userRepo.existsByUserEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         User user = User.builder()
-                .userEmail(request.getUserEmail())
+                .userEmail(request.getEmail())
                 .userKey(UUID.randomUUID().toString())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .birth(request.getBirth())
@@ -54,7 +54,7 @@ public class UserService {
      * 로그인
      */
     public TokenResponseDTO login(LoginRequestDTO request) {
-        User user = userRepo.findByUserEmail(request.getUserEmail())
+        User user = userRepo.findByUserEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

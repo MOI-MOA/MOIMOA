@@ -8,11 +8,11 @@ import lombok.*;
 @Builder
 public class GatheringMemberDTO {
 
-    private Long GatheringMemberId;
-    private Long GatheringId;
-    private String  GatheringMemberUserId;
-    private Integer GatheringAttendCount;
-    private Integer GatheringMemberAccountBalance;
-    private Integer GatheringMemberAccountDeposit;
-    private Boolean Gathering_payment_status; //납부상태
+    private Long gatheringMemberId;
+    private Long gatheringId;
+    private String gatheringMemberUserId;
+    private Integer gatheringAttendCount;
+    private Integer gatheringMemberAccountBalance;
+    private Integer gatheringMemberAccountDeposit;
+    private Boolean gatheringPaymentStatus; //납부상태
 }
