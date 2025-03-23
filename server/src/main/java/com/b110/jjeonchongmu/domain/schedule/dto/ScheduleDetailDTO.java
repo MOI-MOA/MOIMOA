@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -17,14 +18,13 @@ public class ScheduleDetailDTO {
     private String scheduleDetail;
     private String schedulePlace;
     private LocalDateTime scheduleStartTime;
-    //perBudget 없음.
-    private int totalBudget;
-    //패널티 없음.
-
-    private int scheduleId;
-    private int gatheringId;
-    //부총무 정보 없음.
-    //스케줄 상태 없음. ddd
+    private Long perBudget;
+    private Long totalBudget;
+    private Date penaltyApplyDate;
+    private Date penaltyRate;
+    private Long scheduleId;
+    private Long gatheringId;
+    private Long scheduleSubManagerId;
 
     //모임장 정보 추가
     private ManagerInfo scheduleManager;
