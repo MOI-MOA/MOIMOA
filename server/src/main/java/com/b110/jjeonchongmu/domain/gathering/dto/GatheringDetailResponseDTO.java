@@ -1,11 +1,11 @@
 package com.b110.jjeonchongmu.domain.gathering.dto;
 
-import lombok.Builder;
-import lombok.Data;
-
+import lombok.*;
 import java.util.List;
 
-@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class GatheringDetailResponseDTO {
     private GatheringDTO gathering;

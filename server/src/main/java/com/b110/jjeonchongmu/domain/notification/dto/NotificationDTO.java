@@ -3,6 +3,7 @@ package com.b110.jjeonchongmu.domain.notification.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -17,4 +18,24 @@ public class NotificationDTO {
     private Boolean isRead;
     private LocalDateTime notificationCreatedAt;
     private String userId;
+}
+
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+class NotificationCreateRequest {
+    private String notificationContent;
+    private int notificationType;
+    private Long dataId;
+    private int dataType;
+    private LocalDateTime notificationCreatedAt;
+}
+
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+class NotificationListResponse {
+    private List<NotificationDTO> notifications;
 }

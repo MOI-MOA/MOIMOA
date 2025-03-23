@@ -1,12 +1,13 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.account.entity;
 
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "trade")
+@Table(name = "account")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,5 +1,8 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.gathering.entity;
 
+import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

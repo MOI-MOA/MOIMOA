@@ -1,10 +1,9 @@
 package com.b110.jjeonchongmu.domain.trade.dto;
 
-import com.b110.jjeonchongmu.domain.entity.Trade;
+import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter

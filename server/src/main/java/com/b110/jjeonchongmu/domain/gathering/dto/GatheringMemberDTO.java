@@ -7,10 +7,12 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class GatheringMemberDTO {
-    private Long GatheringMemberId;
-    private Long GatheringId;
-    private String userId;
-    private Integer GatheringAttendCount;
-    private Integer GatheringMemberAccountBalance;
-    private Boolean Gathering_payment_status;
+
+    private Long gatheringMemberId;
+    private Long gatheringId;
+    private String gatheringMemberUserId;
+    private Integer gatheringAttendCount;
+    private Integer gatheringMemberAccountBalance;
+    private Integer gatheringMemberAccountDeposit;
+    private Boolean gatheringPaymentStatus; //납부상태
 }

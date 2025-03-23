@@ -1,8 +1,8 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
 import com.b110.jjeonchongmu.domain.gathering.dto.*;
-import com.b110.jjeonchongmu.domain.entity.Gathering;
-import com.b110.jjeonchongmu.domain.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.global.exception.CustomException;
@@ -92,7 +92,7 @@ public class GatheringService {
     public GatheringDetailResponseDTO getGatheringDetail(Long gatheringId) {
         Gathering gathering = gatheringRepo.findById(gatheringId)
                 .orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
-        
+
         List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
 
         return GatheringDetailResponseDTO.builder()
@@ -108,10 +108,13 @@ public class GatheringService {
                         .build())
                 .members(members.stream()
                         .map(member -> GatheringMemberDTO.builder()
-                                .name(member.getName())
-                                .email(member.getEmail())
-                                .createdAt(member.getCreatedAt())
-                                .gatheringPaymentStatus(member.isGatheringPaymentStatus())
+                                .gatheringMemberId(member.getGatheringMemberId())
+                                .gatheringId(member.getGathering().getGatheringId())
+                                .gatheringMemberUserId(member.getGatheringMember().getUserId().toString())
+                                .gatheringAttendCount(member.getGatheringAttendCount())
+                                .gatheringMemberAccountBalance(member.getGatheringMemberAccountBalance())
+                                .gatheringMemberAccountDeposit(member.getGatheringMemberAccountDeposit())
+                                .gatheringPaymentStatus(member.getGatheringPaymentStatus())
                                 .build())
                         .collect(Collectors.toList()))
                 .build();

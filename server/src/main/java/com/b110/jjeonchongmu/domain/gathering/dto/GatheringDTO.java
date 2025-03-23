@@ -4,8 +4,10 @@ import lombok.*;
 
 import java.util.Date;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@Data
 public class GatheringDTO {
     private Long gatheringId;
     private String gatheringName;
@@ -15,5 +17,4 @@ public class GatheringDTO {
     private int penaltyRate;
     private Integer memberCount;
     private Long gatheringDeposit;
-
 }

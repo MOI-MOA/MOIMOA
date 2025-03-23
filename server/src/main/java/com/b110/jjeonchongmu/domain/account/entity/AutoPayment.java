@@ -1,4 +1,4 @@
-package com.b110.jjeonchongmu.domain.entity;
+package com.b110.jjeonchongmu.domain.account.entity;
 import jakarta.persistence.*;
 import lombok.*;
 

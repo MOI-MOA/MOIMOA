@@ -1,4 +1,4 @@
-package com.b110.jjeonchongmu.domain.account.dto;
+package com.b110.jjeonchongmu.domain.mypage.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,19 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GetAutoPaymentResponseDTO {
+public class AutoPaymentResponse {
     private Long autoPaymentNo;
     private int autoPaymentAmount;
-    private Date autoPaymentDate;
+    private LocalDateTime autoPaymentDate;
     private boolean isActive;
     private String gatheringName;
-    private long gatheringDeposit;
-    private long gatheringAccountNumber;
-    private long gatheringAccountBalance;
-}
+    private Long gatheringDeposit;
+    private Long gatheringAccountNo;
+    private Long gatheringAccountBalance;
+} 
