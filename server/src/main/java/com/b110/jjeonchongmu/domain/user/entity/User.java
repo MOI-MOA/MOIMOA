@@ -40,6 +40,9 @@ public class User implements UserDetails {
     private Integer userId;
 
     @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private String userEmail;
 
     @Column(nullable = false)
@@ -86,10 +89,11 @@ public class User implements UserDetails {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public User(String userEmail, String userKey, String password, LocalDate birth) {
+    public User(String userEmail, String userKey, String password, String name, LocalDate birth) {
         this.userEmail = userEmail;
         this.userKey = userKey;
         this.password = password;
+        this.name = name;
         this.birth = birth;
     }
 
@@ -141,7 +145,7 @@ public class User implements UserDetails {
      */
     public void addGatheringMember(GatheringMember gatheringMember) {
         this.gatheringMembers.add(gatheringMember);
-        gatheringMember.setUser(this);
+//        gatheringMember.setUser(this);
     }
 
     /**
@@ -149,7 +153,7 @@ public class User implements UserDetails {
      */
     public void addSchedule(Schedule schedule) {
         this.schedules.add(schedule);
-        schedule.setUser(this);
+//        schedule.setUser(this);
     }
 
     /**
@@ -157,9 +161,10 @@ public class User implements UserDetails {
      */
     public void addNotification(Notification notification) {
         this.notifications.add(notification);
-        notification.setUser(this);
+//        notification.setUser(this);
     }
 
     public String getName() {
+        return this.name;
     }
 }

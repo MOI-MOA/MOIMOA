@@ -7,11 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ScheduleListDTO {
+    List<ScheduleDetailDTO> scheduleList;
     private int gatheringId;
     private String gatheringName;
     private int scheduleId;
