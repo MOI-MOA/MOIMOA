@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.main.service;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
+import com.b110.jjeonchongmu.domain.schedule.dto.*;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleResponseDTO;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
 /**
  * 메인 화면 관련 서비스
  */
@@ -64,33 +65,58 @@ public class MainService {
                 .map(ScheduleDTO::from)
                 .collect(Collectors.toList());
 
-        return ScheduleListResponseDTO.builder()
+        return ScheduleListDTO.builder()
                 .schedules(schedules)
                 .build();
     }
 
     /**
      * 월별 일정 조회
+     * /api/v1/main/schedule/{year}/{month}
+     *
      */
-    public MonthlyScheduleResponseDTO getMonthlySchedules(int year, int month) {
-        List<ScheduleDTO> schedules = mainRepo.findSchedulesByYearAndMonth(year, month).stream()
-                .map(ScheduleDTO::from)
+    public MonthScheduleDTO getMonthSchedules(int year, int month) {
+        // 해당 월에 일정이 있는 날짜들을 조회
+        List<LocalDateTime> scheduleDates = mainRepo.findSchedulesByYearAndMonth(year, month);
+        
+        // 날짜만 추출하여 DateInfo 리스트로 변환
+        List<MonthScheduleDTO.DateInfo> dates = scheduleDates.stream()
+                .map(date -> MonthScheduleDTO.DateInfo.builder()
+                        .date(date.getDayOfMonth())
+                        .build())
+                .distinct()
+                .sorted()
                 .collect(Collectors.toList());
 
-        return MonthlyScheduleResponseDTO.builder()
-                .year(year)
-                .month(month)
-                .schedules(schedules)
+        return MonthScheduleDTO.builder()
+                .datas(dates)
                 .build();
     }
 
     /**
-     * 특정 날짜의 일정 조회
+     * 특정 날짜의 일정 조회 수정 필요. userId는 jwt에서 가져오도록.
      */
-    public ScheduleListResponseDTO getDailySchedules(int year, int month, int date) {
+    public DayScheduleDTO getDaySchedules(Long userId,    int year, int month, int date) {
         LocalDate targetDate = LocalDate.of(year, month, date);
-        return ScheduleListResponse.builder()
-//                .datas(mainRepo.findSchedulesByDate(targetDate))
+        List<ScheduleDTO> schedules = mainRepo.findSchedulesByDate(targetDate).stream()
+                .map(schedule -> ScheduleDTO.builder()
+                        .gatheringId(schedule.getGathering().getGatheringId())
+                        .gatheringName(schedule.getGathering().getGatheringName())
+                        .scheduleId(schedule.getScheduleId())
+                        .scheduleTitle(schedule.getScheduleTitle())
+                        .scheduleDetail(schedule.getScheduleDetail())
+                        .schedulePlace(schedule.getSchedulePlace())
+                        .scheduleStartTime(schedule.getScheduleStartTime())
+                        .perBudget(schedule.getPerBudget())
+                        .totalBudget(schedule.getTotalBudget())
+                        .penaltyApplyDate(schedule.getPenaltyApplyDate())
+                        .scheduleStatus(schedule.getScheduleStatus())
+                        .attendeeCount(schedule.getScheduleMembers().size())
+                        .build())
+                .collect(Collectors.toList());
+
+        return DayScheduleDTO.builder()
+                .datas(schedules)
                 .build();
     }
 

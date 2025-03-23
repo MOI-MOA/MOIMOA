@@ -10,9 +10,6 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class ScheduleDTO {
-    private Long scheduleId;
-    private Long groupId;
-    private Long subManagerId;
     private String scheduleTitle;
     private String scheduleDetail;
     private String schedulePlace;
@@ -20,6 +17,11 @@ public class ScheduleDTO {
     private Long perBudget;
     private Long totalBudget;
     private Date penaltyApplyDate;
+
+    //createDTO와 updateDTO 추가
+    private Long scheduleId;
+    private Long gatheringId;
+    private Long subManagerId;
     private Integer scheduleStatus;
 
 

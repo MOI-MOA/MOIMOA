@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -16,12 +18,12 @@ public class ScheduleService {
 
     private final ScheduleRepo scheduleRepo;
 
-    public List<ScheduleListDto> getScheduleList() {
+    public List<ScheduleListDTO> getScheduleList() {
         return scheduleRepo.findAllSchedules();
     }
 
     @Transactional
-    public void createSchedule(ScheduleCreateDto dto) {
+    public void createSchedule(ScheduleCreateDTO dto) {
         User manager = getCurrentUser();
         Gathering gathering = getCurrentGathering();
 
@@ -40,14 +42,14 @@ public class ScheduleService {
         scheduleRepo.save(schedule);
     }
 
-    public ScheduleDetailDto getScheduleDetail(Long scheduleId) {
+    public ScheduleDetailDTO getScheduleDetail(Long scheduleId) {
         Long userId = getCurrentUserId();
         return scheduleRepo.findScheduleDetailById(scheduleId, userId)
                 .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
     }
 
     @Transactional
-    public void updateSchedule(ScheduleUpdateDto dto) {
+    public void updateSchedule(ScheduleUpdateDTO dto) {
         Schedule schedule = scheduleRepo.findById(dto.getScheduleId())
                 .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
         validateManager(schedule);
@@ -78,10 +80,10 @@ public class ScheduleService {
         schedule.removeAttendee(user);
     }
 
-    public PerBudgetDto getPerBudget(Long scheduleId) {
+    public PerBudgetDTO getPerBudget(Long scheduleId) {
         Schedule schedule = scheduleRepo.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-        return PerBudgetDto.builder()
+        return PerBudgetDTO.builder()
                 .perBudget((int) schedule.getPerBudget())
                 .build();
     }

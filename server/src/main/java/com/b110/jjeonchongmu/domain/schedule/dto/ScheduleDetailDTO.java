@@ -1,5 +1,5 @@
-package com.b110.jjeonchongmu.domain.schedule.dto;
 
+package com.b110.jjeonchongmu.domain.schedule.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,23 +12,32 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleDetailDto {
-    private int gatheringId;
-    private String gatheringName;
-    private int scheduleId;
+public class ScheduleDetailDTO {
     private String scheduleTitle;
     private String scheduleDetail;
-    private ManagerInfo scheduleManager;
-    private LocalDateTime scheduleStartTime;
     private String schedulePlace;
-    private int attendCount;
+    private LocalDateTime scheduleStartTime;
+    //perBudget 없음.
     private int totalBudget;
-    private boolean scheduleAttendStatus;
+    //패널티 없음.
+
+    private int scheduleId;
+    private int gatheringId;
+    //부총무 정보 없음.
+    //스케줄 상태 없음. ddd
+
+    //모임장 정보 추가
+    private ManagerInfo scheduleManager;
+    //참석자 정보 추가
+    private String gatheringName;
     private List<AttendeeInfo> attendees;
+    private int attendCount;
+    private boolean scheduleAttendStatus;
 
     @Getter
     @Builder
     public static class ManagerInfo {
+
         private long userId;
         private String username;
     }
@@ -39,4 +48,4 @@ public class ScheduleDetailDto {
         private long userId;
         private String username;
     }
-} 
+}

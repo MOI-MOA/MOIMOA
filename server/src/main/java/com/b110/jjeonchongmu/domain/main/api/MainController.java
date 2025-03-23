@@ -8,9 +8,9 @@ import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
 import java.util.List;
-
+// 스케줄에서 import 해서 쓰기. ㅎ
 /**
  * 홈 관련 API 컨트롤러
  * 
@@ -64,7 +64,7 @@ public class MainController {
     @GetMapping("/schedule/personal")
     public ResponseEntity<ApiResponse<List<ScheduleDTO>>> getPersonalSchedules(@RequestHeader("Authorization") String token) {
         String jwtToken = token.replace("Bearer ", "");
-        Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
         List<ScheduleDTO> response = mainService.getPersonalSchedules(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -76,7 +76,7 @@ public class MainController {
             @PathVariable int year,
             @PathVariable int month) {
         String jwtToken = token.replace("Bearer ", "");
-        Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
         MonthScheduleDTO response = mainService.getMonthSchedules(userId, year, month);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -89,7 +89,7 @@ public class MainController {
             @PathVariable int month,
             @PathVariable int date) {
         String jwtToken = token.replace("Bearer ", "");
-        Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
         DayScheduleDTO response = mainService.getDaySchedules(userId, year, month, date);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -98,7 +98,7 @@ public class MainController {
     @GetMapping("/schedule/today")
     public ResponseEntity<ApiResponse<List<ScheduleDTO>>> getTodaySchedules(@RequestHeader("Authorization") String token) {
         String jwtToken = token.replace("Bearer ", "");
-        Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
         List<ScheduleDTO> response = mainService.getTodaySchedules(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
