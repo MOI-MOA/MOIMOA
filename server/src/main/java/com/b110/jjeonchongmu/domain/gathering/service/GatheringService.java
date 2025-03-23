@@ -89,33 +89,36 @@ public class GatheringService {
     /**
      * 모임 상세 조회
      */
-//    public GatheringDetailResponseDTO getGatheringDetail(Long gatheringId) {
-//        Gathering gathering = gatheringRepo.findById(gatheringId)
-//                .orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
-//
-//        List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
-//
-//        return GatheringDetailResponseDTO.builder()
-//                .gathering(GatheringDTO.builder()
-//                        .gatheringId(gathering.getGatheringId())
-//                        .gatheringName(gathering.getGatheringName())
-//                        .gatheringIntroduction(gathering.getGatheringIntroduction())
-//                        .memberCount(gathering.getMemberCount())
-//                        .penaltyRate(gathering.getPenaltyRate())
-//                        .depositDate(gathering.getDepositDate())
-//                        .basicFee(gathering.getBasicFee())
-//                        .gatheringDeposit(gathering.getGatheringDeposit())
-//                        .build())
-//                .members(members.stream()
-//                        .map(member -> GatheringMemberDTO.builder()
-//                                .name(member.getName())
-//                                .email(member.getEmail())
-//                                .createdAt(member.getCreatedAt())
-//                                .gatheringPaymentStatus(member.isGatheringPaymentStatus())
-//                                .build())
-//                        .collect(Collectors.toList()))
-//                .build();
-//    }
+    public GatheringDetailResponseDTO getGatheringDetail(Long gatheringId) {
+        Gathering gathering = gatheringRepo.findById(gatheringId)
+                .orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
+
+        List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
+
+        return GatheringDetailResponseDTO.builder()
+                .gathering(GatheringDTO.builder()
+                        .gatheringId(gathering.getGatheringId())
+                        .gatheringName(gathering.getGatheringName())
+                        .gatheringIntroduction(gathering.getGatheringIntroduction())
+                        .memberCount(gathering.getMemberCount())
+                        .penaltyRate(gathering.getPenaltyRate())
+                        .depositDate(gathering.getDepositDate())
+                        .basicFee(gathering.getBasicFee())
+                        .gatheringDeposit(gathering.getGatheringDeposit())
+                        .build())
+                .members(members.stream()
+                        .map(member -> GatheringMemberDTO.builder()
+                                .gatheringMemberId(member.getGatheringMemberId())
+                                .gatheringId(member.getGathering().getGatheringId())
+                                .gatheringMemberUserId(member.getGatheringMember().getUserId().toString())
+                                .gatheringAttendCount(member.getGatheringAttendCount())
+                                .gatheringMemberAccountBalance(member.getGatheringMemberAccountBalance())
+                                .gatheringMemberAccountDeposit(member.getGatheringMemberAccountDeposit())
+                                .gatheringPaymentStatus(member.getGatheringPaymentStatus())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+    }
 
     /**
      * 모임통장 거래내역 조회

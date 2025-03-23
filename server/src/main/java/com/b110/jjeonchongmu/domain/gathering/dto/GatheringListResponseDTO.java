@@ -8,13 +8,5 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GatheringListResponseDTO {
-    private Long gatheringId;
-    private String gatheringName;
-    private String gatheringIntroduction;
-    private String depositDate;
-    private Long basicFee;
-    private int penaltyRate;
-    private Integer memberCount;
-    private Long gatheringDeposit;
     private List<GatheringDTO> gatherings;
 }
