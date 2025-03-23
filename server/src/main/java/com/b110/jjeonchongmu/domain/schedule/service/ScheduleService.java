@@ -17,7 +17,7 @@ import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ScheduleService {
-
+    // 오류 수정 작업중.
     private final ScheduleRepo scheduleRepo;
 
     public List<ScheduleListDTO> getScheduleList() {
