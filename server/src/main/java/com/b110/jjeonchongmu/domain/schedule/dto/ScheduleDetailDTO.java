@@ -24,7 +24,7 @@ public class ScheduleDetailDTO {
     private int scheduleId;
     private int gatheringId;
     //부총무 정보 없음.
-    //스케줄 상태 없음.
+    //스케줄 상태 없음. ddd
 
     //모임장 정보 추가
     private ManagerInfo scheduleManager;
