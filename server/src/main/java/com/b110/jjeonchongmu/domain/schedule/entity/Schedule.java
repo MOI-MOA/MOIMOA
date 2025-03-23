@@ -2,7 +2,7 @@ package com.b110.jjeonchongmu.domain.schedule.entity;
 
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleUpdateDto;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleUpdateDTO;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -79,7 +79,7 @@ public class Schedule {
         this.status = 0;
     }
 
-    public void update(ScheduleUpdateDto dto) {
+    public void update(ScheduleUpdateDTO dto) {
         this.title = dto.getScheduleTitle();
         this.detail = dto.getScheduleDetail();
         this.place = dto.getSchedulePlace();

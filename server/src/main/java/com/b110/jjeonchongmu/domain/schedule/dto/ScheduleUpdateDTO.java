@@ -10,7 +10,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleUpdateDto {
+// 일정 수정하는 페이지 아직 없지만, 추후 수정 시 필요.
+// 일단은 보류작업.
+
+public class ScheduleUpdateDTO {
     private String scheduleTitle;
     private String scheduleDetail;
     private String schedulePlace;

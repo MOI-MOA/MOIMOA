@@ -27,24 +27,27 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
+    //일정 전체 조회.
     @GetMapping
-    public ResponseEntity<List<ScheduleListDto>> getScheduleList() {
+    public ResponseEntity<List<ScheduleListDTO>> getScheduleList() {
         return ResponseEntity.ok(scheduleService.getScheduleList());
     }
 
+    // 일정 생성.
     @PostMapping
-    public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDto dto) {
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO dto) {
         scheduleService.createSchedule(dto);
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
     }
 
+    //
     @GetMapping("/{scheduleId}")
-    public ResponseEntity<ScheduleDetailDto> getScheduleDetail(@PathVariable Long scheduleId) {
+    public ResponseEntity<ScheduleDetailDTO> getScheduleDetail(@PathVariable Long scheduleId) {
         return ResponseEntity.ok(scheduleService.getScheduleDetail(scheduleId));
     }
 
     @PatchMapping
-    public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDto dto) {
+    public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDTO dto) {
         scheduleService.updateSchedule(dto);
         return ResponseEntity.status(204).body("일정이 수정되었습니다.");
     }
@@ -68,7 +71,7 @@ public class ScheduleController {
     }
 
     @GetMapping("/{scheduleId}/amount")
-    public ResponseEntity<PerBudgetDto> getPerBudget(@PathVariable Long scheduleId) {
+    public ResponseEntity<PerBudgetDTO> getPerBudget(@PathVariable Long scheduleId) {
         return ResponseEntity.ok(scheduleService.getPerBudget(scheduleId));
     }
 }

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ScheduleCreateDto {
+public class ScheduleCreateDTO {
     private String scheduleTitle;
     private String scheduleDetail;
     private String schedulePlace;
