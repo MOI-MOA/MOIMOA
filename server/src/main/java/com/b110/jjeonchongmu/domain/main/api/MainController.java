@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
 import java.util.List;
-
+// 스케줄에서 import 해서 쓰기. ㅎ
 /**
  * 홈 관련 API 컨트롤러
  * 
