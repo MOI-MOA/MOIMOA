@@ -1,4 +1,4 @@
-package com.b110.jjeonchongmu.domain.mypage.dto;
+package com.b110.jjeonchongmu.domain.mypage.dto.statistics;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MyPageResponse {
-    private Long userId;
+public class MonthlyExpenseData {
     private String name;
-    private String email;
-} 
+    private Long amount;
+}

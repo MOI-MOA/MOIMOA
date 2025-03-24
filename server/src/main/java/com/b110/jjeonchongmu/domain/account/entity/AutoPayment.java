@@ -27,8 +27,10 @@ public class AutoPayment {
     @Column(name = "auto_payment_amount", nullable = true)
     private Integer autoPaymentAmount;
 
+    // 매월 며칠인지 표시
+    // ex) 14 면 매월 14일에 자동 입금
     @Column(name = "auto_payment_date", nullable = true)
-    private LocalDateTime autoPaymentDate;
+    private Integer autoPaymentDate;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
