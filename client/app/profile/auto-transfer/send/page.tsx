@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/Header"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,12 +21,25 @@ import {
 
 export default function SendMoneyPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [amount, setAmount] = useState("")
   const [accountNumber, setAccountNumber] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [pinCode, setPinCode] = useState("")
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [isPinDialogOpen, setIsPinDialogOpen] = useState(false)
+
+  useEffect(() => {
+    const account = searchParams.get('account')
+    const cost = searchParams.get('cost')
+    
+    if (account) {
+      setAccountNumber(account)
+    }
+    if (cost) {
+      setAmount(cost)
+    }
+  }, [searchParams])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +73,7 @@ export default function SendMoneyPage() {
         title: "송금 완료",
         description: `${accountNumber}로 ${amount}원이 성공적으로 송금되었습니다.`,
       })
-      router.push("/profile/auto-transfer")
+      router.back()
     } catch (error) {
       toast({
         title: "송금 실패",
