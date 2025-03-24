@@ -1,6 +1,7 @@
 package com.b110.jjeonchongmu.domain.trade.dto;
 
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class TradeDetailDTO {
     private String tradeDetail;
-    private Date tradeTime;
+    private LocalDateTime tradeTime;
     private Long tradeAmount;
     private Long tradeBalance;
     private String tradePartnerName;

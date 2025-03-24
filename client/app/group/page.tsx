@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Plus, Search, ChevronRight, Link } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Header } from "@/components/Header"
-import { toast } from "@/components/ui/use-toast"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Search, ChevronRight, Link } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Header } from "@/components/Header";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -16,31 +16,73 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
+
+interface Group {
+  id: number;
+  name: string;
+  description: string;
+  members: number;
+  totalAmount: number;
+  currency: string;
+}
+
+interface GatheringData {
+  gatheringTitle: string;
+  gatheringIntroduction: string;
+  memberCount: number;
+  basicFee: number;
+}
+
+interface ApiResponse {
+  httpStatus: number;
+  message: string;
+  datas: GatheringData[];
+}
 
 export default function GroupsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [inviteCode, setInviteCode] = useState("")
-  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
-  const [isJoining, setIsJoining] = useState(false)
-  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [groups, setGroups] = useState<Group[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedGroups = localStorage.getItem("groups");
+      if (savedGroups) {
+        return JSON.parse(savedGroups);
+      }
+    }
+    return [
+      {
+        id: 1,
+        name: "SSAFY 12기",
+        description: "SSAFY 12기 모임",
+        members: 5,
+        totalAmount: 150000,
+        currency: "KRW",
+      },
+    ];
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  // Mock data for groups
-  const groups = [
-    { id: 1, name: "회사 동료", description: "월간 회식 및 경비", members: 8, totalAmount: 240000, currency: "KRW" },
-    { id: 2, name: "대학 친구들", description: "정기 모임", members: 6, totalAmount: 180000, currency: "KRW" },
-    { id: 3, name: "가족 모임", description: "생일 및 기념일", members: 4, totalAmount: 100000, currency: "KRW" },
-    { id: 4, name: "동호회", description: "주말 등산 모임", members: 12, totalAmount: 360000, currency: "KRW" },
-    { id: 5, name: "독서 모임", description: "월간 독서 토론", members: 7, totalAmount: 70000, currency: "KRW" },
-    { id: 6, name: "동네 친구들", description: "주말 브런치 모임", members: 5, totalAmount: 150000, currency: "KRW" },
-    { id: 7, name: "스터디 그룹", description: "주 2회 영어 스터디", members: 6, totalAmount: 120000, currency: "KRW" },
-  ]
+  const [formData, setFormData] = useState({
+    gatheringTitle: "",
+    gatheringIntroduction: "",
+    memberCount: "",
+    basicFee: "",
+  });
+
+  // 그룹 데이터가 변경될 때마다 로컬 스토리지에 저장
+  useEffect(() => {
+    localStorage.setItem("groups", JSON.stringify(groups));
+  }, [groups]);
 
   const filteredGroups = groups.filter(
     (group) =>
       group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.description.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      group.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // 초대 링크로 모임 참가 함수
   const handleJoinWithInviteCode = async () => {
@@ -50,35 +92,48 @@ export default function GroupsPage() {
         description: "초대 코드를 입력해주세요.",
         variant: "destructive",
         duration: 3000,
-      })
-      return
+      });
+      return;
     }
 
-    setIsJoining(true)
+    setIsJoining(true);
 
     try {
       // 실제로는 API 호출로 초대 코드 검증 및 모임 참가 처리
-      await new Promise((resolve) => setTimeout(resolve, 1500)) // 임시 지연
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // 임시 지연
+
+      // 새로운 그룹 추가
+      const newGroup: Group = {
+        id: groups.length + 1,
+        name: "새로운 모임",
+        description: "초대 코드로 참가한 모임",
+        members: 1,
+        totalAmount: 0,
+        currency: "KRW",
+      };
+
+      setGroups((prevGroups) => [...prevGroups, newGroup]);
 
       // 성공 시 처리
       toast({
         title: "모임 참가 신청 완료",
-        description: "모임 참가 신청이 완료되었습니다. 총무의 승인을 기다려주세요.",
+        description:
+          "모임 참가 신청이 완료되었습니다. 총무의 승인을 기다려주세요.",
         duration: 3000,
-      })
-      setIsJoinDialogOpen(false)
-      setInviteCode("")
+      });
+      setIsJoinDialogOpen(false);
+      setInviteCode("");
     } catch (error) {
       toast({
         title: "모임 참가 실패",
         description: "유효하지 않은 초대 코드입니다. 다시 확인해주세요.",
         variant: "destructive",
         duration: 3000,
-      })
+      });
     } finally {
-      setIsJoining(false)
+      setIsJoining(false);
     }
-  }
+  };
 
   return (
     <>
@@ -127,11 +182,18 @@ export default function GroupsPage() {
               <CardContent className="p-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-medium text-lg text-gray-800">{group.name}</div>
-                    <div className="text-sm text-gray-500">{group.description}</div>
+                    <div className="font-medium text-lg text-gray-800">
+                      {group.name}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {group.description}
+                    </div>
                     <div className="text-sm mt-1 text-gray-600">
                       참여인원: {group.members}명
-                      <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800">
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-blue-100 text-blue-800"
+                      >
                         {group.totalAmount.toLocaleString()} {group.currency}
                       </Badge>
                     </div>
@@ -149,22 +211,33 @@ export default function GroupsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>초대 코드로 모임 참가하기</DialogTitle>
-            <DialogDescription>모임 초대 링크나 코드를 입력하여 모임에 참가하세요.</DialogDescription>
+            <DialogDescription>
+              모임 초대 링크나 코드를 입력하여 모임에 참가하세요.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Input placeholder="초대 코드 입력" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} />
-              <p className="text-xs text-gray-500">* 전체 URL을 붙여넣거나 코드만 입력해도 됩니다.</p>
+              <Input
+                placeholder="초대 코드 입력"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">
+                * 전체 URL을 붙여넣거나 코드만 입력해도 됩니다.
+              </p>
             </div>
           </div>
           <DialogFooter>
-            <Button className="w-full" onClick={handleJoinWithInviteCode} disabled={isJoining}>
+            <Button
+              className="w-full"
+              onClick={handleJoinWithInviteCode}
+              disabled={isJoining}
+            >
               {isJoining ? "처리 중..." : "참가 신청하기"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
-

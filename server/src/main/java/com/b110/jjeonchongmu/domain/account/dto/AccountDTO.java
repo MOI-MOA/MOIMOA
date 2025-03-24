@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AccountDTO {
     private Long accountHolderId;
+    private String userName;
     private Long accountNo;
     private Long accountBalance;
     private int accountPw;
