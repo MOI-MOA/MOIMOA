@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "schedule")
@@ -29,11 +30,11 @@ public class Schedule {
     private Gathering gathering;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
-    private User manager;
+    @JoinColumn(name = "sub_manager_id", nullable = false)
+    private User subManager;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_account_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "schedule_account_id")
     private ScheduleAccount scheduleAccount;
 
     @Column(name = "schedule_title", nullable = false)
@@ -42,50 +43,24 @@ public class Schedule {
     @Column(name = "schedule_detail", nullable = false)
     private String detail;
 
-    @Column(name = "schedule_place", nullable = true)
+    @Column(name = "schedule_place")
     private String place;
 
-    @Column(name = "schedule_start_time", nullable = true)
-    private Timestamp startTime;
+    @Column(name = "schedule_start_time")
+    private LocalDateTime startTime;
 
-    @Column(name = "per_budget", nullable = true)
+    @Column(name = "per_budget")
     private Long perBudget;
 
-    @Column(name = "total_budgget", nullable = true)
-    private Long totalBudget;
+    @Column(name = "penalty_apply_date")
+    private LocalDateTime penaltyApplyDate;
 
-    @Column(name = "penalty_apply_date", nullable = true)
-    private Date penaltyApplyDate;
+    @Column(name = "penalty_rate")
+    private int penalty_rate;
 
-    @Column(name = "schedule_status", nullable = true)
+    @Column(name = "schedule_status")
     private int status;
 
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL)
-    private List<ScheduleMember> attendees;
-
-    @Builder
-    public Schedule(Gathering gathering, User manager, String title, String detail,
-                   String place, Timestamp startTime, long perBudget,
-                   long totalBudget, LocalDateTime penaltyApplyDate) {
-        this.gathering = gathering;
-        this.manager = manager;
-        this.title = title;
-        this.detail = detail;
-        this.place = place;
-        this.startTime = startTime;
-        this.perBudget = perBudget;
-        this.totalBudget = totalBudget;
-//        this.penaltyApplyDate = penaltyApplyDate;
-        this.status = 0;
-    }
-
-    public void update(ScheduleUpdateDTO dto) {
-        this.title = dto.getScheduleTitle();
-        this.detail = dto.getScheduleDetail();
-        this.place = dto.getSchedulePlace();
-//        this.startTime = dto.getScheduleStartDate();
-//        this.totalBudget = dto.getTotalBudget();
-//        this.penaltyApplyDate = dto.getPenaltyApplyDate();
-    }
-
+    @OneToMany(mappedBy = "schedule")
+    private List<ScheduleMember> scheduleMembers = new ArrayList<>();
 }

@@ -27,6 +27,19 @@ interface Group {
   currency: string;
 }
 
+interface GatheringData {
+  gatheringTitle: string;
+  gatheringIntroduction: string;
+  memberCount: number;
+  basicFee: number;
+}
+
+interface ApiResponse {
+  httpStatus: number;
+  message: string;
+  datas: GatheringData[];
+}
+
 export default function GroupsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [inviteCode, setInviteCode] = useState("");
@@ -52,6 +65,13 @@ export default function GroupsPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const [formData, setFormData] = useState({
+    gatheringTitle: "",
+    gatheringIntroduction: "",
+    memberCount: "",
+    basicFee: "",
+  });
 
   // 그룹 데이터가 변경될 때마다 로컬 스토리지에 저장
   useEffect(() => {

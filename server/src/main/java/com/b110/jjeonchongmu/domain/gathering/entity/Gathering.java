@@ -6,6 +6,7 @@ import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -21,13 +22,14 @@ public class Gathering {
     @Column(name = "gahtering_id", nullable = false)
     private Long gatheringId;
 
+    //총무아이디
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User gatheringManager;
+    @JoinColumn(name = "manager_id", nullable = false)
+    private User manager;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gathering_account_id" , nullable = false)
-    private GatheringAccount gatheringAccount;
+    private GatheringAccount gatheringAccountId;
 
     @Column(name = "gathering_name", nullable = false, length = 255)
     private String gatheringName;
@@ -56,5 +58,37 @@ public class Gathering {
     @OneToMany(mappedBy = "gathering" , fetch = FetchType.LAZY)
     private List<GatheringMember> gatheringMembers;
 
+    @Builder
+    public Gathering(User manager, GatheringAccount gatheringAccountId, String gatheringName,
+                    String gatheringIntroduction, int memberCount, int penaltyRate, String depositDate,
+                    Long basicFee, Long gatheringDeposit) {
+        this.manager = manager;
+        this.gatheringAccountId = gatheringAccountId;
+        this.gatheringName = gatheringName;
+        this.gatheringIntroduction = gatheringIntroduction;
+        this.memberCount = memberCount;
+        this.penaltyRate = penaltyRate;
+        this.depositDate = depositDate;
+        this.basicFee = basicFee;
+        this.gatheringDeposit = gatheringDeposit;
+    }
 
+    public Long getManagerId() {
+        return manager != null ? manager.getUserId() : null;
+    }
+
+    public void updateGathering(String gatheringName, String gatheringIntroduction, int memberCount,
+                              int penaltyRate, String depositDate, int basicFee, int gatheringDeposit) {
+        this.gatheringName = gatheringName;
+        this.gatheringIntroduction = gatheringIntroduction;
+        this.memberCount = memberCount;
+        this.penaltyRate = penaltyRate;
+        this.depositDate = depositDate;
+        this.basicFee = (long) basicFee;
+        this.gatheringDeposit = (long) gatheringDeposit;
+    }
+
+    public void updateMemberCount(int memberCount) {
+        this.memberCount = memberCount;
+    }
 }

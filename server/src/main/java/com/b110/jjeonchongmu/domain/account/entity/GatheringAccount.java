@@ -21,8 +21,8 @@ public class GatheringAccount extends Account {
 //    @JoinColumn(name = "user_id", nullable = false)
 //    private User gatheringAccountHolder;
 //
-//    @Column(name = "gathering_account_no", nullable = true)
-//    private Long gatheringAccountNo;
+    @Column(name = "gathering_account_no", nullable = true)
+    private String gatheringAccountNo;
 //
 //    @Column(name = "gathering_account_balance", nullable = false)
 //    private Integer gatheringAccountBalance = 0;

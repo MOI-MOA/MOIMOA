@@ -1,7 +1,9 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleResponseDTO;
+<<<<<<< HEAD
+=======
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+>>>>>>> 89d40c1092cc8c7e279579755ddf9f55c915df73
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 public class MainHomeResponseDTO {
+    //수정중.
     
     private int uncheckScheduleCount;
     private List<DateDTO> dateList;
@@ -37,29 +40,29 @@ public class MainHomeResponseDTO {
     public static class DateDTO {
         private int date;
 
-        public static List<DateDTO> fromSchedules(List<Schedule> schedules) {
-            // 현재 월의 일정들만 필터링
-            LocalDateTime now = LocalDateTime.now();
-            int currentMonth = now.getMonthValue();
-            int currentYear = now.getYear();
-
-            return schedules.stream()
-                    .filter(schedule -> {
-                        if (schedule.getStartTime() == null) return false;
-                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDateTime();
-                        return scheduleTime.getMonthValue() == currentMonth && 
-                               scheduleTime.getYear() == currentYear;
-                    })
-                    .map(schedule -> {
-                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDateTime();
-                        return DateDTO.builder()
-                                .date(scheduleTime.getDayOfMonth())
-                                .build();
-                    })
-                    .distinct()  // 중복된 날짜 제거
-                    .sorted(Comparator.comparingInt(DateDTO::getDate))  // 날짜순 정렬
-                    .collect(Collectors.toList());
-        }
+//        public static List<DateDTO> fromSchedules(List<Schedule> schedules) {
+//            // 현재 월의 일정들만 필터링
+//            LocalDateTime now = LocalDateTime.now();
+//            int currentMonth = now.getMonthValue();
+//            int currentYear = now.getYear();
+//
+//            return schedules.stream()
+//                    .filter(schedule -> {
+//                        if (schedule.getStartTime() == null) return false;
+//                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDate();
+//                        return scheduleTime.getMonthValue() == currentMonth &&
+//                               scheduleTime.getYear() == currentYear;
+//                    })
+//                    .map(schedule -> {
+//                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDate();
+//                        return DateDTO.builder()
+//                                .date(scheduleTime.getDayOfMonth())
+//                                .build();
+//                    })
+//                    .distinct()  // 중복된 날짜 제거
+//                    .sorted(Comparator.comparingInt(DateDTO::getDate))  // 날짜순 정렬
+//                    .collect(Collectors.toList());
+//        }
     }
 
     @Builder

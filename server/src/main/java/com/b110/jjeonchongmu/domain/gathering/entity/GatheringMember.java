@@ -1,4 +1,5 @@
 package com.b110.jjeonchongmu.domain.gathering.entity;
+
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,7 +7,8 @@ import lombok.*;
 @Entity
 @Table(name = "gathering_member")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 @AllArgsConstructor
 public class GatheringMember {
 
@@ -19,22 +21,18 @@ public class GatheringMember {
     @JoinColumn(name = "gathering_id", nullable = false)
     private Gathering gathering;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User gatheringMember;
+    @Column(name = "gathering_member_user_id", nullable = false)
+    private Long gatheringMemberUserId;
 
     @Column(name = "gathering_attend_count")
-    private Integer gatheringAttendCount;
+    private int gatheringAttendCount;
 
     @Column(name = "gathering_member_account_balance")
-    private Integer gatheringMemberAccountBalance;
+    private int gatheringMemberAccountBalance;
 
     @Column(name = "gathering_member_account_deposit")
-    private Integer gatheringMemberAccountDeposit;
+    private int gatheringMemberAccountDeposit;
 
     @Column(name = "gathering_payment_status")
-    private Boolean gatheringPaymentStatus;
-
-
-
+    private boolean gatheringPaymentStatus;
 }

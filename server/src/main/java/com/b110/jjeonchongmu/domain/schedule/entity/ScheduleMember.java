@@ -26,6 +26,6 @@ public class ScheduleMember {
     @JoinColumn(name = "user_id", nullable = false)
     private User scheduleMember;
 
-    @Column(name = "schedule_is_check", nullable = true)
+    @Column(name = "schedule_is_check")
     private Boolean scheduleIsCheck;
 }

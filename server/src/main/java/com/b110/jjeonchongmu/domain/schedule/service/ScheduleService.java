@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
@@ -20,98 +21,36 @@ public class ScheduleService {
 
     private final ScheduleRepo scheduleRepo;
 
-    public List<ScheduleListDTO> getScheduleList() {
-        return scheduleRepo.findAllSchedules();
+    // 모임 일정목록 조회
+    public List<ScheduleDTO> getScheduleList(Long userId,Long gatheringId) {
+        return scheduleRepo.findByGatheringGatheringId(gatheringId)
+                .stream()
+                .map(schedule -> ScheduleDTO.from(schedule, scheduleRepo))
+                .collect(Collectors.toList());
     }
-
+    // 일정 상세조회
+    public ScheduleDetailDTO getScheduleDetail(Long userId,Long scheduleId) {
+        return scheduleRepo.findScheduleDetailById(scheduleId);
+    }
+    // 일정 멤버(참여자) 목록 조회
+    public List<ScheduleMemberDTO> getScheduleMember(Long userId,Long scheduleId){
+        return scheduleRepo.selectAllScheduleMemebers(scheduleId);
+    };
+    // 일정 생성(총무만)
     @Transactional
-    public void createSchedule(ScheduleCreateDTO dto) {
-        User manager = getCurrentUser();
-        Gathering gathering = getCurrentGathering();
+    public void createSchedule(Long userId,Long gatheringId ,ScheduleCreateDTO scheduleCreateDTO) {
 
-        Schedule schedule = Schedule.builder()
-                .gathering(gathering)
-                .manager(manager)
-                .title(dto.getScheduleTitle())
-                .detail(dto.getScheduleDetail())
-                .place(dto.getSchedulePlace())
-                .startTime(dto.getScheduleStartTime())
-                .perBudget(dto.getPerBudget())
-                .totalBudget(dto.getTotalBudget())
-                .penaltyApplyDate(dto.getPenaltyApplyDate())
-                .build();
-
-        scheduleRepo.save(schedule);
+        scheduleRepo.insertSchedule(gatheringId,scheduleCreateDTO);
     }
-
-    public ScheduleDetailDTO getScheduleDetail(Long scheduleId) {
-        Long userId = getCurrentUserId();
-        return scheduleRepo.findScheduleDetailById(scheduleId, userId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-    }
-
+    // 일정 수정(총무만)
     @Transactional
-    public void updateSchedule(ScheduleUpdateDTO dto) {
-        Schedule schedule = scheduleRepo.findById(dto.getScheduleId())
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-        validateManager(schedule);
-        schedule.update(dto);
-    }
+    public void updateSchedule(Long userId,Long scheduleId,ScheduleUpdateDTO scheduleUpdateDTO) {
+        scheduleRepo.updateSchedule(scheduleId,scheduleUpdateDTO);
 
+    }
+    // 일정 삭제(총무만)
     @Transactional
-    public void deleteSchedule(Long scheduleId) {
-        Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-        validateManager(schedule);
-        scheduleRepo.delete(schedule);
+    public void deleteSchedule(Long userId,Long scheduleId) {
+        scheduleRepo.deleteSchedule(scheduleId);
     }
-
-    @Transactional
-    public void attendSchedule(Long scheduleId) {
-        Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-        User user = getCurrentUser();
-        schedule.addAttendee(user);
-    }
-
-    @Transactional
-    public void cancelAttendance(Long scheduleId) {
-        Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-        User user = getCurrentUser();
-        schedule.removeAttendee(user);
-    }
-
-    public PerBudgetDTO getPerBudget(Long scheduleId) {
-        Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
-        return PerBudgetDTO.builder()
-                .perBudget((int) schedule.getPerBudget())
-                .build();
-    }
-
-    private User getCurrentUser() {
-        // SecurityContext에서 현재 사용자 정보를 가져오는 로직 구현
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    private Long getCurrentUserId() {
-        // SecurityContext에서 현재 사용자 ID를 가져오는 로직 구현
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    private Gathering getCurrentGathering() {
-        // 현재 모임 정보를 가져오는 로직 구현
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    private void validateManager(Schedule schedule) {
-        User currentUser = getCurrentUser();
-        if (!schedule.getManager().equals(currentUser)) {
-            throw new CustomException(ErrorCode.INVALID_MANAGER);
-        }
-    }
-
-
-
 }
