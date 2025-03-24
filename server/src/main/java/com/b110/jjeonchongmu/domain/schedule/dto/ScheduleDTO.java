@@ -33,7 +33,7 @@ public class ScheduleDTO {
                 .schedulePlace(schedule.getPlace())
                 .scheduleStartTime(schedule.getStartTime())
                 .perBudget(schedule.getPerBudget())
-                .attendeeCount((int) scheduleRepo.countByScheduleId(schedule.getId()))
+                .attendeeCount(schedule.getAttendees().size())
                 .build();
     }
 }

@@ -62,5 +62,5 @@ public class Schedule {
     private int status;
 
     @OneToMany(mappedBy = "schedule")
-    private List<ScheduleMember> scheduleMembers = new ArrayList<>();
+    private List<ScheduleMember> attendees = new ArrayList<>();
 }
