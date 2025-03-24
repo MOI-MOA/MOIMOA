@@ -11,6 +11,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.security.Key;
 import java.util.Date;
@@ -36,6 +38,17 @@ public class JwtTokenProvider {
 
     private Key key;
 
+    /**
+     * 현재 요청의 HttpServletRequest 가져오기
+     */
+    private HttpServletRequest getCurrentRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            throw new RuntimeException("Request not found");
+        }
+        return attributes.getRequest();
+    }
+
     @PostConstruct
     protected void init() {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -44,22 +57,22 @@ public class JwtTokenProvider {
     /**
      * Access Token 생성
      */
-    public String createAccessToken(String userId) {
+    public String createAccessToken(Long userId) {
         return createToken(userId, accessTokenValidity);
     }
 
     /**
      * Refresh Token 생성
      */
-    public String createRefreshToken(String userId) {
+    public String createRefreshToken(Long userId) {
         return createToken(userId, refreshTokenValidity);
     }
 
     /**
      * 토큰 생성
      */
-    private String createToken(String userId, long validityInMilliseconds) {
-        Claims claims = Jwts.claims().setSubject(userId);
+    private String createToken(Long userId, long validityInMilliseconds) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
@@ -75,20 +88,32 @@ public class JwtTokenProvider {
      * 토큰에서 인증 정보 추출
      */
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(getUserId(token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(getUserId(token)));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
+
+    /**
+     * 현재 사용자의 ID 추출
+     */
+    public Long getUserId() {
+        String token = resolveToken(getCurrentRequest());
+        if (token != null && validateToken(token)) {
+            return getUserId(token);
+        }
+        throw new RuntimeException("Invalid token");
     }
 
     /**
      * 토큰에서 사용자 ID 추출
      */
-    public String getUserId(String token) {
-        return Jwts.parserBuilder()
+    public Long getUserId(String token) {
+        String subject = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+        return Long.parseLong(subject);
     }
 
     /**

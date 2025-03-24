@@ -8,7 +8,11 @@ import java.util.Optional;
 /**
  * 사용자 엔티티에 대한 데이터베이스 접근을 담당하는 리포지토리
  */
-public interface UserRepo extends JpaRepository<User, Integer> {
+public interface UserRepo extends JpaRepository<User, Long> {
     Optional<User> findByUserEmail(String userEmail);
     boolean existsByUserEmail(String userEmail);
+    Optional<User> findByUserId(Long userId);
+
+
+
 }

@@ -10,7 +10,7 @@ public class GatheringMemberDTO {
 
     private Long gatheringMemberId;
     private Long gatheringId;
-    private String gatheringMemberUserId;
+    private Long gatheringMemberUserId;
     private Integer gatheringAttendCount;
     private Integer gatheringMemberAccountBalance;
     private Integer gatheringMemberAccountDeposit;
