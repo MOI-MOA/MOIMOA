@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.trade.entity;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.entity.Account;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.*;
 
 import java.util.Date;
@@ -19,7 +20,7 @@ public class Trade {
     private Long tradeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
+    @JoinColumn(name = "from_account_id")
     private Account fromAccount;
     // Account 3개
 
@@ -27,7 +28,7 @@ public class Trade {
     private AccountType fromAccountType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
+    @JoinColumn(name = "to_account_id")
     private Account toAccount;
 
     @Column(name = "to_account_type", nullable = false)
@@ -37,7 +38,7 @@ public class Trade {
     private Long tradeAmount;
 
     @Column(name = "trade_time", nullable = true)
-    private Date tradeTime;
+    private LocalDateTime tradeTime;
 
     @Column(name = "trade_detail", nullable = true)
     private String tradeDetail;

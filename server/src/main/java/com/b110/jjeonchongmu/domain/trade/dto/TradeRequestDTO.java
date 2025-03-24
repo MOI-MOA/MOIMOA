@@ -1,6 +1,7 @@
 package com.b110.jjeonchongmu.domain.trade.dto;
 
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
