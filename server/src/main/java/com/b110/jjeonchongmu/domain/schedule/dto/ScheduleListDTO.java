@@ -22,8 +22,6 @@ public class ScheduleListDTO {
     private LocalDateTime penaltyApplyDate;
     private Integer scheduleStatus;
     private Integer attendeeCount;
-<<<<<<< HEAD
+
 }
-=======
-}
->>>>>>> b1f34f5b3739a2cfcde91a7c402d26574259e9b0
+
