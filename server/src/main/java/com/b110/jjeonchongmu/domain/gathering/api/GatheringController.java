@@ -24,7 +24,6 @@ package com.b110.jjeonchongmu.domain.gathering.api;
 
 import com.b110.jjeonchongmu.domain.gathering.service.GatheringService;
 import com.b110.jjeonchongmu.global.util.JwtUtil;
-import com.b110.jjeonchongmu.global.common.ApiResponse; // 응답코드 / 메세지 / 데이터.
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

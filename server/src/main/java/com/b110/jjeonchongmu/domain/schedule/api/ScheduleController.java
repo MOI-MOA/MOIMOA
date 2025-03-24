@@ -1,11 +1,12 @@
 package com.b110.jjeonchongmu.domain.schedule.api;
 
 import com.b110.jjeonchongmu.domain.schedule.dto.*;
+import com.b110.jjeonchongmu.domain.schedule.service.ScheduleMemberService;
 import com.b110.jjeonchongmu.domain.schedule.service.ScheduleService;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /**
@@ -26,52 +27,75 @@ import java.util.List;
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
+    private final ScheduleMemberService scheduleMemberService;
+    private final JwtTokenProvider jwtTokenProvider;
+    // 모임 일정목록 조회
+    @GetMapping("/{gatheringId}")
+    public ResponseEntity<List<ScheduleDTO>> getScheduleList(@PathVariable Long gatheringId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
 
-    //일정 전체 조회.
-    @GetMapping
-    public ResponseEntity<List<ScheduleListDTO>> getScheduleList() {
-        return ResponseEntity.ok(scheduleService.getScheduleList());
+        return ResponseEntity.status(200).body(scheduleService.getScheduleList(userId,gatheringId));
     }
+    // 일정 상세조회
+    @GetMapping("/{scheduleId}")
+    public ResponseEntity<ScheduleDetailDTO> getScheduleDetail(@PathVariable Long scheduleId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
 
-    // 일정 생성.
-    @PostMapping
-    public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO dto) {
-        scheduleService.createSchedule(dto);
+        return ResponseEntity.status(200).body(scheduleService.getScheduleDetail(userId,scheduleId));
+    }
+    // 일정 멤버(참여자) 목록 조회
+    @GetMapping({"/[scheduleId}/member"})
+    public ResponseEntity<List<ScheduleMemberDTO>> getScheduleMember(@PathVariable Long scheduleId, @RequestHeader("Authorization") String token){
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
+
+        return ResponseEntity.status(200).body(scheduleService.getScheduleMember(userId,scheduleId));
+    }
+    // 일정 생성(총무만)
+    @PostMapping({"/{gatheringId"})
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
+
+        scheduleService.createSchedule(userId,gatheringId,scheduleCreateDTO);
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
     }
+    // 일정 수정(총무만)
+    @PatchMapping("/{scheduleId}")
+    public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDTO scheduleUpdateDTO, @PathVariable Long scheduleId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
 
-    //
-    @GetMapping("/{scheduleId}")
-    public ResponseEntity<ScheduleDetailDTO> getScheduleDetail(@PathVariable Long scheduleId) {
-        return ResponseEntity.ok(scheduleService.getScheduleDetail(scheduleId));
-    }
-
-    @PatchMapping
-    public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDTO dto) {
-        scheduleService.updateSchedule(dto);
+        scheduleService.updateSchedule(userId,scheduleId,scheduleUpdateDTO);
         return ResponseEntity.status(204).body("일정이 수정되었습니다.");
     }
-
+    // 일정 삭제(총무만)
     @DeleteMapping("/{scheduleId}")
-    public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleId) {
-        scheduleService.deleteSchedule(scheduleId);
+    public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
+
+        scheduleService.deleteSchedule(userId,scheduleId);
         return ResponseEntity.status(204).body("일정이 삭제되었습니다.");
     }
-
+    // 일정 참석
     @PostMapping("/{scheduleId}/attend")
-    public ResponseEntity<String> attendSchedule(@PathVariable Long scheduleId) {
-        scheduleService.attendSchedule(scheduleId);
+    public ResponseEntity<String> attendSchedule(@PathVariable Long scheduleId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
+
+        scheduleMemberService.attendSchedule(userId,scheduleId);
         return ResponseEntity.status(201).body("일정 참석이 완료되었습니다.");
     }
-
+    // 일정 참석 취소
     @DeleteMapping("/{scheduleId}/cancel")
-    public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
-        scheduleService.cancelAttendance(scheduleId);
-        return ResponseEntity.status(204).body("일정 참석이 취소되었습니다.");
-    }
+    public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId, @RequestHeader("Authorization") String token) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
 
-    @GetMapping("/{scheduleId}/amount")
-    public ResponseEntity<PerBudgetDTO> getPerBudget(@PathVariable Long scheduleId) {
-        return ResponseEntity.ok(scheduleService.getPerBudget(scheduleId));
+        scheduleMemberService.cancelAttendance(userId,scheduleId);
+        return ResponseEntity.status(204).body("일정 참석이 취소되었습니다.");
     }
 }
