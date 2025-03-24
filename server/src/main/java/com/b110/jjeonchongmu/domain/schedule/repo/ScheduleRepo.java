@@ -33,6 +33,6 @@ public interface ScheduleRepo extends JpaRepository<Schedule, Long> {
     void deleteSchedule(Long scheduleId);
 
     // 일정별 참석자 수 조회
-    long countByScheduleId(Long scheduleId);
-
+    @Query("SELECT COUNT(sm) FROM ScheduleMember sm WHERE sm.schedule.id = :scheduleId")
+    long countAttendeesByScheduleId(@Param("scheduleId") Long scheduleId);
 }

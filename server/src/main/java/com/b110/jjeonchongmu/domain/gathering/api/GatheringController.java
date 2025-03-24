@@ -23,6 +23,7 @@
 package com.b110.jjeonchongmu.domain.gathering.api;
 
 import com.b110.jjeonchongmu.domain.gathering.service.GatheringService;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeDTO;
 import com.b110.jjeonchongmu.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -54,64 +55,70 @@ public class GatheringController {
      * 모임 생성
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> addGathering(@RequestBody GatheringDTO request) {
+    public ResponseEntity<ApiResponse> addGathering(@RequestBody GatheringDTO request) {
         gatheringService.addGathering(request);
-        return ResponseEntity.status(201).body(new ApiResponse<>(201, "모임 생성 성공"));
+        return ResponseEntity.status(201).body(new ApiResponse(201, "모임 생성 성공"));
     }
 
-//    /**
-//     * 모임 수정 (미구현)
-//     */
-//    @PatchMapping
-//    public ResponseEntity<ApiResponse<Void>> updateGathering(@RequestBody GatheringDTO request) {
-//        gatheringService.updateGathering(request);
-//        return ResponseEntity.ok(new ApiResponse<>(200, "모임 수정 성공"));
-//    }
+    /**
+     * 모임 수정
+     * 
+     * @param request 모임 수정 정보
+     * @return ResponseEntity<ApiResponse> 수정 결과
+     */
+    @PatchMapping
+    public ResponseEntity<ApiResponse> updateGathering(@RequestBody GatheringDTO request) {
+        gatheringService.updateGathering(request.getGatheringId(), request);
+        return ResponseEntity.status(204).body(new ApiResponse(204, "모임 수정 성공"));
+    }
 
     /**
      * 모임 삭제
      */
     @DeleteMapping("/{gatheringId}")
-    public ResponseEntity<ApiResponse<Void>> deleteGathering(@PathVariable Long gatheringId) {
+    public ApiResponse<?> deleteGathering(@PathVariable Long gatheringId) {
         gatheringService.deleteGathering(gatheringId);
-        return ResponseEntity.ok(new ApiResponse<>(204, "모임 삭제 성공"));
+        return new ApiResponse<>(204, "모임 삭제 성공");
     }
 
     /**
      * 전체 모임 목록 조회
      */
     @GetMapping()
-    public ResponseEntity<ApiResponse<GatheringListResponseDTO>> getAllGatherings() {
+    public ResponseEntity<ApiResponse> getAllGatherings() {
         GatheringListResponseDTO response = gatheringService.getAllGatherings();
-        return ResponseEntity.ok(new ApiResponse<>(200, "전체 모임 목록 조회 성공", response));
+        return ResponseEntity.ok(new ApiResponse(200, "전체 모임 목록 조회 성공", response));
     }
 
     /**
      * 내 모임 조회
      */
     @GetMapping("/my")
-    public ResponseEntity<ApiResponse<GatheringListResponseDTO>> getMyGatherings(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse> getMyGatherings(HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request);
         Long userId = jwtUtil.getUserId(token);
         GatheringListResponseDTO response = gatheringService.getMyGatherings(userId);
-        return ResponseEntity.ok(new ApiResponse<>(200, "내 모임 조회 성공", response));
+        return ResponseEntity.ok(new ApiResponse(200, "내 모임 조회 성공", response));
     }
 
     /**
      * 모임 상세 조회
      */
     @GetMapping("/{gatheringId}/detail")
-    public ResponseEntity<ApiResponse<GatheringDetailResponseDTO>> getGatheringDetail(@PathVariable Long gatheringId) {
+    public ResponseEntity<ApiResponse> getGatheringDetail(@PathVariable Long gatheringId) {
         GatheringDetailResponseDTO response = gatheringService.getGatheringDetail(gatheringId);
-        return ResponseEntity.ok(new ApiResponse<>(200, "모임 상세 조회 성공", response));
+        return ResponseEntity.ok(new ApiResponse(200, "모임 상세 조회 성공", response));
     }
 
-    /**
-     * 모임통장 거래내역
-     */
-    @GetMapping("/{gatheringId}/trade")
-    public ResponseEntity<ApiResponse<TradeListResponseDTO>> getGatheringTrades(@PathVariable Long gatheringId) {
-        TradeListResponseDTO response = gatheringService.getGatheringTrades(gatheringId);
-        return ResponseEntity.ok(new ApiResponse<>(200, "모임통장 거래내역 조회 성공", response));
-    }
+//    /**
+//     * 모임통장 거래내역
+//     */
+//    @GetMapping("/{gatheringId}/trade")
+//    public ResponseEntity<ApiResponse> getGatheringTrades(@PathVariable Long gatheringId) {
+//        TradeListResponseDTO response = gatheringService.getGatheringTrades(gatheringId);
+//        return ResponseEntity.ok(new ApiResponse(200, "모임통장 거래내역 조회 성공", response));
+//    }
+
+
+
 }

@@ -11,4 +11,5 @@ public interface ScheduleMemberRepo extends JpaRepository<ScheduleMember, Long> 
     // 일정 참석 취소
     void deleteScheduleMember(Long userId, Long scheduleId);
 
+
 }

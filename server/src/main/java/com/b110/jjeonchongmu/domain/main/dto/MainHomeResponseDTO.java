@@ -1,5 +1,9 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
+<<<<<<< HEAD
+=======
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+>>>>>>> 89d40c1092cc8c7e279579755ddf9f55c915df73
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
