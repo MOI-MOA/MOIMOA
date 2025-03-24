@@ -1,4 +1,16 @@
 services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d        # 상대 경로로 변경
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - client
+      - server
+    restart: always
   client:
     build:
       context: ./client
@@ -32,6 +44,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+      # - MYSQL_USER=${MYSQL_USER}
     volumes:
       - ./mysql_data:/var/lib/mysql
     ports:
@@ -44,6 +57,9 @@ services:
     image: redis
     ports:
       - 6379:6379
+    command: redis-server --port 6379 --protected-mode yes
+    volumes:
+      - ./redis_data:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s

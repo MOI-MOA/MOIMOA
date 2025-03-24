@@ -1,7 +1,9 @@
 package com.b110.jjeonchongmu.domain.trade.service;
 
+import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeRequestDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeResponseDTO;
+import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +31,15 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class TradeService {
-    public TradeResponseDTO getTradeHistory(TradeRequestDTO request) {
-            // 거래내역 조회 기능 구현
+
+    private final TradeRepo tradeRepo;
+    public TradeResponseDTO getTradeHistory(TradeHistoryRequestDTO tradeHistoryRequestDTO) {
+
+
+        // accountId를 통해 모든 거래 내역 조회
+        // 거래 내역은 어차피 개인, 모임 밖에 없어서 이렇게 만드는것 보다
+
+        // 거래내역 조회 기능 구현
         return new TradeResponseDTO();
     }
 }

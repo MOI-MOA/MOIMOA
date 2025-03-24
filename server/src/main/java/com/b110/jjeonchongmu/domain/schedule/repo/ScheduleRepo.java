@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.schedule.repo;
 
+import com.b110.jjeonchongmu.domain.mypage.dto.statistics.GroupExpenseData;
+import com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData;
 import com.b110.jjeonchongmu.domain.schedule.dto.*;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import org.springframework.data.domain.Page;
@@ -11,6 +13,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ScheduleRepo extends JpaRepository<Schedule, Long> {
+    @Query("SELECT new com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData(CONCAT(YEAR(s.startTime), '년 ', MONTH(s.startTime), '월'), SUM(s.perBudget)) " +
+            "FROM Schedule s " +
+            "WHERE s.manager.userId = :userId AND s.startTime BETWEEN :startDate AND :endDate " +
+            "GROUP BY YEAR(s.startTime), MONTH(s.startTime) " +
+            "ORDER BY YEAR(s.startTime), MONTH(s.startTime)")
+    List<MonthlyExpenseData> findMonthlyExpenseDataByUserIdAndDateBetween(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT new com.b110.jjeonchongmu.domain.mypage.dto.statistics.GroupExpenseData(s.gathering.gatheringName, SUM(s.perBudget)) " +
+            "FROM Schedule s " +
+            "WHERE s.manager.userId = :userId " +
+            "GROUP BY s.gathering.gatheringName " +
+            "ORDER BY SUM(s.perBudget) DESC")
+    List<GroupExpenseData> findGroupExpensesByUserId(@Param("userId") Long userId);
 
     // 모임 일정목록 조회
     // gathering_id로 Schedule 엔티티 목록 조회

@@ -1,17 +1,23 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { Header } from "@/components/Header"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Switch } from "@/components/ui/switch"
-import { Edit, User, Shield, LogOut } from "lucide-react"
-import { useState } from "react"
-import { toast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/Header";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Edit, User, Shield, LogOut } from "lucide-react";
+import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function MyPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   // 사용자 정보 (실제로는 API에서 가져와야 함)
   const [userInfo, setUserInfo] = useState({
@@ -24,7 +30,7 @@ export default function MyPage() {
       push: true,
       sms: false,
     },
-  })
+  });
 
   const handleNotificationChange = (type: string, checked: boolean) => {
     // 상태 업데이트
@@ -34,14 +40,18 @@ export default function MyPage() {
         ...prev.notifications,
         [type]: checked,
       },
-    }))
+    }));
 
     // 토스트 메시지 표시
     toast({
-      title: `${type === "email" ? "이메일" : type === "push" ? "푸시" : "SMS"} 알림 ${checked ? "활성화" : "비활성화"}`,
-      description: `${type === "email" ? "이메일" : type === "push" ? "푸시" : "SMS"} 알림이 ${checked ? "활성화" : "비활성화"} 되었습니다.`,
-    })
-  }
+      title: `${
+        type === "email" ? "이메일" : type === "push" ? "푸시" : "SMS"
+      } 알림 ${checked ? "활성화" : "비활성화"}`,
+      description: `${
+        type === "email" ? "이메일" : type === "push" ? "푸시" : "SMS"
+      } 알림이 ${checked ? "활성화" : "비활성화"} 되었습니다.`,
+    });
+  };
 
   return (
     <>
@@ -83,7 +93,10 @@ export default function MyPage() {
               </div>
             </div>
 
-            <Button className="w-full" onClick={() => router.push("/profile/mypage/edit")}>
+            <Button
+              className="w-full"
+              onClick={() => router.push("/profile/mypage/edit")}
+            >
               <Edit className="h-4 w-4 mr-2" />
               프로필 수정
             </Button>
@@ -98,34 +111,14 @@ export default function MyPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">이메일 알림</p>
-                <p className="text-sm text-gray-500">모임 및 일정 관련 이메일 알림</p>
+                <p className="font-medium">일정 알림</p>
+                <p className="text-sm text-gray-500">모임 및 일정 관련 알림</p>
               </div>
               <Switch
                 checked={userInfo.notifications.email}
-                onCheckedChange={(checked) => handleNotificationChange("email", checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">푸시 알림</p>
-                <p className="text-sm text-gray-500">앱 푸시 알림</p>
-              </div>
-              <Switch
-                checked={userInfo.notifications.push}
-                onCheckedChange={(checked) => handleNotificationChange("push", checked)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">SMS 알림</p>
-                <p className="text-sm text-gray-500">문자 메시지 알림</p>
-              </div>
-              <Switch
-                checked={userInfo.notifications.sms}
-                onCheckedChange={(checked) => handleNotificationChange("sms", checked)}
+                onCheckedChange={(checked) =>
+                  handleNotificationChange("email", checked)
+                }
               />
             </div>
           </CardContent>
@@ -140,7 +133,10 @@ export default function MyPage() {
               <Shield className="h-4 w-4 mr-2" />
               비밀번호 변경
             </Button>
-            <Button variant="outline" className="w-full flex justify-start text-red-500 hover:text-red-600">
+            <Button
+              variant="outline"
+              className="w-full flex justify-start text-red-500 hover:text-red-600"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               로그아웃
             </Button>
@@ -155,6 +151,5 @@ export default function MyPage() {
         </Card>
       </main>
     </>
-  )
+  );
 }
-
