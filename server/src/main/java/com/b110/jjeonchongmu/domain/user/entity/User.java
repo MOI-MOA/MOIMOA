@@ -42,8 +42,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String userEmail;
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String userKey;
@@ -89,12 +89,13 @@ public class User implements UserDetails {
     private List<Notification> notifications = new ArrayList<>();
 
     @Builder
-    public User(String userEmail, String userKey, String password, String name, LocalDate birth) {
-        this.userEmail = userEmail;
+    public User(String name, String email, String userKey, String password, LocalDate birth) {
+        this.name = name;
+        this.email = email;
         this.userKey = userKey;
         this.password = password;
-        this.name = name;
         this.birth = birth;
+        this.createdAt = LocalDateTime.now();
     }
 
     /**
