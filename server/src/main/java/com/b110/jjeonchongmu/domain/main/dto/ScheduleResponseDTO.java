@@ -27,20 +27,20 @@ public class ScheduleResponseDTO {
     private int scheduleStatus;  // 0:대기, 1:진행중, 2:종료
     private int attendeeCount;
 
-    public static ScheduleResponseDTO from(Schedule schedule) {
-        return ScheduleResponseDTO.builder()
-                .gatheringId(schedule.getGathering().getGatheringId())
-                .gatheringName(schedule.getGathering().getGatheringName())
-                .scheduleId(schedule.getId())
-                .scheduleTitle(schedule.getTitle())
-                .scheduleDetail(schedule.getDetail())
-                .schedulePlace(schedule.getPlace())
-                .scheduleStartTime(schedule.getStartTime())
-                .perBudget(schedule.getPerBudget())
-                .totalBudget(schedule.getTotalBudget())
-                .penaltyApplyDate(schedule.getPenaltyApplyDate())
-                .scheduleStatus(schedule.getStatus())
-                .attendeeCount(schedule.getAttendees().size())
-                .build();
-    }
+//    public static ScheduleResponseDTO from(Schedule schedule) {
+//        return ScheduleResponseDTO.builder()
+//                .gatheringId(schedule.getGathering().getGatheringId())
+//                .gatheringName(schedule.getGathering().getGatheringName())
+//                .scheduleId(schedule.getId())
+//                .scheduleTitle(schedule.getTitle())
+//                .scheduleDetail(schedule.getDetail())
+//                .schedulePlace(schedule.getPlace())
+//                .scheduleStartTime(schedule.getStartTime())
+//                .perBudget(schedule.getPerBudget())
+//                .totalBudget(schedule.getTotalBudget())
+//                .penaltyApplyDate(schedule.getPenaltyApplyDate())
+//                .scheduleStatus(schedule.getStatus())
+//                .attendeeCount(schedule.getAttendees().size())
+//                .build();
+//    }
 } 

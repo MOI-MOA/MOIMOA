@@ -28,19 +28,4 @@ public class ScheduleMember {
 
     @Column(name = "schedule_is_check")
     private Boolean scheduleIsCheck;
-
-    @Builder
-    public ScheduleMember(Schedule schedule, User user, Boolean scheduleIsCheck) {
-        this.schedule = schedule;
-        this.scheduleMember = user;
-        this.scheduleIsCheck = scheduleIsCheck;
-    }
-
-    public void checkAttendance() {
-        this.scheduleIsCheck = true;
-    }
-
-    public User getUser() {
-        return this.scheduleMember;
-    }
 }
