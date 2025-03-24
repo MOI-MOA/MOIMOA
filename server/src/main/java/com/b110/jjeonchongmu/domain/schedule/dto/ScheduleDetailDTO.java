@@ -1,4 +1,3 @@
-
 package com.b110.jjeonchongmu.domain.schedule.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -20,8 +18,8 @@ public class ScheduleDetailDTO {
     private LocalDateTime scheduleStartTime;
     private Long perBudget;
     private Long totalBudget;
-    private Date penaltyApplyDate;
-    private Date penaltyRate;
+    private LocalDateTime penaltyApplyDate;
+    private Integer penaltyRate;
     private Long scheduleId;
     private Long gatheringId;
     private Long scheduleSubManagerId;
@@ -37,15 +35,14 @@ public class ScheduleDetailDTO {
     @Getter
     @Builder
     public static class ManagerInfo {
-
-        private long userId;
+        private Long userId;
         private String username;
     }
 
     @Getter
     @Builder
     public static class AttendeeInfo {
-        private long userId;
+        private Long userId;
         private String username;
     }
 }

@@ -47,13 +47,13 @@ public class ScheduleService {
     public ScheduleDetailDTO getScheduleDetail(Long scheduleId) {
         Long userId = getCurrentUserId();
         return scheduleRepo.findScheduleDetailById(scheduleId, userId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
     }
 
     @Transactional
     public void updateSchedule(ScheduleUpdateDTO dto) {
         Schedule schedule = scheduleRepo.findById(dto.getScheduleId())
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
         validateManager(schedule);
         schedule.update(dto);
     }
@@ -61,7 +61,7 @@ public class ScheduleService {
     @Transactional
     public void deleteSchedule(Long scheduleId) {
         Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
         validateManager(schedule);
         scheduleRepo.delete(schedule);
     }
@@ -69,7 +69,7 @@ public class ScheduleService {
     @Transactional
     public void attendSchedule(Long scheduleId) {
         Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+                .orElseThrow(() ->new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
         User user = getCurrentUser();
         schedule.addAttendee(user);
     }
@@ -77,16 +77,22 @@ public class ScheduleService {
     @Transactional
     public void cancelAttendance(Long scheduleId) {
         Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
         User user = getCurrentUser();
         schedule.removeAttendee(user);
     }
 
     public PerBudgetDTO getPerBudget(Long scheduleId) {
         Schedule schedule = scheduleRepo.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+        
+        Long perBudget = schedule.getPerBudget();
+        if (perBudget == null) {
+            throw new CustomException(ErrorCode.SCHEDULE_BUDGET_NOT_SET);
+        }
+
         return PerBudgetDTO.builder()
-                .perBudget((int) schedule.getPerBudget())
+                .perBudget(perBudget)
                 .build();
     }
 

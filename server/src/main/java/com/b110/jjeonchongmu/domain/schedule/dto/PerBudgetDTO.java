@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PerBudgetDTO {
-    private int perBudget;
+    private Long perBudget;
 } 
