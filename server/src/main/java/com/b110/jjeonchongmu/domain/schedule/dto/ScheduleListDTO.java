@@ -1,16 +1,14 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Setter
 public class ScheduleListDTO {
     private Long gatheringId;
     private String gatheringName;

@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.main.service;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 /**
@@ -28,37 +30,26 @@ public class MainService {
      * - 오늘의 일정
      * - 다가오는 일정
      */
-    public MainHomeResponseDTO getMainHome(Long userId) {
+    public List<MainHomeResponseDTO> getMainHome(Long userId) {
         // 오늘의 일정과 다가오는 일정 조회
-        List<ScheduleListDTO> selectSchedules = getTodaySchedules(userId);
 
-        return null;
+        return List.of();
     }
 
     /**
      * 미확인 일정 목록 조회
      */
-    public ScheduleListDTO getUncheckSchedules(Long userId) {
-        List<ScheduleListDTO> schedules = mainRepo.findUncheckSchedules().stream()
-                .map(ScheduleListDTO::from)
-                .collect(Collectors.toList());
+    public List<ScheduleListDTO> getUncheckSchedules(Long userId) {
 
-        return ScheduleListDTO.builder()
-                .schedules(schedules)
-                .build();
+        return List.of();
     }
 
     /**
      * 개인 일정 목록 조회
      */
-    public ScheduleListDTO getPersonalSchedules(Long userId) {
-        List<ScheduleDTO> schedules = mainRepo.findPersonalSchedules().stream()
-                .map(ScheduleDTO::from)
-                .collect(Collectors.toList());
+    public List<ScheduleListDTO> getPersonalSchedules(Long userId) {
 
-        return ScheduleListDTO.builder()
-                .schedules(schedules)
-                .build();
+        return List.of();
     }
 
     /**
@@ -66,61 +57,45 @@ public class MainService {
      * /api/v1/main/schedule/{year}/{month}
      *
      */
-    public DateDTO getMonthSchedules(Long userId, int year, int month) {
+    public List<DateDTO> getMonthSchedules(Long userId, int year, int month) {
         // 해당 월에 일정이 있는 날짜들을 조회
-        List<LocalDateTime> scheduleDates = mainRepo.findSchedulesByYearAndMonth(year, month);
+
 
         // 날짜만 추출하여 DateInfo 리스트로 변환
-        List<DateDTO.DateInfo> dates = scheduleDates.stream()
-                .map(date -> DateDTO.DateInfo.builder()
-                        .date(date.getDayOfMonth())
-                        .build())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
 
-        return DateDTO.builder()
-                .datas(dates)
-                .build();
+        return List.of();
     }
 
     /**
      * 특정 날짜의 일정 조회 수정 필요. userId는 jwt에서 가져오도록.
      */
-    public ScheduleListDTO getDaySchedules(Long userId, int year, int month, int date) {
-        LocalDate targetDate = LocalDate.of(year, month, date);
-        List<ScheduleListDTO> schedules = mainRepo.findSchedulesByDate(targetDate).stream()
-                .map(schedule -> ScheduleDTO.builder()
-                        .gatheringId(schedule.getGathering().getGatheringId())
-                        .gatheringName(schedule.getGathering().getGatheringName())
-                        .scheduleId(schedule.getScheduleId())
-                        .scheduleTitle(schedule.getScheduleTitle())
-                        .scheduleDetail(schedule.getScheduleDetail())
-                        .schedulePlace(schedule.getSchedulePlace())
-                        .scheduleStartTime(schedule.getScheduleStartTime())
-                        .perBudget(schedule.getPerBudget())
-                        .totalBudget(schedule.getTotalBudget())
-                        .penaltyApplyDate(schedule.getPenaltyApplyDate())
-                        .scheduleStatus(schedule.getScheduleStatus())
-                        .attendeeCount(schedule.getScheduleMembers().size())
-                        .build())
-                .collect(Collectors.toList());
+    public List<ScheduleListDTO> getDaySchedules(Long userId, int year, int month, int date) {
 
-        return DayScheduleDTO.builder()
-                .datas(schedules)
-                .build();
     }
 
     /**
      * 오늘의 일정 조회
      */
-    public ScheduleListDTO getTodaySchedules(Long userId) {
-        List<ScheduleDTO> schedules = mainRepo.findTodaySchedules().stream()
-                .map(ScheduleDTO::from)
-                .collect(Collectors.toList());
+       public List<ScheduleListDTO> getTodaySchedules(Long userId) {
+        List<Object[]> scheduleData = mainRepo.findTodaySchedules();
+        List<ScheduleListDTO> result = new ArrayList<>();
 
-        return ScheduleListDTO.builder()
-                .schedules(schedules)
-                .build();
+        for (Object[] data : scheduleData) {
+            ScheduleListDTO schedule = new ScheduleListDTO();
+
+            // 데이터베이스에서 조회한 결과를 기반으로 DTO 설정
+            if (data.length > 0) schedule.setScheduleId((Long) data[0]);
+            if (data.length > 1) schedule.setScheduleTitle((String) data[1]);
+            if (data.length > 2) schedule.setScheduleDetail((String) data[2]);
+            if (data.length > 3) schedule.setSchedulePlace((String) data[3]);
+            if (data.length > 4) schedule.setScheduleStartTime((LocalDateTime) data[4]);
+            if (data.length > 5) schedule.setGatheringId((Long) data[5]);
+            if (data.length > 6) schedule.setGatheringName((String) data[6]);
+            if (data.length > 7) schedule.setAttendeeCount((Integer) data[7]);
+
+            result.add(schedule);
+        }
+
+        return result;
     }
 }

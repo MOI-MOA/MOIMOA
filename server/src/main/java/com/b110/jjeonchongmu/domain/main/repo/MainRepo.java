@@ -7,60 +7,60 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
-public interface MainRepo extends JpaRepository<Schedule, Long> {
+public interface MainRepo extends JpaRepository<Long> {
 
     /**
      * 미확인 일정 수 조회
      */
-    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.checked = false")
-    int countUncheckSchedules();
+//    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.checked = false")
+//    int countUncheckSchedules();
 
     /**
      * 오늘의 일정 조회
      */
-    @Query("SELECT s FROM Schedule s " +
-           "WHERE DATE(s.startDate) = CURRENT_DATE " +
-           "ORDER BY s.startDate")
-    List<Schedule> findTodaySchedules();
+//    @Query("SELECT s FROM Schedule s " +
+//           "WHERE DATE(s.startDate) = CURRENT_DATE " +
+//           "ORDER BY s.startDate")
+//    List<Schedule> findTodaySchedules();
 
     /**
      * 다가오는 일정 조회
      */
-    @Query("SELECT s FROM Schedule s " +
-           "WHERE s.startDate > CURRENT_DATE " +
-           "ORDER BY s.startDate")
-    List<Schedule> findUpcomingSchedules();
+//    @Query("SELECT s FROM Schedule s " +
+//           "WHERE s.startDate > CURRENT_DATE " +
+//           "ORDER BY s.startDate")
+//    List<Schedule> findUpcomingSchedules();
 
     /**
      * 미확인 일정 조회
      */
-    @Query("SELECT s FROM Schedule s " +
-           "WHERE s.checked = false " +
-           "ORDER BY s.startDate")
-    List<Schedule> findUncheckSchedules();
+//    @Query("SELECT s FROM Schedule s " +
+//           "WHERE s.checked = false " +
+//           "ORDER BY s.startDate")
+//    List<Schedule> findUncheckSchedules();
 
     /**
      * 개인 일정 조회
      */
-    @Query("SELECT s FROM Schedule s " +
-           "WHERE s.type = 'PERSONAL' " +
-           "ORDER BY s.startDate")
-    List<Schedule> findPersonalSchedules();
+//    @Query("SELECT s FROM Schedule s " +
+//           "WHERE s.type = 'PERSONAL' " +
+//           "ORDER BY s.startDate")
+//    List<Schedule> findPersonalSchedules();
 
     /**
      * 특정 연월의 일정 조회
      */
-    @Query("SELECT s FROM Schedule s " +
-           "WHERE YEAR(s.startDate) = :year " +
-           "AND MONTH(s.startDate) = :month " +
-           "ORDER BY s.startDate")
-    List<Schedule> findSchedulesByYearAndMonth(@Param("year") int year, @Param("month") int month);
+//    @Query("SELECT s FROM Schedule s " +
+//           "WHERE YEAR(s.startDate) = :year " +
+//           "AND MONTH(s.startDate) = :month " +
+//           "ORDER BY s.startDate")
+//    List<Schedule> findSchedulesByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
     /**
      * 특정 날짜의 일정 조회
      */
-    @Query("SELECT s FROM Schedule s " +
-           "WHERE DATE(s.startDate) = :date " +
-           "ORDER BY s.startDate")
-    List<Schedule> findSchedulesByDate(@Param("date") LocalDate date);
+//    @Query("SELECT s FROM Schedule s " +
+//           "WHERE DATE(s.startDate) = :date " +
+//           "ORDER BY s.startDate")
+//    List<Schedule> findSchedulesByDate(@Param("date") LocalDate date);
 } 
