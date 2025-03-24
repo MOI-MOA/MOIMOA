@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.entity;
 import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,15 +18,15 @@ public class PersonalAccount {
     @Column(name = "personal_account_id", nullable = false)
     private Long personalAccountId;
 
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id" , nullable = false)
-//    private User personalAccountHolder;
-//
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id" , nullable = false)
+    private User personalAccountHolder;
+
 //    @Column(name = "personal_account_no", nullable = false, length = 255)
 //    private String personalAccountNo;
 //
-//    @Column(name = "personal_account_balance", nullable = false)
-//    private Integer personalAccountBalance;
+    @Column(name = "personal_account_balance", nullable = false)
+    private Integer personalAccountBalance;
 //
 //    @Column(name = "personal_account_pw", nullable = false)
 //    private String personalAccountPw;

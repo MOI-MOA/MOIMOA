@@ -30,8 +30,8 @@ public class Schedule {
     private Gathering gathering;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
-    private User manager;
+    @JoinColumn(name = "sub_manager_id", nullable = false)
+    private User subManager;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "schedule_account_id")
@@ -52,57 +52,15 @@ public class Schedule {
     @Column(name = "per_budget")
     private Long perBudget;
 
-    @Column(name = "total_budget")
-    private Long totalBudget;
-
     @Column(name = "penalty_apply_date")
     private LocalDateTime penaltyApplyDate;
+
+    @Column(name = "penalty_rate")
+    private int penalty_rate;
 
     @Column(name = "schedule_status")
     private int status;
 
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduleMember> attendees = new ArrayList<>();
-
-    @Builder
-    public Schedule(Gathering gathering, User manager, String title, String detail,
-                   String place, LocalDateTime startTime, long perBudget,
-                   long totalBudget, LocalDateTime penaltyApplyDate) {
-        this.gathering = gathering;
-        this.manager = manager;
-        this.title = title;
-        this.detail = detail;
-        this.place = place;
-        this.startTime = startTime;
-        this.perBudget = perBudget;
-        this.totalBudget = totalBudget;
-        this.penaltyApplyDate = penaltyApplyDate;
-        this.status = 0;
-    }
-
-    public void addAttendee(User user) {
-        ScheduleMember scheduleMember = ScheduleMember.builder()
-                .schedule(this)
-                .user(user)
-                .build();
-        this.attendees.add(scheduleMember);
-    }
-
-    public void removeAttendee(User user) {
-        this.attendees.removeIf(scheduleMember -> 
-            scheduleMember.getScheduleMember().equals(user));
-    }
-
-    public void update(ScheduleUpdateDTO dto) {
-        this.title = dto.getScheduleTitle();
-        this.detail = dto.getScheduleDetail();
-        this.place = dto.getSchedulePlace();
-        this.startTime = dto.getScheduleStartDate();
-        this.totalBudget = (long) dto.getTotalBudget();
-        this.penaltyApplyDate = dto.getPenaltyApplyDate();
-    }
-
-    public void setScheduleAccount(ScheduleAccount scheduleAccount) {
-        this.scheduleAccount = scheduleAccount;
-    }
+    @OneToMany(mappedBy = "schedule")
+    private List<ScheduleMember> scheduleMembers = new ArrayList<>();
 }
