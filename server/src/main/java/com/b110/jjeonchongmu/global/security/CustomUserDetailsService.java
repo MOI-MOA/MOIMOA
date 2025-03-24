@@ -16,12 +16,13 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-
+    private final JwtTokenProvider jwtTokenProvider;
     private final UserRepo userRepo;
 
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        return userRepo.findById(Integer.parseInt(userId))
+
+        return userRepo.findById(jwtTokenProvider.getUserId())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 } 

@@ -61,8 +61,8 @@ public class UserService {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(String.valueOf(user.getUserId()));
-        String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(user.getUserId()));
+        String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
         return TokenResponseDTO.builder()
                 .accessToken(accessToken)
@@ -114,7 +114,7 @@ public class UserService {
      */
     private User getCurrentUser() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepo.findById(Integer.parseInt(userId))
+        return userRepo.findById(Long.valueOf(userId))
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }
