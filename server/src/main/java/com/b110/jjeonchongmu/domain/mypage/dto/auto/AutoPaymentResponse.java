@@ -23,4 +23,4 @@ public class AutoPaymentResponse {
             this.autoTransfers.add(new AutoTransfer(user.getUserId(), gatheringMember));
         }
     }
-} 
+}

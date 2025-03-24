@@ -7,6 +7,7 @@ import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,37 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ScheduleMemberService {
-    
+
     private final ScheduleMemberRepo scheduleMemberRepo;
 
+    // 일정 참석
     @Transactional
-    public void addMember(Schedule schedule, User user) {
-        if (scheduleMemberRepo.existsByScheduleAndScheduleMember(schedule, user)) {
-            throw new CustomException(ErrorCode.ALREADY_SCHEDULE_MEMBER);
-        }
-
-        ScheduleMember scheduleMember = ScheduleMember.builder()
-                .schedule(schedule)
-                .user(user)
-                .scheduleIsCheck(false)
-                .build();
-
-        scheduleMemberRepo.save(scheduleMember);
+    public void attendSchedule(Long userId,Long scheduleId) {
+        scheduleMemberRepo.insertScheduleMember(userId,scheduleId);
     }
-
+    // 일정 참석 취소
     @Transactional
-    public void removeMember(Schedule schedule, User user) {
-        ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleAndScheduleMember(schedule, user)
-                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_MEMBER_NOT_FOUND));
-
-        scheduleMemberRepo.delete(scheduleMember);
-    }
-
-    @Transactional
-    public void checkAttendance(Schedule schedule, User user) {
-        ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleAndScheduleMember(schedule, user)
-                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_MEMBER_NOT_FOUND));
-
-        scheduleMember.checkAttendance();
+    public void cancelAttendance(Long userId,Long scheduleId) {
+        scheduleMemberRepo.deleteScheduleMember(userId,scheduleId);
     }
 }

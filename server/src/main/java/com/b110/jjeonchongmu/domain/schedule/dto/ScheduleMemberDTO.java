@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ScheduleMemberDTO {
-    private Long scheduleMemberId;
     private Long scheduleId;
-    private Long userId;
+    private Long scheduleMemberId;
+    private String scheduleMemberName;
 }
