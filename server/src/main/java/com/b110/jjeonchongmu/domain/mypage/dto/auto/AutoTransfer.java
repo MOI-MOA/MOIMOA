@@ -30,7 +30,7 @@ public class AutoTransfer {
 
     public AutoTransfer(Long userId, GatheringMember gatheringMember) {
         Gathering gathering = gatheringMember.getGathering();
-        GatheringAccount gatheringAccount = gathering.getGatheringAccount();
+        GatheringAccount gatheringAccount = gathering.getGatheringAccountId(); //일단 getGatheringAccountID로 했는데 나중에 고쳐
         List<AutoPayment> autoPayments = gatheringAccount.getAutoPayments();
 
         // 자동이체에서 뽑아오는 파트

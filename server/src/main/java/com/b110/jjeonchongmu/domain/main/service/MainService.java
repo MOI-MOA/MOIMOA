@@ -3,7 +3,6 @@ package com.b110.jjeonchongmu.domain.main.service;
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
 import com.b110.jjeonchongmu.domain.schedule.dto.*;
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

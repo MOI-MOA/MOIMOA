@@ -4,7 +4,6 @@ import com.b110.jjeonchongmu.domain.gathering.dto.InviteResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.MemberListResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.MemberManageResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.service.GatheringMemberService;
-import com.b110.jjeonchongmu.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,68 +32,57 @@ public class GatheringMemberController {
      * 모임 초대링크 생성 (총무)
      */
     @PostMapping("/{gatheringId}/invite")
-    public ResponseEntity<ApiResponse> createInviteLink(@PathVariable Long gatheringId) {
+    public ResponseEntity<InviteResponseDTO> createInviteLink(@PathVariable Long gatheringId) {
         InviteResponseDTO response = gatheringMemberService.createInviteLink(gatheringId);
-        return ResponseEntity.status(201).body(new ApiResponse(201, "모임 초대 링크 생성 성공", response));
-    }
-
-    /**
-     * 모임 참여 거절 (총무)
-     */
-    @PostMapping("/{gatheringId}/reject/{userId}")
-    public ResponseEntity<ApiResponse> rejectGathering(
-            @PathVariable Long gatheringId,
-            @PathVariable Long userId) {
-        gatheringMemberService.rejectGathering(gatheringId, userId);
-        return ResponseEntity.status(201).body(new ApiResponse(201, "모임 참여 거절 성공"));
+        return ResponseEntity.status(201).body(response);
     }
 
     /**
      * 멤버 삭제 (총무)
      */
     @DeleteMapping("/{gatheringId}/members/{userId}")
-    public ResponseEntity<ApiResponse> deleteMember(
+    public ResponseEntity<String> deleteMember(
             @PathVariable Long gatheringId,
             @PathVariable Long userId) {
         gatheringMemberService.deleteMember(gatheringId, userId);
-        return ResponseEntity.status(204).body(new ApiResponse(204, "멤버 삭제 성공"));
+        return ResponseEntity.status(204).body("멤버삭제 성공");
     }
 
     /**
      * 모임 참여 수락 (총무)
      */
     @PostMapping("/{gatheringId}/accept/{userId}")
-    public ResponseEntity<ApiResponse> acceptGathering(
+    public ResponseEntity<String> acceptGathering(
             @PathVariable Long gatheringId,
             @PathVariable Long userId) {
         gatheringMemberService.acceptGathering(gatheringId, userId);
-        return ResponseEntity.status(201).body(new ApiResponse(201, "모임 참여 수락 성공"));
+        return ResponseEntity.status(201).body("모임 참여 수락");
     }
 
     /**
      * 모임 회원 관리 조회 (총무)
      */
     @GetMapping("/{gatheringId}/member-manage")
-    public ResponseEntity<ApiResponse> getMemberManage(@PathVariable Long gatheringId) {
+    public ResponseEntity<MemberManageResponseDTO> getMemberManage(@PathVariable Long gatheringId) {
         MemberManageResponseDTO response = gatheringMemberService.getMemberManage(gatheringId);
-        return ResponseEntity.ok(new ApiResponse(200, "회원 관리 조회 성공", response));
+        return ResponseEntity.status(200).body(response);
     }
 
     /**
      * 모임 회원 목록 조회 (모든 사용자)
      */
     @GetMapping("/{gatheringId}/members")
-    public ResponseEntity<ApiResponse> getMembers(@PathVariable Long gatheringId) {
+    public ResponseEntity<MemberListResponseDTO> getMembers(@PathVariable Long gatheringId) {
         MemberListResponseDTO response = gatheringMemberService.getMembers(gatheringId);
-        return ResponseEntity.ok(new ApiResponse(200, "회원 목록 조회 성공", response));
+        return ResponseEntity.status(200).body(response);
     }
 
     /**
      * 모임 탈퇴하기 (모든 사용자)
      */
     @DeleteMapping("/{gatheringId}/leave")
-    public ResponseEntity<ApiResponse> leaveGathering(@PathVariable Long gatheringId) {
+    public ResponseEntity<String> leaveGathering(@PathVariable Long gatheringId) {
         gatheringMemberService.leaveGathering(gatheringId);
-        return ResponseEntity.status(204).body(new ApiResponse(204, "모임 탈퇴 성공"));
+        return ResponseEntity.status(204).body("모임탈퇴성공");
     }
 }
