@@ -13,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ScheduleListDTO {
-    private List<ScheduleDetailDTO> scheduleList;
     private Long gatheringId;
     private String gatheringName;
     private Long scheduleId;
@@ -26,4 +25,4 @@ public class ScheduleListDTO {
     private LocalDateTime penaltyApplyDate;
     private Integer scheduleStatus;
     private Integer attendeeCount;
-} 
+}

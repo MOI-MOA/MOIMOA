@@ -1,7 +1,6 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleResponseDTO;
-import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,14 +21,13 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-@Builder
+@AllArgsConstructor
 public class MainHomeResponseDTO {
-    //수정중.
     
     private int uncheckScheduleCount;
     private List<DateDTO> dateList;
-    private List<ScheduleResponseDTO> todayScheduleList;
-    private List<ScheduleResponseDTO> upcommingScheduleList;
+    private List<ScheduleListDTO> todayScheduleList;
+    private List<ScheduleListDTO> upcommingScheduleList;
 
     @Getter
     @NoArgsConstructor
@@ -63,12 +61,12 @@ public class MainHomeResponseDTO {
         }
     }
 
-    @Builder
-    public MainHomeResponseDTO(int uncheckScheduleCount, List<DateDTO> dateList,
-                             List<ScheduleResponseDTO> todayScheduleList, List<ScheduleResponseDTO> upcommingScheduleList) {
-        this.uncheckScheduleCount = uncheckScheduleCount;
-        this.dateList = dateList;
-        this.todayScheduleList = todayScheduleList;
-        this.upcommingScheduleList = upcommingScheduleList;
-    }
+//    @Builder
+//    public MainHomeResponseDTO(int uncheckScheduleCount, List<DateDTO> dateList,
+//                             List<ScheduleResponseDTO> todayScheduleList, List<ScheduleResponseDTO> upcommingScheduleList) {
+//        this.uncheckScheduleCount = uncheckScheduleCount;
+//        this.dateList = dateList;
+//        this.todayScheduleList = todayScheduleList;
+//        this.upcommingScheduleList = upcommingScheduleList;
+//    }
 } 
