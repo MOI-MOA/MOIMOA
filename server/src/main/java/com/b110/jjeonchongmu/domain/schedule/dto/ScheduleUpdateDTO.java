@@ -14,12 +14,13 @@ import java.time.LocalDateTime;
 // 일단은 보류작업.
 
 public class ScheduleUpdateDTO {
+    private Long scheduleId;
     private String scheduleTitle;
     private String scheduleDetail;
     private String schedulePlace;
     private LocalDateTime scheduleStartDate;
     private LocalDateTime scheduleEndDate;
     private LocalDateTime scheduleDate;
-    private int totalBudget;
+    private Long totalBudget;
     private LocalDateTime penaltyApplyDate;
 } 

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 public class MainHomeResponseDTO {
+    //수정중.
     
     private int uncheckScheduleCount;
     private List<DateDTO> dateList;
@@ -46,12 +47,12 @@ public class MainHomeResponseDTO {
             return schedules.stream()
                     .filter(schedule -> {
                         if (schedule.getStartTime() == null) return false;
-                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDateTime();
+                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDate();
                         return scheduleTime.getMonthValue() == currentMonth && 
                                scheduleTime.getYear() == currentYear;
                     })
                     .map(schedule -> {
-                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDateTime();
+                        LocalDateTime scheduleTime = schedule.getStartTime().toLocalDate();
                         return DateDTO.builder()
                                 .date(scheduleTime.getDayOfMonth())
                                 .build();

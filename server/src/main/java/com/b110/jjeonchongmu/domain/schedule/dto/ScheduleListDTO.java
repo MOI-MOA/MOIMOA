@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -14,17 +13,17 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ScheduleListDTO {
-    List<ScheduleDetailDTO> scheduleList;
-    private int gatheringId;
+    private List<ScheduleDetailDTO> scheduleList;
+    private Long gatheringId;
     private String gatheringName;
-    private int scheduleId;
+    private Long scheduleId;
     private String scheduleTitle;
     private String scheduleDetail;
     private String schedulePlace;
     private LocalDateTime scheduleStartTime;
-    private long perBudget;
-    private long totalBudget;
-    private LocalDate penaltyApplyDate;
-    private int scheduleStatus;
-    private int attendeeCount;
+    private Long perBudget;
+    private Long totalBudget;
+    private LocalDateTime penaltyApplyDate;
+    private Integer scheduleStatus;
+    private Integer attendeeCount;
 } 
