@@ -1,4 +1,123 @@
 package com.b110.jjeonchongmu.domain.schedule.service;
 
+import com.b110.jjeonchongmu.domain.schedule.dto.*;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
+import com.b110.jjeonchongmu.global.exception.CustomException;
+import com.b110.jjeonchongmu.global.exception.ErrorCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ScheduleService {
+    // 오류 수정 작업중.
+    private final ScheduleRepo scheduleRepo;
+
+    public List<ScheduleListDTO> getScheduleList() {
+        return scheduleRepo.findAllSchedules();
+    }
+
+    @Transactional
+    public void createSchedule(ScheduleCreateDTO dto) {
+        User manager = getCurrentUser();
+        Gathering gathering = getCurrentGathering();
+
+        Schedule schedule = Schedule.builder()
+                .gathering(gathering)
+                .manager(manager)
+                .title(dto.getScheduleTitle())
+                .detail(dto.getScheduleDetail())
+                .place(dto.getSchedulePlace())
+                .startTime(dto.getScheduleStartTime())
+                .perBudget(dto.getPerBudget())
+                .totalBudget(dto.getTotalBudget())
+                .penaltyApplyDate(dto.getPenaltyApplyDate())
+                .build();
+
+        scheduleRepo.save(schedule);
+    }
+
+    public ScheduleDetailDTO getScheduleDetail(Long scheduleId) {
+        Long userId = getCurrentUserId();
+        return scheduleRepo.findScheduleDetailById(scheduleId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+    }
+
+    @Transactional
+    public void updateSchedule(ScheduleUpdateDTO dto) {
+        Schedule schedule = scheduleRepo.findById(dto.getScheduleId())
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+        validateManager(schedule);
+        schedule.update(dto);
+    }
+
+    @Transactional
+    public void deleteSchedule(Long scheduleId) {
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+        validateManager(schedule);
+        scheduleRepo.delete(schedule);
+    }
+
+    @Transactional
+    public void attendSchedule(Long scheduleId) {
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() ->new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+        User user = getCurrentUser();
+        schedule.addAttendee(user);
+    }
+
+    @Transactional
+    public void cancelAttendance(Long scheduleId) {
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+        User user = getCurrentUser();
+        schedule.removeAttendee(user);
+    }
+
+    public PerBudgetDTO getPerBudget(Long scheduleId) {
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+        
+        Long perBudget = schedule.getPerBudget();
+        if (perBudget == null) {
+            throw new CustomException(ErrorCode.SCHEDULE_BUDGET_NOT_SET);
+        }
+
+        return PerBudgetDTO.builder()
+                .perBudget(perBudget)
+                .build();
+    }
+
+    private User getCurrentUser() {
+        // SecurityContext에서 현재 사용자 정보를 가져오는 로직 구현
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private Long getCurrentUserId() {
+        // SecurityContext에서 현재 사용자 ID를 가져오는 로직 구현
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private Gathering getCurrentGathering() {
+        // 현재 모임 정보를 가져오는 로직 구현
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void validateManager(Schedule schedule) {
+        User currentUser = getCurrentUser();
+        if (!schedule.getManager().equals(currentUser)) {
+            throw new CustomException(ErrorCode.INVALID_MANAGER);
+        }
+    }
+
+
+
 }

@@ -1,6 +1,9 @@
 package com.b110.jjeonchongmu.domain.account.entity;
+import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "personal_account")
@@ -14,12 +17,21 @@ public class PersonalAccount {
     @Column(name = "personal_account_id", nullable = false)
     private Long personalAccountId;
 
-    @Column(name = "personal_account_no", nullable = false, length = 255)
-    private String personalAccountNo;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id" , nullable = false)
+//    private User personalAccountHolder;
+//
+//    @Column(name = "personal_account_no", nullable = false, length = 255)
+//    private String personalAccountNo;
+//
+//    @Column(name = "personal_account_balance", nullable = false)
+//    private Integer personalAccountBalance;
+//
+//    @Column(name = "personal_account_pw", nullable = false)
+//    private String personalAccountPw;
 
-    @Column(name = "personal_account_balance", nullable = false)
-    private Integer personalAccountBalance;
+    @OneToMany(mappedBy = "personalAccount" , fetch = FetchType.LAZY)
+    private List<AutoPayment> autoPayments;
 
-    @Column(name = "personal_account_pw", nullable = false)
-    private String personalAccountPw;
+
 }

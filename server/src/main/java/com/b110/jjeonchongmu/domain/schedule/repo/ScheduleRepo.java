@@ -1,4 +1,28 @@
 package com.b110.jjeonchongmu.domain.schedule.repo;
 
-public class ScheduleRepo {
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import java.util.List;
+import java.util.Optional;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDetailDTO;
+import org.springframework.data.repository.query.Param;
+
+public interface ScheduleRepo extends JpaRepository<Schedule, Long> {
+
+    @Query("SELECT new com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO(" +
+           "s.gathering.gatheringId, s.gathering.gatheringName, s.id, s.title, s.detail, s.place, " +
+           "s.startTime, s.perBudget, s.totalBudget, s.penaltyApplyDate, s.status, " +
+           "SIZE(s.attendees)) " +
+           "FROM Schedule s")
+    List<ScheduleListDTO> findAllSchedules();
+
+    @Query("SELECT new com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDetailDTO(" +
+           "s.title, s.detail, s.place, s.startTime, s.perBudget, s.totalBudget, " +
+           "s.penaltyApplyDate, s.gathering.penaltyRate, s.id, s.gathering.gatheringId, " +
+           "s.manager.userId, s.gathering.gatheringName, SIZE(s.attendees), " +
+           "EXISTS (SELECT 1 FROM ScheduleMember sm WHERE sm.schedule = s AND sm.scheduleMember.userId = :userId)) " +
+           "FROM Schedule s WHERE s.id = :scheduleId")
+    Optional<ScheduleDetailDTO> findScheduleDetailById(@Param("scheduleId") Long scheduleId, @Param("userId") Long userId);
 }
