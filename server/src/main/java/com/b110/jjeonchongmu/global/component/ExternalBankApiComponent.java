@@ -35,6 +35,7 @@ public class ExternalBankApiComponent {
 	public ExternalBankApiComponent(
 			RestTemplateBuilder builder,
 			@Value("${external.bank.api.url}") String apiUrl,
+			@Value("${external.bank.api.url.transactionDetails}") String transactionDetailsApiUrl,
 			@Value("${external.bank.api.key}") String apiKey) {
 		this.restTemplate = builder.build();
 		this.apiUrl = apiUrl;
