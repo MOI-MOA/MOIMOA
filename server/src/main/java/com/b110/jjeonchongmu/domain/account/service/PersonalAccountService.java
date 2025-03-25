@@ -4,6 +4,7 @@ import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.dto.AddAutoPaymentRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
@@ -149,5 +150,8 @@ public class PersonalAccountService {
 		// 계좌 삭제 로직 구현
 	}
 
+	public void addPersonalAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
+		externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
+	}
 
 }
