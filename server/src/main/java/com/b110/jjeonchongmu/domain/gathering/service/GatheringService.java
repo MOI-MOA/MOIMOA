@@ -37,7 +37,7 @@ public class GatheringService {
     @Transactional
     public GatheringDTO addGathering(GatheringDTO request) {
         // 동일한 모임명 존재 여부 확인
-        if (gatheringRepo.existsByGatheringNameAndManagerId(request.getGatheringName(), request.getManagerId())) {
+        if (gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(), request.getManagerId())) {
             throw new CustomException(ErrorCode.DUPLICATE_GATHERING_NAME);
         }
 
@@ -51,7 +51,7 @@ public class GatheringService {
 
         Gathering gathering = Gathering.builder()
                 .manager(manager)
-                .gatheringAccountId(account)
+                .gatheringAccount(account)
                 .gatheringName(request.getGatheringName())
                 .gatheringIntroduction(request.getGatheringIntroduction())
                 .memberCount(request.getMemberCount())
@@ -79,7 +79,7 @@ public class GatheringService {
 
         // 모임명 변경 시 중복 체크
         if (!gathering.getGatheringName().equals(request.getGatheringName()) &&
-                gatheringRepo.existsByGatheringNameAndManagerId(request.getGatheringName(), gathering.getManagerId())) {
+                gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(), gathering.getManagerId())) {
             throw new CustomException(ErrorCode.GATHERING_NAME_DUPLICATE);
         }
 
@@ -136,20 +136,20 @@ public class GatheringService {
                 .gathering(GatheringDTO.builder()
                         .gatheringId(gathering.getGatheringId())
                         .managerId(gathering.getManagerId())
-                        .gatheringAccountId(gathering.getGatheringAccountId().getGatheringAccountId())
+                        .gatheringAccountId(gathering.getGatheringAccount().getAccountId())
                         .gatheringName(gathering.getGatheringName())
                         .gatheringIntroduction(gathering.getGatheringIntroduction())
                         .memberCount(gathering.getMemberCount())
                         .penaltyRate(gathering.getPenaltyRate())
                         .depositDate(gathering.getDepositDate())
-                        .basicFee(gathering.getBasicFee().intValue())
-                        .gatheringDeposit(gathering.getGatheringDeposit().intValue())
+                        .basicFee(gathering.getBasicFee())
+                        .gatheringDeposit(gathering.getGatheringDeposit())
                         .build())
                 .members(members.stream()
                         .map(member -> GatheringMemberDTO.builder()
                                 .gatheringMemberId(member.getGatheringMemberId())
                                 .gatheringId(member.getGathering().getGatheringId())
-                                .gatheringMemberUserId(member.getGatheringMemberUserId())
+                                .gatheringMemberUserId(member.getGatheringMemberUser().getUserId())
                                 .gatheringAttendCount(member.getGatheringAttendCount())
                                 .gatheringMemberAccountBalance(member.getGatheringMemberAccountBalance())
                                 .gatheringMemberAccountDeposit(member.getGatheringMemberAccountDeposit())
@@ -159,13 +159,7 @@ public class GatheringService {
                 .build();
     }
 
-    /**
-     * 모임통장 거래내역 조회
-     * 
-     * @param gatheringId 모임 ID
-     * @return 거래내역 목록
-     * @throws CustomException 모임을 찾을 수 없는 경우
-     */
+
 //    public TradeListResponseDTO getGatheringTrades(Long gatheringId) {
 //        Gathering gathering = gatheringRepo.findById(gatheringId)
 //                .orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
@@ -186,14 +180,14 @@ public class GatheringService {
                 .map(gathering -> GatheringDTO.builder()
                         .gatheringId(gathering.getGatheringId())
                         .managerId(gathering.getManagerId())
-                        .gatheringAccountId(gathering.getGatheringAccountId().getGatheringAccountId())
+                        .gatheringAccountId(gathering.getGatheringAccount().getAccountId())
                         .gatheringName(gathering.getGatheringName())
                         .gatheringIntroduction(gathering.getGatheringIntroduction())
                         .memberCount(gathering.getMemberCount())
                         .penaltyRate(gathering.getPenaltyRate())
                         .depositDate(gathering.getDepositDate())
-                        .basicFee(gathering.getBasicFee().intValue())
-                        .gatheringDeposit(gathering.getGatheringDeposit().intValue())
+                        .basicFee(gathering.getBasicFee())
+                        .gatheringDeposit(gathering.getGatheringDeposit())
                         .build())
                 .collect(Collectors.toList());
 
@@ -226,7 +220,7 @@ public class GatheringService {
      * @throws CustomException 모임을 찾을 수 없거나 회원이 아닌 경우
      */
     public void validateGatheringMember(Long gatheringId, Long userId) {
-        if (!gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUserId(gatheringId, userId)) {
+        if (!gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)) {
             throw new CustomException(ErrorCode.NOT_GATHERING_MEMBER);
         }
     }
@@ -245,14 +239,14 @@ public class GatheringService {
         return GatheringDTO.builder()
                 .gatheringId(gathering.getGatheringId())
                 .managerId(gathering.getManagerId())
-                .gatheringAccountId(gathering.getGatheringAccountId().getGatheringAccountId())
+                .gatheringAccountId(gathering.getGatheringAccount().getAccountId())
                 .gatheringName(gathering.getGatheringName())
                 .gatheringIntroduction(gathering.getGatheringIntroduction())
                 .memberCount(gathering.getMemberCount())
                 .penaltyRate(gathering.getPenaltyRate())
                 .depositDate(gathering.getDepositDate())
-                .basicFee(gathering.getBasicFee().intValue())
-                .gatheringDeposit(gathering.getGatheringDeposit().intValue())
+                .basicFee(gathering.getBasicFee())
+                .gatheringDeposit(gathering.getGatheringDeposit())
                 .build();
     }
 
@@ -267,7 +261,7 @@ public class GatheringService {
         Gathering gathering = gatheringRepo.findById(gatheringId)
                 .orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
-        if (!accountId.equals(gathering.getGatheringAccountId().getGatheringAccountId())) {
+        if (!accountId.equals(gathering.getGatheringAccount().getAccountId())) {
             throw new CustomException(ErrorCode.GATHERING_ACCOUNT_INVALID);
         }
     }
@@ -294,7 +288,7 @@ public class GatheringService {
      * @return 모임 목록
      */
     public GatheringListResponseDTO getManagerGatherings(Long managerId) {
-        List<Gathering> gatherings = gatheringRepo.findByManagerId(managerId);
+        List<Gathering> gatherings = gatheringRepo.findByManager_UserId(managerId);
         return convertToGatheringListResponse(gatherings);
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
 public interface MypageRepo extends JpaRepository<AutoPayment, Long> {
 
     @Query("SELECT new com.b110.jjeonchongmu.domain.mypage.dto.MyPageResponse(" +
-           "u.userId, u.name, u.userEmail) " +
+           "u.userId, u.name, u.email) " +
            "FROM User u " +
            "WHERE u.userId = :userId")
     MyPageResponse findMyPageInfo(@Param("userId") Long userId);

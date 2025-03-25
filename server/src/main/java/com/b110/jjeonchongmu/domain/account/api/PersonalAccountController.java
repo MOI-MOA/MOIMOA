@@ -44,7 +44,7 @@ public class PersonalAccountController {
 	 * 계좌 송금
 	 */
 	@PostMapping("/transfer")
-	public ResponseEntity<TransferTransactionHistoryDTO> transfer(
+	public ResponseEntity<Object> transfer(
 			@RequestBody TransferRequestDTO requestDto) {
 		TransferTransactionHistoryDTO response = personalAccountService.initTransfer(requestDto);
 
@@ -61,7 +61,7 @@ public class PersonalAccountController {
 				TransferResponseDTO result = new TransferResponseDTO();
 				simpMessagingTemplate.convertAndSend(
 						"/queue/transfer-results" + requestDto.getToAccountId(),
-						result
+						"송금중 오류가 발생"
 				);
 			}
 		});

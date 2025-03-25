@@ -73,16 +73,16 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ScheduleAccount scheduleAccount;
 
-    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "manager" , fetch = FetchType.LAZY)
     private List<Gathering> gatherings;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "gatheringMemberUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GatheringMember> gatheringMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "subManager", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "scheduleMember" , fetch = FetchType.LAZY)
     private List<ScheduleMember> scheduleMembers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

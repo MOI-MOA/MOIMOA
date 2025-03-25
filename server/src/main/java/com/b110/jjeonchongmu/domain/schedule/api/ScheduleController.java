@@ -46,7 +46,7 @@ public class ScheduleController {
         return ResponseEntity.status(200).body(scheduleService.getScheduleDetail(userId,scheduleId));
     }
     // 일정 멤버(참여자) 목록 조회
-    @GetMapping({"/[scheduleId}/member"})
+    @GetMapping({"/{scheduleId}/member"})
     public ResponseEntity<List<ScheduleMemberDTO>> getScheduleMember(@PathVariable Long scheduleId, @RequestHeader("Authorization") String token){
         String jwtToken = token.replace("Bearer ", "");
         Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
@@ -54,7 +54,7 @@ public class ScheduleController {
         return ResponseEntity.status(200).body(scheduleService.getScheduleMember(userId,scheduleId));
     }
     // 일정 생성(총무만)
-    @PostMapping({"/{gatheringId"})
+    @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId, @RequestHeader("Authorization") String token) {
         String jwtToken = token.replace("Bearer ", "");
         Long userId = Long.valueOf(jwtTokenProvider.getUserId(jwtToken));

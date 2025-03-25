@@ -21,11 +21,11 @@ public class ScheduleMemberService {
     // 일정 참석
     @Transactional
     public void attendSchedule(Long userId,Long scheduleId) {
-        scheduleMemberRepo.insertScheduleMember(userId,scheduleId);
+//        scheduleMemberRepo.insertScheduleMember(userId,scheduleId);
     }
     // 일정 참석 취소
     @Transactional
     public void cancelAttendance(Long userId,Long scheduleId) {
-        scheduleMemberRepo.deleteScheduleMember(userId,scheduleId);
+//        scheduleMemberRepo.deleteScheduleMember(userId,scheduleId);
     }
 }

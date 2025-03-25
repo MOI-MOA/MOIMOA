@@ -30,7 +30,7 @@ public class Schedule {
     private Gathering gathering;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sub_manager_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User subManager;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

@@ -30,27 +30,29 @@ public class ScheduleService {
     }
     // 일정 상세조회
     public ScheduleDetailDTO getScheduleDetail(Long userId,Long scheduleId) {
-        return scheduleRepo.findScheduleDetailById(scheduleId);
+//        return scheduleRepo.findScheduleDetailById(scheduleId);
+        return null;
     }
     // 일정 멤버(참여자) 목록 조회
     public List<ScheduleMemberDTO> getScheduleMember(Long userId,Long scheduleId){
-        return scheduleRepo.selectAllScheduleMemebers(scheduleId);
+//        return scheduleRepo.findAllScheduleMembers(scheduleId);
+        return null;
     };
     // 일정 생성(총무만)
     @Transactional
     public void createSchedule(Long userId,Long gatheringId ,ScheduleCreateDTO scheduleCreateDTO) {
 
-        scheduleRepo.insertSchedule(gatheringId,scheduleCreateDTO);
+//        scheduleRepo.insertSchedule(gatheringId,scheduleCreateDTO);
     }
     // 일정 수정(총무만)
     @Transactional
     public void updateSchedule(Long userId,Long scheduleId,ScheduleUpdateDTO scheduleUpdateDTO) {
-        scheduleRepo.updateSchedule(scheduleId,scheduleUpdateDTO);
+//        scheduleRepo.updateSchedule(scheduleId,scheduleUpdateDTO);
 
     }
     // 일정 삭제(총무만)
     @Transactional
     public void deleteSchedule(Long userId,Long scheduleId) {
-        scheduleRepo.deleteSchedule(scheduleId);
+//        scheduleRepo.deleteSchedule(scheduleId);
     }
 }

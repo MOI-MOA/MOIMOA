@@ -30,22 +30,21 @@ public class AutoTransfer {
 
     public AutoTransfer(Long userId, GatheringMember gatheringMember) {
         Gathering gathering = gatheringMember.getGathering();
-        GatheringAccount gatheringAccount = gathering.getGatheringAccountId(); //일단 getGatheringAccountID로 했는데 나중에 고쳐
-        List<AutoPayment> autoPayments = gatheringAccount.getAutoPayments();
+        GatheringAccount gatheringAccount = gathering.getGatheringAccount(); //일단 getGatheringAccountID로 했는데 나중에 고쳐
 
-        // 자동이체에서 뽑아오는 파트
-        for (AutoPayment autoPayment : autoPayments) {
-            if (autoPayment.getPersonalAccount().getPersonalAccountHolder().getUserId() == userId) {
-                this.id = autoPayment.getAutoPaymentId();
-                this.amount = autoPayment.getAutoPaymentAmount();
-                this.day = autoPayment.getAutoPaymentDate();
-                this.status = autoPayment.getIsActive();
-                break;
-            }
-        }
-
-        // 모임계좌에서 뽑아오는 파트
-        this.account = gatheringAccount.getGatheringAccountNo();
+//        // 자동이체에서 뽑아오는 파트
+//        for (AutoPayment autoPayment : autoPayments) {
+//            if (autoPayment.getPersonalAccount().getPersonalAccountHolder().getUserId() == userId) {
+//                this.id = autoPayment.getAutoPaymentId();
+//                this.amount = autoPayment.getAutoPaymentAmount();
+//                this.day = autoPayment.getAutoPaymentDate();
+//                this.status = autoPayment.getIsActive();
+//                break;
+//            }
+//        }
+//
+//        // 모임계좌에서 뽑아오는 파트
+//        this.account = gatheringAccount.getGatheringAccountNo();
 
         // 모임에서 뽑아오는 파트
         this.deposit = gathering.getGatheringDeposit();
