@@ -4,8 +4,11 @@ import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 계좌 관련 API 컨트롤러
@@ -24,13 +27,34 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GatheringAccountController {
     private final GatheringAccountService gatheringAccountService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
     /**
      * 계좌 송금
      */
     @PostMapping("/transfer")
-    public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
-        String response = gatheringAccountService.transfer(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<Object> transfer(
+            @RequestBody TransferRequestDTO requestDto) {
+        TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 성공하면 계좌 잔액을 함께 보내기??
+                boolean isCompleted = gatheringAccountService.processTransfer(response);
+
+                simpMessagingTemplate.convertAndSend(
+                        "/queue/transfer-results" + requestDto.getToAccountId(),
+                        isCompleted
+                );
+            } catch (Exception e) {
+
+                TransferResponseDTO result = new TransferResponseDTO();
+                simpMessagingTemplate.convertAndSend(
+                        "/queue/transfer-results" + requestDto.getToAccountId(),
+                        "송금중 오류가 발생"
+                );
+            }
+        });
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     /**
