@@ -9,7 +9,6 @@ import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
-import com.b110.jjeonchongmu.domain.trade.dto.TradeDTO;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +29,13 @@ public class GatheringService {
 
     /**
      * 모임 생성
-     * 
+     *
      * @param request 모임 생성 요청 DTO
+     * @return
      * @throws CustomException 동일한 모임명이 이미 존재하는 경우
      */
     @Transactional
-    public void addGathering(GatheringDTO request) {
+    public GatheringDTO addGathering(GatheringDTO request) {
         // 동일한 모임명 존재 여부 확인
         if (gatheringRepo.existsByGatheringNameAndManagerId(request.getGatheringName(), request.getManagerId())) {
             throw new CustomException(ErrorCode.DUPLICATE_GATHERING_NAME);
@@ -62,6 +62,7 @@ public class GatheringService {
                 .build();
         
         gatheringRepo.save(gathering);
+        return null;
     }
 
     /**

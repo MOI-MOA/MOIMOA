@@ -6,7 +6,6 @@ import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.TokenResponseDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.UserResponseDTO;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
-import com.b110.jjeonchongmu.global.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +26,9 @@ public class UserController {
      * 새로운 사용자를 등록합니다.
      */
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupRequestDTO request) {
+    public ResponseEntity<String> signup(@Valid @RequestBody SignupRequestDTO request) {
         userService.signup(request);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.status(200).body("회원가입 성공");
     }
 
     /**
@@ -37,9 +36,9 @@ public class UserController {
      * 이메일과 비밀번호로 로그인하고 토큰을 발급받습니다.
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<TokenResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
+    public ResponseEntity<TokenResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
         TokenResponseDTO tokenResponse = userService.login(request);
-        return ResponseEntity.ok(ApiResponse.success(tokenResponse));
+        return ResponseEntity.status(200).body(tokenResponse);
     }
 
     /**
@@ -47,9 +46,9 @@ public class UserController {
      * 현재 사용 중인 토큰을 무효화합니다.
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout() {
+    public ResponseEntity<String> logout() {
         userService.logout();
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.status(200).body("토큰무효화 성공");
     }
 
     /**
@@ -57,9 +56,9 @@ public class UserController {
      * 현재 로그인한 사용자의 정보를 조회합니다.
      */
     @GetMapping("/user/me")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getMyInfo() {
+    public ResponseEntity<UserResponseDTO> getMyInfo() {
         UserResponseDTO response = userService.getMyInfo();
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.status(200).body(response);
     }
 
     /**
@@ -67,9 +66,9 @@ public class UserController {
      * 현재 비밀번호를 확인하고 새로운 비밀번호로 변경합니다.
      */
     @PatchMapping("/user/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody PasswordChangeRequestDTO request) {
+    public ResponseEntity<String> changePassword(@Valid @RequestBody PasswordChangeRequestDTO request) {
         userService.changePassword(request);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.status(200).body("비밀번호 변경 성공");
     }
 
     /**
@@ -77,8 +76,8 @@ public class UserController {
      * 사용자 정보를 삭제합니다.
      */
     @DeleteMapping("/user")
-    public ResponseEntity<ApiResponse<Void>> withdraw() {
+    public ResponseEntity<String> withdraw() {
         userService.withdraw();
-        return ResponseEntity.ok(ApiResponse.success());
+        return ResponseEntity.status(200).body("사용자 정보 삭제");
     }
 }
