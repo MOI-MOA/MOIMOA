@@ -71,7 +71,7 @@ public class MypageService {
 
         List<ParticipationRateData> participationRateDatas = new ArrayList<>();
 
-        List<Gathering> gatherings = gatheringRepo.findByManagerId(userId);
+        List<Gathering> gatherings = gatheringRepo.findByManager_UserId(userId);
 
         for (Gathering gathering : gatherings) {
             int participate = 0;

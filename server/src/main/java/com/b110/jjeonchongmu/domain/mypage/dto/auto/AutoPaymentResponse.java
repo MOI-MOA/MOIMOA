@@ -18,7 +18,7 @@ public class AutoPaymentResponse {
     private int accountBalance;
     private List<AutoTransfer> autoTransfers = new ArrayList<>();
     public AutoPaymentResponse(User user) {
-        this.accountBalance = user.getPersonalAccount().getPersonalAccountBalance();
+        this.accountBalance = user.getPersonalAccount().getAccountBalance();
         for (GatheringMember gatheringMember : user.getGatheringMembers()) {
             this.autoTransfers.add(new AutoTransfer(user.getUserId(), gatheringMember));
         }

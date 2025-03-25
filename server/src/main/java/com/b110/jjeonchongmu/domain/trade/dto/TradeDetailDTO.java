@@ -21,9 +21,9 @@ public class TradeDetailDTO {
 
         // if 안에 조건문 고쳐야함 ( token에서 내 정보 가져와서 내 계좌와 fromaccount 또는 toaccount 가 같으면 )
         if (true) {
-            tradePartnerName = trade.getFromAccount().getAccountHolder().getName();
+            tradePartnerName = trade.getFromAccount().getUser().getName();
         } else if (true) {
-            tradePartnerName = trade.getToAccount().getAccountHolder().getName();
+            tradePartnerName = trade.getToAccount().getUser().getName();
         }
 
         this.tradeDetail = trade.getTradeDetail();
@@ -40,9 +40,9 @@ public class TradeDetailDTO {
 
         // if 안에 조건문 고쳐야함 ( token에서 내 정보 가져와서 내 계좌와 fromaccount 또는 toaccount 가 같으면 )
         if (true) {
-            tradePartnerName = trade.getFromAccount().getAccountHolder().getName();
+            tradePartnerName = trade.getFromAccount().getUser().getName();
         } else if (true) {
-            tradePartnerName = trade.getToAccount().getAccountHolder().getName();
+            tradePartnerName = trade.getToAccount().getUser().getName();
         }
 
         return new TradeDetailDTO(

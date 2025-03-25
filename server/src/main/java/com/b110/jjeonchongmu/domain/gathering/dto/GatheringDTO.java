@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.repository.Query;
 
 @Getter
 @Setter
@@ -17,13 +18,13 @@ public class GatheringDTO {
     private int memberCount;
     private int penaltyRate;
     private String depositDate;
-    private int basicFee;
-    private int gatheringDeposit;
+    private Long basicFee;
+    private Long gatheringDeposit;
 
     @Builder
     public GatheringDTO(Long gatheringId, Long managerId, Long gatheringAccountId, String gatheringName,
                        String gatheringIntroduction, int memberCount, int penaltyRate, String depositDate,
-                       int basicFee, int gatheringDeposit) {
+        Long basicFee, Long gatheringDeposit) {
         this.gatheringId = gatheringId;
         this.managerId = managerId;
         this.gatheringAccountId = gatheringAccountId;
@@ -33,6 +34,24 @@ public class GatheringDTO {
         this.penaltyRate = penaltyRate;
         this.depositDate = depositDate;
         this.basicFee = basicFee;
+        this.gatheringDeposit = gatheringDeposit;
+    }
+
+
+    // GatheringDTO.java
+    public GatheringDTO(Long gatheringId, Long managerId, Long accountId,
+        String gatheringName, String gatheringIntroduction,
+        String depositDate, Long basicFee, Integer penaltyRate,
+        Integer memberCount, Long gatheringDeposit) {
+        this.gatheringId = gatheringId;
+        this.managerId = managerId;
+        this.gatheringAccountId = accountId;
+        this.gatheringName = gatheringName;
+        this.gatheringIntroduction = gatheringIntroduction;
+        this.depositDate = depositDate;
+        this.basicFee = basicFee;
+        this.penaltyRate = penaltyRate;
+        this.memberCount = memberCount;
         this.gatheringDeposit = gatheringDeposit;
     }
 }

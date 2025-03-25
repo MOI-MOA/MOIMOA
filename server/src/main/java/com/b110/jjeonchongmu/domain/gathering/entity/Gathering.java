@@ -24,12 +24,12 @@ public class Gathering {
 
     //총무아이디
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User manager;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gathering_account_id" , nullable = false)
-    private GatheringAccount gatheringAccountId;
+    private GatheringAccount gatheringAccount;
 
     @Column(name = "gathering_name", nullable = false, length = 255)
     private String gatheringName;
@@ -59,11 +59,11 @@ public class Gathering {
     private List<GatheringMember> gatheringMembers;
 
     @Builder
-    public Gathering(User manager, GatheringAccount gatheringAccountId, String gatheringName,
+    public Gathering(User manager, GatheringAccount gatheringAccount, String gatheringName,
                     String gatheringIntroduction, int memberCount, int penaltyRate, String depositDate,
                     Long basicFee, Long gatheringDeposit) {
         this.manager = manager;
-        this.gatheringAccountId = gatheringAccountId;
+        this.gatheringAccount = gatheringAccount;
         this.gatheringName = gatheringName;
         this.gatheringIntroduction = gatheringIntroduction;
         this.memberCount = memberCount;
@@ -78,14 +78,14 @@ public class Gathering {
     }
 
     public void updateGathering(String gatheringName, String gatheringIntroduction, int memberCount,
-                              int penaltyRate, String depositDate, int basicFee, int gatheringDeposit) {
+                              int penaltyRate, String depositDate, Long basicFee, Long gatheringDeposit) {
         this.gatheringName = gatheringName;
         this.gatheringIntroduction = gatheringIntroduction;
         this.memberCount = memberCount;
         this.penaltyRate = penaltyRate;
         this.depositDate = depositDate;
-        this.basicFee = (long) basicFee;
-        this.gatheringDeposit = (long) gatheringDeposit;
+        this.basicFee = basicFee;
+        this.gatheringDeposit = gatheringDeposit;
     }
 
     public void updateMemberCount(int memberCount) {
