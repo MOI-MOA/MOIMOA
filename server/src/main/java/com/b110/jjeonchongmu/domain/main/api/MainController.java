@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.main.api;
 
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.service.MainService;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +55,9 @@ public class MainController {
      * 2. 미확인 일정목록 조회 - GET /api/v1/main/schedule/uncheck
      */
     @GetMapping("/schedule/uncheck")
-    public ResponseEntity<List<ScheduleListDTO>> getUncheckSchedules(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<ScheduleDTO>> getUncheckSchedules(@RequestHeader("Authorization") String token) {
         Long userId = userIdFromToken(token);
-        List<ScheduleListDTO> response = mainService.getUncheckSchedules(userId);
+        List<ScheduleDTO> response = mainService.getUncheckSchedules(userId);
         return ResponseEntity.ok(response);
     }
 
@@ -64,9 +65,9 @@ public class MainController {
      * 3. 개인 일정목록 조회 - GET /api/v1/main/schedule/personal
      */
     @GetMapping("/schedule/personal")
-    public ResponseEntity<List<ScheduleListDTO>> getPersonalSchedules(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<ScheduleDTO>> getPersonalSchedules(@RequestHeader("Authorization") String token) {
         Long userId = userIdFromToken(token);
-        List<ScheduleListDTO> response = mainService.getPersonalSchedules(userId);
+        List<ScheduleDTO> response = mainService.getPersonalSchedules(userId);
         return ResponseEntity.ok(response);
     }
 
@@ -87,13 +88,13 @@ public class MainController {
      * 5. 특정 날짜 일정 조회 - GET /api/v1/main/schedule/{year}/{month}/{date}
      */
     @GetMapping("/schedule/{year}/{month}/{date}")
-    public ResponseEntity<List<ScheduleListDTO>> getDaySchedules(
+    public ResponseEntity<List<ScheduleDTO>> getDaySchedules(
             @RequestHeader("Authorization") String token,
             @PathVariable int year,
             @PathVariable int month,
             @PathVariable int date) {
         Long userId = userIdFromToken(token);
-        List<ScheduleListDTO> response = mainService.getDaySchedules(userId, year, month, date);
+        List<ScheduleDTO> response = mainService.getDaySchedules(userId, year, month, date);
         return ResponseEntity.ok(response);
     }
 
@@ -101,9 +102,9 @@ public class MainController {
      * 6. 오늘 일정 조회 - GET /api/v1/main/schedule/today
      */
     @GetMapping("/schedule/today")
-    public ResponseEntity<List<ScheduleListDTO>> getTodaySchedules(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<ScheduleDTO>> getTodaySchedules(@RequestHeader("Authorization") String token) {
         Long userId = userIdFromToken(token);
-        List<ScheduleListDTO> response = mainService.getTodaySchedules(userId);
+        List<ScheduleDTO> response = mainService.getTodaySchedules(userId);
         return ResponseEntity.ok(response);
     }
 }

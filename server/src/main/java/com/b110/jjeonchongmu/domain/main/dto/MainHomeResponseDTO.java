@@ -1,6 +1,6 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +25,6 @@ public class MainHomeResponseDTO {
 
     private int uncheckScheduleCount;
     private List<DateDTO> dateList;
-    private List<ScheduleListDTO> todayScheduleList;
-    private List<ScheduleListDTO> upcommingScheduleList;
+    private List<ScheduleDTO> todayScheduleList;
+    private List<ScheduleDTO> upcommingScheduleList;
 }

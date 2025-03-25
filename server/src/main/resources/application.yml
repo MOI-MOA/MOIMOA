@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: default
   datasource:
     url: jdbc:mysql://localhost:3306/jjeonchongmu?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
