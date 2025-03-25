@@ -14,12 +14,13 @@ public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 	/**
 	 * 모임 계좌 ID로 모임 정보 조회
 	 */
-	Optional<Gathering> findByGatheringAccountId(Long gatheringAccountId);
+	@Query("SELECT g FROM Gathering g WHERE g.gatheringAccount.accountId = :accountId")
+	Optional<Gathering> findByGatheringAccountId(@Param("accountId") Long accountId);
 
 	/**
 	 * 총무 ID로 모임 목록 조회
 	 */
-	List<Gathering> findByManagerId(Long managerId);
+	List<Gathering> findByManager_UserId(Long managerId);
 
 	/**
 	 * 모임명으로 모임 검색
@@ -29,7 +30,7 @@ public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 	/**
 	 * 모임 ID와 총무 ID로 모임 조회
 	 */
-	Optional<Gathering> findByGatheringIdAndManagerId(Long gatheringId, Long managerId);
+	Optional<Gathering> findByGatheringIdAndManager_UserId(Long gatheringId, Long managerId);
 
 	/**
 	 * 모임 계좌 잔액 조회
@@ -40,12 +41,12 @@ public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 	/**
 	 * 모임 기본 정보 존재 여부 확인
 	 */
-	boolean existsByGatheringIdAndManagerId(Long gatheringId, Long managerId);
+	boolean existsByGatheringIdAndManager_UserId(Long gatheringId, Long userId);
 
 	/**
 	 * 모임명과 총무 ID로 모임 존재 여부 확인
 	 */
-	boolean existsByGatheringNameAndManagerId(String gatheringName, Long managerId);
+	boolean existsByGatheringNameAndManager_UserId(String gatheringName, Long managerId);
 
 	/**
 	 * 모임 ID로 존재 여부 확인

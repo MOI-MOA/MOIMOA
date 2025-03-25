@@ -11,9 +11,9 @@ import java.util.List;
 public interface NotificationRepo extends JpaRepository<Notification, Long> {
     
     @Query("SELECT new com.b110.jjeonchongmu.domain.notification.dto.NotificationResponseDto(" +
-           "n.content, n.notificationType, n.dataId, n.dataType, n.createdAt) " +
+           "n.notificationContent, n.notificationType, n.dataId, n.dataType, n.notificationCreatedAt) " +
            "FROM Notification n " +
-           "WHERE n.user.id = :userId AND n.isRead = false " +
-           "ORDER BY n.createdAt DESC")
+           "WHERE n.user.userId = :userId AND n.isRead = false " +
+           "ORDER BY n.notificationCreatedAt DESC")
     List<NotificationResponseDto> findUnreadNotifications(@Param("userId") Long userId);
 }

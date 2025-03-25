@@ -25,10 +25,10 @@ public class TradeHistoryDTO {
 
 		if (accountId.equals(trade.getFromAccount().getAccountId())) {
 			tradeType = TradeType.WITHDRAWAL;
-			otherUserName = trade.getToAccount().getAccountHolder().getName();
+			otherUserName = trade.getToAccount().getUser().getName();
 		}else {
 			tradeType = TradeType.DEPOSIT;
-			otherUserName = trade.getFromAccount().getAccountHolder().getName();
+			otherUserName = trade.getFromAccount().getUser().getName();
 		}
 		TradeHistoryDTO tradeHistoryDTO = new TradeHistoryDTO(
 				trade.getTradeId(),

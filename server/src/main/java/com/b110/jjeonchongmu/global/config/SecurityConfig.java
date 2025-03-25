@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.global.config;
 
+import com.b110.jjeonchongmu.global.security.CustomUserDetailsService;
 import com.b110.jjeonchongmu.global.security.JwtAuthenticationFilter;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import com.b110.jjeonchongmu.global.security.TokenBlacklistService;
@@ -26,6 +27,7 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;  // JWT 토큰 생성 및 검증을 위한 컴포넌트
     private final TokenBlacklistService tokenBlacklistService;
+    private final CustomUserDetailsService userDetailsService;
 
     /**
      * Spring Security FilterChain 구성
@@ -54,7 +56,7 @@ public class SecurityConfig {
                                 .anyRequest().authenticated())
                 
                 // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 이전에 추가
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

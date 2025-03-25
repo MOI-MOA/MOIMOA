@@ -18,7 +18,7 @@ public class Account {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User accountHolder;
+    private User user;
 
     @Column(name = "account_no", nullable = false)
     private String accountNo;
@@ -28,6 +28,5 @@ public class Account {
 
     @Column(name = "account_pw", nullable = false)
     private String AccountPw;
-
 
 }

@@ -36,7 +36,7 @@ public class UserService {
      */
     @Transactional
     public void signup(SignupRequestDTO request) {
-        if (userRepo.existsByUserEmail(request.getEmail())) {
+        if (userRepo.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
@@ -54,7 +54,7 @@ public class UserService {
      * 로그인
      */
     public TokenResponseDTO login(LoginRequestDTO request) {
-        User user = userRepo.findByUserEmail(request.getEmail())
+        User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

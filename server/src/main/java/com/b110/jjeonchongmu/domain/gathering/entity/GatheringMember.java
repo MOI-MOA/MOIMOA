@@ -21,8 +21,9 @@ public class GatheringMember {
     @JoinColumn(name = "gathering_id", nullable = false)
     private Gathering gathering;
 
-    @Column(name = "gathering_member_user_id", nullable = false)
-    private Long gatheringMemberUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User gatheringMemberUser;
 
     @Column(name = "gathering_attend_count")
     private int gatheringAttendCount;

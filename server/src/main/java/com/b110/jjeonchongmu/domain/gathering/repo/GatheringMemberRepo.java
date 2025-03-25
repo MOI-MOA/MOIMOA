@@ -18,36 +18,27 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
      */
     List<GatheringMember> findByGatheringGatheringId(Long gatheringId);
 
-    /**
-     * 모임 ID와 사용자 ID로 회원 정보 조회
-     */
-    Optional<GatheringMember> findByGatheringGatheringIdAndGatheringMemberUserId(Long gatheringId, Long userId);
-
-    /**
-     * 사용자가 참여한 모든 모임의 회원 정보 조회
-     */
-    List<GatheringMember> findByGatheringMemberUserId(Long userId);
 
     /**
      * 모임 ID와 사용자 ID로 회원 정보 삭제
      */
-    void deleteByGatheringGatheringIdAndGatheringMemberUserId(Long gatheringId, Long userId);
+    void deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(Long gatheringId, Long userId);
 
     /**
      * 모임 ID와 사용자 ID로 회원 존재 여부 확인
      */
-    boolean existsByGatheringGatheringIdAndGatheringMemberUserId(Long gatheringId, Long userId);
+    boolean existsByGatheringGatheringIdAndGatheringMemberUser_UserId(Long gatheringId, Long userId);
 
     /**
      * 사용자 ID로 참여중인 모임 목록 조회
      */
     @Query("SELECT new com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO(" +
-            "g.gatheringId, g.managerId, g.gatheringAccountId, g.gatheringName, " +
+            "g.gatheringId, g.manager.userId, g.gatheringAccount.accountId, g.gatheringName, " +
             "g.gatheringIntroduction, g.depositDate, g.basicFee, g.penaltyRate, " +
             "g.memberCount, g.gatheringDeposit) " +
             "FROM GatheringMember gm " +
             "JOIN gm.gathering g " +
-            "WHERE gm.gatheringMemberUserId = :userId")
+            "WHERE gm.gatheringMemberUser.userId = :userId")
     List<GatheringDTO> findGatheringsByUserId(@Param("userId") Long userId);
 
     /**
@@ -55,8 +46,4 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
      */
     long countByGatheringGatheringId(Long gatheringId);
 
-    /**
-     * 모임 ID로 납부 완료된 회원 수 조회
-     */
-    long countByGatheringGatheringIdAndGatheringPaymentStatusIsTrue(Long gatheringId);
 } 
