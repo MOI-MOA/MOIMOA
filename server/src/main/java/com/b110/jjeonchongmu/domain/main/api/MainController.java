@@ -57,11 +57,11 @@ public class MainController {
         try {
             Long userId = userIdFromToken(token);
             MainHomeResponseDTO response = mainService.getMainHome(userId);
-            System.out.println("Controller response: " + response);
+            System.out.println("Controller 홈 화면 조회 response: " + response);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("Controller exception: " + e.getMessage());
+            System.out.println("Controller 홈 화면 조회 exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
@@ -75,11 +75,11 @@ public class MainController {
         try {
             Long userId = userIdFromToken(token);
             List<ScheduleDTO> response = mainService.getUncheckSchedules(userId);
-            System.out.println("Controller getUncheckSchedules response: " + response);
+            System.out.println("Controller 미확인 일정목록 조회 response: " + response);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("Controller getUncheckSchedules exception: " + e.getMessage());
+            System.out.println("Controller 미확인 일정목록 조회 exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -92,11 +92,11 @@ public class MainController {
         try {
             Long userId = userIdFromToken(token);
             List<ScheduleDTO> response = mainService.getPersonalSchedules(userId);
-            System.out.println("Controller getPersonalSchedules response: " + response);
+            System.out.println("Controller 개인 일정목록 조회 response: " + response);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("Controller getPersonalSchedules exception: " + e.getMessage());
+            System.out.println("Controller 개인 일정목록 조회 exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -113,11 +113,11 @@ public class MainController {
         try {
             Long userId = userIdFromToken(token);
             List<DateDTO> response = mainService.getMonthSchedules(userId, year, month);
-            System.out.println("Controller getMonthSchedules response: " + response);
+            System.out.println("Controller 해당 달 일정 조회 response: " + response);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("Controller getMonthSchedules exception: " + e.getMessage());
+            System.out.println("Controller 해당 달 일정 조회 exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -134,11 +134,11 @@ public class MainController {
         try {
             Long userId = userIdFromToken(token);
             List<ScheduleDTO> response = mainService.getDaySchedules(userId, year, month, date);
-            System.out.println("Controller getDaySchedules response: " + response);
+            System.out.println("Controller 특정 날짜 일정 조회 response: " + response);
             return ResponseEntity.ok(response);
 
         }catch (Exception e) {
-            System.out.println("Controller getDaySchedules exception: " + e.getMessage());
+            System.out.println("Controller 특정 날짜 일정 조회 exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -151,11 +151,11 @@ public class MainController {
         try {
             Long userId = userIdFromToken(token);
             List<ScheduleDTO> response = mainService.getTodaySchedules(userId);
-            System.out.println("Controller getTodaySchedules response: " + response);
+            System.out.println("Controller 오늘 일정 조회  response: " + response);
             return ResponseEntity.ok(response);
 
         }catch (Exception e) {
-            System.out.println("Controller getTodaySchedules exception: " + e.getMessage());
+            System.out.println("Controller 오늘 일정 조회  exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

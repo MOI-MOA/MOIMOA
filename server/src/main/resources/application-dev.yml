@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
@@ -27,6 +27,7 @@ logging.level:
     security: DEBUG
     web.socket: DEBUG
     messaging: DEBUG
+  com.b110.jjeonchongmu: DEBUG
 
 springdoc:
   swagger-ui:
