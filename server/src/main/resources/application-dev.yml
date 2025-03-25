@@ -6,14 +6,15 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
-      host: my-cache-server
+#      host: my-cache-server
+      host: localhost
       port: 6379
 
 paging:

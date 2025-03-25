@@ -19,7 +19,7 @@ public class Gathering {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "gahtering_id", nullable = false)
+    @Column(name = "gathering_id", nullable = false)
     private Long gatheringId;
 
     //총무아이디
@@ -34,7 +34,7 @@ public class Gathering {
     @Column(name = "gathering_name", nullable = false, length = 255)
     private String gatheringName;
 
-    @Column(name = "gahtering_introduction")
+    @Column(name = "gathering_introduction")
     private String gatheringIntroduction;
 
     @Column(name = "deposit_date")

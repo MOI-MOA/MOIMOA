@@ -57,8 +57,8 @@ public class MainService {
      * 미확인 일정 목록 조회
      */
     public List<ScheduleDTO> getUncheckSchedules(Long userId) {
-        List<Object[]> data = mainRepo.findUncheckSchedules(userId);
-        return convertToScheduleListDTO(data);
+        List<Object[]> datas = mainRepo.findUncheckSchedules(userId);
+        return convertToScheduleListDTO(datas);
     }
 
     /**
@@ -107,14 +107,13 @@ public class MainService {
     /**
      * Object[] 데이터를 ScheduleListDTO로 변환
      */
-    private List<ScheduleDTO> convertToScheduleListDTO(List<Object[]> data) {
+    private List<ScheduleDTO> convertToScheduleListDTO(List<Object[]> datas) {
         List<ScheduleDTO> result = new ArrayList<>();
 
-        for (Object[] row : data) {
+        for (Object[] row : datas) {
             ScheduleDTO dto = new ScheduleDTO();
 
             // Object[] 배열의 각 컬럼에 해당하는 값을 DTO에 설정
-            // 쿼리: SELECT s.schedule_id, s.title, s.detail, s.place, s.start_time, g.gathering_id, g.name, COUNT(sa.schedule_attendee_id)
             if (row.length > 0 && row[0] != null) dto.setScheduleId((Long) row[0]);
             if (row.length > 1 && row[1] != null) dto.setScheduleTitle((String) row[1]);
             if (row.length > 3 && row[3] != null) dto.setSchedulePlace((String) row[3]);
@@ -122,6 +121,7 @@ public class MainService {
             if (row.length > 5 && row[5] != null) dto.setGatheringId((Long) row[5]);
             if (row.length > 6 && row[6] != null) dto.setGatheringName((String) row[6]);
             if (row.length > 7 && row[7] != null) dto.setAttendeeCount(((Number) row[7]).intValue());
+            if (row.length > 8 && row[8] != null) dto.setPerBudget(((Number) row[8]).longValue());
 
             result.add(dto);
         }
