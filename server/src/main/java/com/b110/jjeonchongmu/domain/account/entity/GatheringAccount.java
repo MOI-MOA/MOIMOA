@@ -1,16 +1,19 @@
 package com.b110.jjeonchongmu.domain.account.entity;
-import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
-import com.b110.jjeonchongmu.domain.user.entity.User;
-import jakarta.persistence.*;
-import lombok.*;
 
-import java.util.List;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "gathering_account")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DiscriminatorValue("GATHERING")  // 이 부분을 추가
 public class GatheringAccount extends Account {
 
     @OneToOne(mappedBy = "gatheringAccount" , fetch = FetchType.LAZY)

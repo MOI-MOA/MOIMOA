@@ -17,5 +17,4 @@ public class StatisticsResponse {
     private List<MonthlyExpenseData> monthlyExpenseData;
     private List<GroupExpenseData> groupExpenseData;
     private List<ParticipationRateData> participationRateData;
-    private StatisticsSummary statisticsSummary;
 } 

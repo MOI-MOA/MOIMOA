@@ -9,11 +9,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "account")
 @Getter
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accountId;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -29,4 +31,11 @@ public class Account {
     @Column(name = "account_pw", nullable = false)
     private String AccountPw;
 
+    public void decreaseBalance(Integer amount) {
+        this.AccountBalance -= amount;
+    }
+
+    public void increaseBalance(Integer amount) {
+        this.AccountBalance += amount;
+    }
 }

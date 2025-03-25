@@ -1,11 +1,14 @@
 package com.b110.jjeonchongmu.domain.mypage.service;
 
+import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
+import com.b110.jjeonchongmu.domain.account.repo.AutoPaymentRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
-import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.mypage.dto.*;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
-import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoTransfer;
+import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.GroupExpenseData;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.ParticipationRateData;
@@ -17,7 +20,6 @@ import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.stat.Statistics;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +38,9 @@ public class MypageService {
     private final UserRepo userRepo;
     private final ScheduleRepo scheduleRepo;
     private final GatheringRepo gatheringRepo;
+    private final AutoPaymentRepo autoPaymentRepo;
 
-    public List<AutoTransfer> getAutoPayments(String type) {
+    public List<AutoPaymentDto> getAutoPayments(String type) {
         return null;
     }
 
@@ -62,14 +65,16 @@ public class MypageService {
         LocalDateTime start = startYearMonth.atDay(1).atStartOfDay(); // ex) 2025-02-01 00:00:00
         LocalDateTime end = endYearMonth.atEndOfMonth().atTime(23, 59, 59); // ex) 2025-02-28 23:59:59
 
+        // ###################################
         List<MonthlyExpenseData> monthlyExpenseDatas =
                 scheduleRepo.findMonthlyExpenseDataByUserIdAndDateBetween(
-                userId, start, end);
+                        userId, start, end);
 
         List<GroupExpenseData> groupExpenseDatas = scheduleRepo.findGroupExpensesByUserId(
                 userId);
 
         List<ParticipationRateData> participationRateDatas = new ArrayList<>();
+        // ###################################
 
         List<Gathering> gatherings = gatheringRepo.findByManager_UserId(userId);
 
@@ -93,8 +98,7 @@ public class MypageService {
             );
             participationRateDatas.add(participationRateData);
         }
-
-        return null;
+        return new StatisticsResponse(monthlyExpenseDatas, groupExpenseDatas, participationRateDatas);
     }
 
     private Long getCurrentUserId() {
@@ -105,5 +109,37 @@ public class MypageService {
     public AutoPaymentResponse getAutoPaymentResponseByUserId(Long id) {
         User user = userRepo.getUserByUserId(id);
         return new AutoPaymentResponse(user);
+    }
+
+    public ProfileDefaultResponse getProfileDefaultByUserId(Long id) {
+        User user = userRepo.getUserByUserId(id);
+
+        return new ProfileDefaultResponse(user);
+    }
+
+    public void updateAutoTransfer(Long id, Long autoPaymentId, UpdateAutoPaymentRequestDto requestDto) {
+        User user = userRepo.getUserByUserId(id);
+
+        AutoPayment autoPayment = autoPaymentRepo.findById(autoPaymentId)
+                .orElseThrow(() -> new RuntimeException("autoPayment를 autoPaymentId로 찾을 수 없습니다"));
+
+        if (!autoPayment.getPersonalAccount().getUser().getUserId().equals(user.getUserId())) {
+            throw new RuntimeException("유저가 자동이체의 주인이 아닙니다.");
+        }
+
+        int amount = requestDto.getAmount();
+        int day = requestDto.getDay();
+        boolean status = false;
+        if (requestDto.getStatus().equals("active")) {
+            status = true;
+        } else if (requestDto.getStatus().equals("inactive")) {
+            status = false;
+        } else {
+            throw new RuntimeException("자동이체의 활성화 여부가 active 또는 inactive로 오지 않았습니다");
+        }
+
+        autoPayment.updateAutoPaymentAmount(amount);
+        autoPayment.updateAutoPaymentDate(day);
+        autoPayment.updateIsActive(status);
     }
 }

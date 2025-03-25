@@ -61,16 +61,14 @@ public class User implements UserDetails {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // cascade = CascadeType.REMOVE : user 삭제시 해당 personalAccount 자동삭제
-    @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    // User 클래스 내에서
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private PersonalAccount personalAccount;
 
-    // cascade = CascadeType.REMOVE : user 삭제시 해당 gatheringAccount 자동삭제
-    @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private GatheringAccount gatheringAccount;
 
-    // cascade = CascadeType.REMOVE : user 삭제시 해당 scheduleAccount 자동삭제
-    @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ScheduleAccount scheduleAccount;
 
     @OneToMany(mappedBy = "manager" , fetch = FetchType.LAZY)

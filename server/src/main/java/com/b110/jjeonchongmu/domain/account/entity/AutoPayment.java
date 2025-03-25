@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AutoPayment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auto_payment_id", nullable = false)
@@ -34,4 +33,14 @@ public class AutoPayment {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
+
+    public void updateAutoPaymentAmount(Integer autoPaymentAmount) {
+        this.autoPaymentAmount = autoPaymentAmount;
+    }
+    public void updateAutoPaymentDate(Integer autoPaymentDate) {
+        this.autoPaymentDate = autoPaymentDate;
+    }
+    public void updateIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 }
