@@ -17,7 +17,7 @@ public class TransferTransactionHistoryDTO {
 	private AccountType fromAccountType;
 	private Long toAccountId;
 	private AccountType toAccountType;
-	private Long amount;
+	private Integer amount;
 	private String detail;
 	private TransactionStatus status;
 	private String errorCode;
@@ -25,4 +25,9 @@ public class TransferTransactionHistoryDTO {
 	private String externalTransactionId;
 	private LocalDateTime createdAt;
 	private LocalDateTime completedAt;
+
+	public void updateStatus(TransactionStatus transactionStatus) {
+		this.status = transactionStatus;
+	}
+
 }

@@ -10,11 +10,9 @@ import com.b110.jjeonchongmu.domain.account.service.PersonalAccountService;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,11 +48,12 @@ public class PersonalAccountController {
 
 		CompletableFuture.runAsync(() -> {
 			try {
-				TransferResponseDTO result = personalAccountService.processTransfer(response);
+				// 성공하면 계좌 잔액을 함께 보내기??
+				boolean isCompleted = personalAccountService.processTransfer(response);
 
 				simpMessagingTemplate.convertAndSend(
 						"/queue/transfer-results" + requestDto.getToAccountId(),
-						result
+						isCompleted
 				);
 			} catch (Exception e) {
 
@@ -67,6 +66,7 @@ public class PersonalAccountController {
 		});
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
+
 
 	/**
 	 * 계좌 비밀번호 확인
