@@ -123,4 +123,8 @@ public class ExternalBankApiComponent {
 		}
 		return sb.toString();
 	}
+
+	
 }
+
+
