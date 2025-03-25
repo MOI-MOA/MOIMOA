@@ -26,5 +26,5 @@ public class MainHomeResponseDTO {
     private int uncheckScheduleCount;
     private List<DateDTO> dateList;
     private List<ScheduleDTO> todayScheduleList;
-    private List<ScheduleDTO> upcommingScheduleList;
+    private List<ScheduleDTO> upcomingScheduleList;
 }

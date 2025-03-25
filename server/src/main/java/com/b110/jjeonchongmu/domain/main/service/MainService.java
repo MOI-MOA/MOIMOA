@@ -3,7 +3,6 @@ package com.b110.jjeonchongmu.domain.main.service;
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.repo.MainRepo;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +48,7 @@ public class MainService {
         response.setUncheckScheduleCount(uncheckCount);
         response.setDateList(dateList);
         response.setTodayScheduleList(todaySchedules);
-        response.setUpcommingScheduleList(upcomingSchedules);
+        response.setUpcomingScheduleList(upcomingSchedules);
 
         return response;
     }

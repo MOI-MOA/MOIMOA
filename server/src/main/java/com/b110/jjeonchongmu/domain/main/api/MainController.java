@@ -3,7 +3,6 @@ package com.b110.jjeonchongmu.domain.main.api;
 import com.b110.jjeonchongmu.domain.main.dto.*;
 import com.b110.jjeonchongmu.domain.main.service.MainService;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +47,7 @@ public class MainController {
     public ResponseEntity<MainHomeResponseDTO> getMainHome(@RequestHeader("Authorization") String token) {
         Long userId = userIdFromToken(token);
         MainHomeResponseDTO response = mainService.getMainHome(userId);
+        System.out.println("Controller response: " + response);
         return ResponseEntity.ok(response);
     }
 

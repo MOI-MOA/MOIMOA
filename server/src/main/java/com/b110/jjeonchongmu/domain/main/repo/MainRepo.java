@@ -1,6 +1,6 @@
 package com.b110.jjeonchongmu.domain.main.repo;
 
-import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleListDTO;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface MainRepo extends JpaRepository<Object, Long> {
+public interface MainRepo extends JpaRepository<Schedule, Long> {
 
     /**
      * 미확인 일정 개수 조회
