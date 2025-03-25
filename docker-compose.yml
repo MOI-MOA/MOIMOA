@@ -5,32 +5,38 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d        # 상대 경로로 변경
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
+      - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
     depends_on:
       - client
       - server
     restart: always
+    networks:
+      - app-network
+
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     depends_on:
       - server
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://server:8080
+    restart: always
+    networks:
+      - app-network
 
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_PROFILES_ACTIVE=production
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       # 추가 환경 변수가 필요하다면 여기에 추가
     depends_on:
@@ -38,21 +44,26 @@ services:
         condition: service_healthy
       my-cache-server:
         condition: service_healthy
+    networks:
+      - app-network
+    restart: always
 
   my-db:
     image: mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      # - MYSQL_USER=${MYSQL_USER}
     volumes:
       - ./mysql_data:/var/lib/mysql
     ports:
       - 3307:3306
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping" ]
       interval: 5s
       retries: 10
+
   my-cache-server:
     image: redis
     ports:
@@ -60,7 +71,13 @@ services:
     command: redis-server --port 6379 --protected-mode yes
     volumes:
       - ./redis_data:/data
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       retries: 10
+
+networks:
+  app-network:
+    driver: bridge
