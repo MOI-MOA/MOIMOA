@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "account")
 @Getter
+@Inheritance(strategy = InheritanceType.JOINED)  // 이 부분 추가
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
@@ -29,4 +30,11 @@ public class Account {
     @Column(name = "account_pw", nullable = false)
     private String AccountPw;
 
+    public void decreaseBalance(Integer amount) {
+        this.AccountBalance -= amount;
+    }
+
+    public void increaseBalance(Integer amount) {
+        this.AccountBalance += amount;
+    }
 }

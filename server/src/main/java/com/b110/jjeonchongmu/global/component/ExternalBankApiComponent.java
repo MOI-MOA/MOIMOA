@@ -8,8 +8,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -29,6 +30,7 @@ public class ExternalBankApiComponent {
 	private final String apiUrl;
 	private final String apiKey;
 
+	private static final Logger log = LoggerFactory.getLogger(ExternalBankApiComponent.class);
 	@Autowired
 	public ExternalBankApiComponent(
 			RestTemplateBuilder builder,
@@ -39,8 +41,38 @@ public class ExternalBankApiComponent {
 		this.apiKey = apiKey;
 	}
 
+	public BankTransferResponseDTO sendTransferWithRetry(BankTransferRequestDTO requestDTO)
+			throws IllegalAccessException {
+		int maxRetries = 3;
+		int retryDelayMs = 1000; // 1초
+
+		for (int attempt = 1; attempt <= maxRetries; attempt++) {
+			try {
+				BankTransferResponseDTO response = externalTransfer(requestDTO);
+				log.info("외부 은행 API 호출 성공");
+				return response;
+			} catch (Exception e) {
+				log.error("외부 은행 API 호출 실패 (시도 {}/{}): {}", attempt, maxRetries, e.getMessage());
+
+				if (attempt == maxRetries) {
+					log.error("최대 재시도 횟수 초과. 송금 실패");
+					throw new IllegalAccessException("외부 은행 API 호출 중 오류 발생");
+				}
+				try {
+					log.info("{}ms 후 재시도 예정", retryDelayMs);
+					Thread.sleep(retryDelayMs);
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					throw new IllegalAccessException("재시도 대기 중 인터럽트 발생");
+				}
+			}
+		}
+		// 코드가 여기까지 오는 경우는 없지만, 컴파일을 위해 필요
+		throw new RuntimeException("예상치 못한 오류");
+	}
+
 	@SneakyThrows
-	public BankTransferResponseDTO externalTransfer(BankTransferRequestDTO request) {
+	public BankTransferResponseDTO externalTransfer(BankTransferRequestDTO requestDTO) {
 
 		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
@@ -55,15 +87,15 @@ public class ExternalBankApiComponent {
 		header.put("apiServiceCode", "createDemandDeposit");
 		header.put("institutionTransactionUniqueNo", generate20DigitRandomNumber());
 		header.put("apiKey", apiKey);
-		header.put("userKey", request.getUserKey()); // 필요한 경우 값 설정
+		header.put("userKey", requestDTO.getUserKey()); // 필요한 경우 값 설정
 
 		requestBody.put("Header", header);
 
-		requestBody.put("depositAccountNo", request.getToAccountNo());
+		requestBody.put("depositAccountNo", requestDTO.getToAccountNo());
 		requestBody.put("depositTransactionSummary", "(수시입출금) : 입금(이체)");
-		requestBody.put("transactionBalance", request.getAmount());
-		requestBody.put("withdrawAccountNo", request.getFromAccountNo());
-		requestBody.put("withdrawTransactionSummary", "(수시입출금) : 입금(이체)");
+		requestBody.put("transactionBalance", requestDTO.getAmount());
+		requestBody.put("withdrawAccountNo", requestDTO.getFromAccountNo());
+		requestBody.put("withdrawTransactionSummary", "(수시입출금) : 출금(이체)");
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
