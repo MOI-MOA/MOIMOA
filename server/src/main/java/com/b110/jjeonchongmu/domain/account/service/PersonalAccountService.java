@@ -49,12 +49,16 @@ public class PersonalAccountService {
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
+		// 계좌를 db에서 확인
+		Account account = accountRepo.findById(requestDto.getToAccountId())
+				.orElseThrow(() -> new IllegalArgumentException("계좌 조회 실패"));
+
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
 				.fromAccountId(requestDto.getFromAccountId())
 				.fromAccountType(requestDto.getFromAccountType())
 				.toAccountId(requestDto.getToAccountId())
-				.toAccountType(requestDto.getToAccountType())
+				.toAccountType(account.getDtype())
 				.amount(requestDto.getTransferAmount())
 				.detail(requestDto.getTradeDetail())
 				.status(TransactionStatus.BEFORE)
@@ -67,7 +71,8 @@ public class PersonalAccountService {
 			TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
 
 		try {
-
+			System.out.println("=".repeat(100));
+			System.out.println("여기 들어와?????");
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
 			PersonalAccount fromAccount = personalAccountRepo.findByAccount(
 							transferTransactionHistoryDTO.getToAccountId())
@@ -75,7 +80,7 @@ public class PersonalAccountService {
 
 			String originAccountPw = fromAccount.getAccountPw();
 			String userAccountPw = transferTransactionHistoryDTO.getAccountPw();
-
+			System.out.println(originAccountPw + " , " + userAccountPw);
 			boolean isPassword = passwordEncoder.matches(userAccountPw, originAccountPw);
 			if(!isPassword) {
 				throw new IllegalAccessException("비밀번호 불일치");
@@ -87,14 +92,13 @@ public class PersonalAccountService {
 				throw new IllegalStateException("잔액이 부족합니다");
 			}
 
-
 			// 계좌 타입에 따라 입금 계좌 조회
 			Account toAccount;
 			String successMessage;
 			toAccount = switch (transferTransactionHistoryDTO.getToAccountType()) {
 				case GATHERING -> gatheringAccountRepo.findByAccount(
 								transferTransactionHistoryDTO.getToAccountId())
-						.orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류"));
+						.orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류 "));
 				case SCHEDULE -> scheduleAccountRepo.findByAccount(
 								transferTransactionHistoryDTO.getToAccountId())
 						.orElseThrow(() -> new IllegalArgumentException("일정계좌 조회 오류"));
@@ -122,10 +126,10 @@ public class PersonalAccountService {
 					AccountType.PERSONAL,
 					toAccount,
 					transferTransactionHistoryDTO.getToAccountType(),
-					transferTransactionHistoryDTO.getAmount().longValue(),
+					transferTransactionHistoryDTO.getAmount(),
 					LocalDateTime.now(),
 					transferTransactionHistoryDTO.getDetail(),
-					fromAccount.getAccountBalance().longValue()
+					fromAccount.getAccountBalance()
 			);
 
 			tradeRepo.save(trade);
@@ -134,13 +138,14 @@ public class PersonalAccountService {
 					toAccount.getUser().getUserKey(),
 					toAccount.getAccountNo(),
 					fromAccount.getAccountNo(),
-					transferTransactionHistoryDTO.getAmount().longValue()
+					transferTransactionHistoryDTO.getAmount()
 					);
 
 			externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
 			return false;
 		}

@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class TransferRequestDTO {
-
 	private AccountType fromAccountType;
 	private Long fromAccountId;
-	private AccountType toAccountType;
+	private AccountType fromAccountType;
 	private Long toAccountId;
 	private String tradeDetail;
 	private Long transferAmount;
+	private String accountPw;
 }

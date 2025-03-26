@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.entity;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,10 @@ public class Account {
 
     @Column(name = "account_pw", nullable = false)
     private String accountPw;
+
+    @Column(name = "dtype", insertable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private AccountType dtype;
 
     public Account(User user, String accountNo, String accountPw) {
         this.user = user;
