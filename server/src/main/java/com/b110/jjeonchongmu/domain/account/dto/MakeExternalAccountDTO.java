@@ -8,4 +8,5 @@ import lombok.RequiredArgsConstructor;
 public class MakeExternalAccountDTO {
 	private final String userKey;
 	private final String externalAccountType;
+	private final Long accountPw;
 }
