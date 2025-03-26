@@ -6,6 +6,5 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class MakeAccountDTO {
-
 	private final int accountPw;
 }

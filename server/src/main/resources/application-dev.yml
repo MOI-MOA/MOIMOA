@@ -44,7 +44,7 @@ jwt:
 external:
   bank:
     api:
-      url: https://finopenapi.ssafy.io/ssafy/api/v1
+      url: https://finopenapi.ssafy.io/ssafy/api/v1/edu
       key: 4c56f9b9514141e3a39dd6783f4c536a
 
 server:
