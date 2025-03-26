@@ -30,7 +30,7 @@ public class GatheringAccountController {
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
         String response = gatheringAccountService.transfer(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(response);
     }
 
     /**

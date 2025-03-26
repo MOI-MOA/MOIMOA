@@ -26,7 +26,7 @@ public class Account {
     private String accountNo;
 
     @Column(name = "account_balance", nullable = false)
-    private Integer accountBalance;
+    private Long accountBalance;
 
     @Column(name = "account_pw", nullable = false)
     private String accountPw;
@@ -37,11 +37,11 @@ public class Account {
         this.accountPw = accountPw;
     }
 
-    public void decreaseBalance(Integer amount) {
+    public void decreaseBalance(Long amount) {
         this.accountBalance -= amount;
     }
 
-    public void increaseBalance(Integer amount) {
+    public void increaseBalance(Long amount) {
         this.accountBalance += amount;
     }
 }

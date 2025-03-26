@@ -29,17 +29,22 @@ public class ScehduleAccountController {
      */
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
-        String response = scheduleAccountService.transfer(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        if(scheduleAccountService.initTransfer(requestDto)){
+            // 실제 송금하는 api 호출 (SSAFY금융망)
+            // if (api 호출 성공) 그대로 처리
+            // else (api 호출 실패) initTransfer한 데이터 삭제
+            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 송금 성공");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌 송금 실패");
     }
 
     /**
      * 계좌 비밀번호 확인
      */
+
     @PostMapping("/password/check")
     public ResponseEntity<Boolean> checkPassword(@RequestBody PasswordCheckRequestDTO requestDto) {
-        Boolean response = scheduleAccountService.checkPassword(requestDto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(scheduleAccountService.checkPassword(requestDto));
     }
 
     /**
@@ -47,7 +52,10 @@ public class ScehduleAccountController {
      */
     @DeleteMapping
     public ResponseEntity<String> deleteAccount(@RequestBody DeleteRequestDTO requestDTO) {
-        scheduleAccountService.deleteAccount(requestDTO);
-        return ResponseEntity.ok("계좌 삭제 성공");
+        if(scheduleAccountService.deleteAccount(requestDTO)){
+             return ResponseEntity.ok("계좌 삭제 성공");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게좌 삭제 실패");
+
     }
 }
