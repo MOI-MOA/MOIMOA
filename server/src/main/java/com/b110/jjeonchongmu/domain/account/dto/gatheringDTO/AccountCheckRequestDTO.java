@@ -1,6 +1,7 @@
-package com.b110.jjeonchongmu.domain.account.dto;
+package com.b110.jjeonchongmu.domain.account.dto.gatheringDTO;
 
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,10 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AccountDTO {
-    private Long accountHolderId;
-    private String userName;
+public class AccountCheckRequestDTO {
     private String accountNo;
-    private Long accountBalance;
-    private int accountPw;
 }

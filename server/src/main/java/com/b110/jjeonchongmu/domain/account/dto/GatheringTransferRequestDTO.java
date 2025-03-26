@@ -1,19 +1,19 @@
 package com.b110.jjeonchongmu.domain.account.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class AccountDTO {
-    private Long accountHolderId;
-    private String userName;
+public class GatheringTransferRequestDTO {
+    private Long groupId;
+    private Long scheduleId;
     private String accountNo;
-    private Long accountBalance;
-    private int accountPw;
+    private Integer amount;
+    private String accountPw;
+    private String tradeDetail;
 }

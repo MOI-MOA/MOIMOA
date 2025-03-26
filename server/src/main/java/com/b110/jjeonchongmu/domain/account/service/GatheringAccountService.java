@@ -1,6 +1,7 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
+import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
@@ -9,8 +10,12 @@ import com.b110.jjeonchongmu.domain.account.enums.TransactionStatus;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +31,8 @@ public class GatheringAccountService {
     private final GatheringAccountRepo gatheringAccountRepo;
     private final ScheduleAccountRepo scheduleAccountRepo;
     private final TradeRepo tradeRepo;
+    private final UserRepo userRepo;
+    private final GatheringRepo gatheringRepo;
 
     public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
         // 비밀번호 확인 로직 구현
@@ -128,5 +135,35 @@ public class GatheringAccountService {
         }
 
         return true;
+    }
+
+    /**
+     *
+     * 여기서 userId는 누가 찾은지 보려고 필요함.
+     * 계좌 주인이랑 비교하는게 아님. 단순히 accountNo로 찾아오는 역할.
+     */
+    public BankAccountInquiryResponseDTO findAccount(Long userId, String accountNo) {
+        // 계좌 조회
+        // 성공하면 true 반환
+        return
+    }
+
+    public TransferRequestDTO getTransferRequestDto(Long userId, GatheringTransferRequestDTO transferRequestDto) {
+        User user = userRepo.getUserByUserId(userId);
+        Long groupId = transferRequestDto.getGroupId();
+        String accountNo = transferRequestDto.getAccountNo();
+        String accountPw = transferRequestDto.getAccountPw();
+
+        // 보내는 모임에서의 계좌를 찾는다.
+        Gathering gathering;
+        try {
+            gathering = gatheringRepo.getGatheringByGatheringId(groupId);
+        } catch (Exception e) {
+            throw new RuntimeException("모임아이디로 모임을 찾을 수 없습니다");
+        }
+        Long fromAccountId = gathering.getGatheringAccount().getAccountId();
+
+        PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
+        Long toAccountId = personalAccount.getAccountId();
     }
 }

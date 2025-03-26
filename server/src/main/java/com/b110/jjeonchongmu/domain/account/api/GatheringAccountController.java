@@ -1,13 +1,19 @@
 package com.b110.jjeonchongmu.domain.account.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
+import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -23,17 +29,25 @@ import java.util.concurrent.CompletableFuture;
  *
  */
 @RestController
-@RequestMapping("/api/v1/Gathering-account")
+@RequestMapping("/api/v1/gathering-account")
 @RequiredArgsConstructor
 public class GatheringAccountController {
     private final GatheringAccountService gatheringAccountService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final JwtTokenProvider jwtTokenProvider;
+
     /**
      * 계좌 송금
      */
     @PostMapping("/transfer")
     public ResponseEntity<Object> transfer(
-            @RequestBody TransferRequestDTO requestDto) {
+            @RequestBody GatheringTransferRequestDTO transferRequestDto) {
+
+        Long userId = jwtTokenProvider.getUserId();
+
+
+        TransferRequestDTO requestDto = gatheringAccountService.getTransferRequestDto(userId, transferRequestDto);
+
         TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);
 
         CompletableFuture.runAsync(() -> {
@@ -56,6 +70,43 @@ public class GatheringAccountController {
         });
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+    /**
+     * 계좌 존재하는지 확인
+     * 존재하면 200 ok
+     * 존재하지 않으면 404 notFound
+     */
+    @GetMapping("/account/check")
+    public ResponseEntity<Map<String, String>> checkAccount(@RequestBody AccountCheckRequestDTO requestDto) {
+        Map<String, String> map = new HashMap<>();
+        Long userId = jwtTokenProvider.getUserId();
+        BankAccountInquiryResponseDTO response;
+        try {
+            // 계좌 찾고
+            response = gatheringAccountService.findAccount(userId, requestDto.getAccountNo());
+        } catch (Exception e) {
+            // 없으면 실패 메시지 담아서 return
+            e.printStackTrace();
+            map.put("message", "account를 찾을때 문제가 생겼습니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
+        }
+
+        // 있으면 name담아서 리턴
+        String name = response.getRec().getUserName();
+        map.put("name", name);
+
+        return ResponseEntity.status(HttpStatus.OK).body(map);
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * 계좌 비밀번호 확인

@@ -52,4 +52,7 @@ public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 	 * 모임 ID로 존재 여부 확인
 	 */
 	boolean existsById(Long gatheringId);
+
+
+	Gathering getGatheringByGatheringId(Long gatheringId);
 }
