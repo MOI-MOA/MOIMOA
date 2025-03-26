@@ -106,4 +106,27 @@ tasks.named('test') {
 //tasks.withType(JavaCompile) {
 //	options.failOnError = false
 //}
+
+// 특정 패키지만 컴파일하는 옵션 추가
+if (project.hasProperty('includePackage')) {
+	def includePackage = project.getProperty('includePackage')
+
+	sourceSets {
+		main {
+			java {
+				// 지정된 패키지만 포함
+				include "**/${includePackage.replace('.', '/')}/**"
+			}
+		}
+	}
+
+	tasks.withType(JavaCompile) {
+		options.failOnError = false
+	}
+
+	test {
+		// 모든 테스트 스킵
+		enabled = false
+	}
+}
 /////////////////////////////////////////////////////////
