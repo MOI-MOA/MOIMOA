@@ -1,10 +1,11 @@
 package com.b110.jjeonchongmu.domain.account.dto;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MakeAccountDTO {
-	private final int accountPw;
+	private String accountPw;
 }

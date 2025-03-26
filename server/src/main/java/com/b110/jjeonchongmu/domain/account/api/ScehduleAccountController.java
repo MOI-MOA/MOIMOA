@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.account.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,18 @@ public class ScehduleAccountController {
              return ResponseEntity.ok("계좌 삭제 성공");
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게좌 삭제 실패");
-
     }
+
+    @PostMapping
+    public ResponseEntity<String> createAccount(@RequestBody MakeAccountDTO requestDTO){
+
+        System.out.println("사용자가 입력한 비밀번호" + requestDTO.getAccountPw());
+        if(scheduleAccountService.createAccount(requestDTO)){
+            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 생성 성공");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌생성실패");
+    }
+
+
+
 }

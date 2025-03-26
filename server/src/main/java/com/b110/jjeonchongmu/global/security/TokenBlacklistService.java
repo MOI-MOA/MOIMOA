@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class TokenBlacklistService {
 
-    private final RedisTemplate<String, String> redisTemplate;
+//    private final RedisTemplate<String, String> redisTemplate;
     private static final String BLACKLIST_PREFIX = "blacklist:";
 
     /**
@@ -29,7 +29,7 @@ public class TokenBlacklistService {
      */
     public void addToBlacklist(String token, long expirationTime) {
         String key = BLACKLIST_PREFIX + token;
-        redisTemplate.opsForValue().set(key, "blacklisted", expirationTime, TimeUnit.MILLISECONDS);
+//        redisTemplate.opsForValue().set(key, "blacklisted", expirationTime, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -38,8 +38,8 @@ public class TokenBlacklistService {
      * @param token JWT 토큰
      * @return 블랙리스트 포함 여부
      */
-    public boolean isBlacklisted(String token) {
-        String key = BLACKLIST_PREFIX + token;
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
-    }
+//    public boolean isBlacklisted(String token) {
+//        String key = BLACKLIST_PREFIX + token;
+//        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+//    }
 }
