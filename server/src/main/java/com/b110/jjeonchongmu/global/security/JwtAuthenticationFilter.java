@@ -47,11 +47,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null) {
             // 블랙리스트 체크
-            if (tokenBlacklistService.isBlacklisted(token)) {
-                log.debug("Blacklisted token: {}", token);
-                filterChain.doFilter(request, response);
-                return;
-            }
+//            if (tokenBlacklistService.isBlacklisted(token)) {
+//                log.debug("Blacklisted token: {}", token);
+//                filterChain.doFilter(request, response);
+//                return;
+//            }
 
             // 토큰 유효성 검사
             if (jwtTokenProvider.validateToken(token)) {

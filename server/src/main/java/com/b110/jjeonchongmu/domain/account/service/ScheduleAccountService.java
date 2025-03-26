@@ -5,10 +5,12 @@ import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,9 @@ public class ScheduleAccountService {
 
     private final ScheduleAccountRepo scheduleAccountRepo;
     private final TradeRepo tradeRepo;
-
+    private final ScheduleRepo scheduleRepo;
+    private final UserRepo userRepo;
+//    계좌내역저장
     public Boolean initTransfer(TransferRequestDTO requestDto) {
 
     ScheduleAccount FromScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getFromAccountId())
@@ -47,6 +51,7 @@ public class ScheduleAccountService {
         return true;
     }
 
+//    비밀번호 체크
     public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
         Long scheduleAccountId = requestDto.getAccountId();
         String scheduleAccountPW = requestDto.getAccountPW();
@@ -56,9 +61,9 @@ public class ScheduleAccountService {
         return storedAccount
                 .map(account -> account.getAccountPw().equals(scheduleAccountPW))
                 .orElse(false);
-
     }
 
+//    계좌삭제
     public boolean deleteAccount(DeleteRequestDTO requestDTO) {
         long scheduleAccountId = requestDTO.getAccountId();
 
@@ -67,6 +72,20 @@ public class ScheduleAccountService {
         scheduleAccountRepo.deleteById(scheduleAccountId);
         return true;
     }
+//    계좌 생성
+    public boolean createAccount(MakeAccountDTO requestDTO){
+        Long userId = 5L;
+        User user = userRepo.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
+        String scheduleAccountNo = "123-45-67891011";
+        Long scheduleId = 2L;
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
 
+        ScheduleAccount scheduleAccount = new ScheduleAccount(user,scheduleAccountNo,requestDTO.getAccountPw(),schedule);
+
+        scheduleAccountRepo.save(scheduleAccount);
+        return true;
+    }
 
 }
