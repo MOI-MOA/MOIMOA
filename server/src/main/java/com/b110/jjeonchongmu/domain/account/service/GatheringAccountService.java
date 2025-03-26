@@ -121,8 +121,8 @@ public class GatheringAccountService {
 
             BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
                     toAccount.getUser().getUserKey(),
-                    toAccount.getAccountId(),
-                    fromAccount.getAccountId(),
+                    toAccount.getAccountNo(),
+                    fromAccount.getAccountNo(),
                     transferTransactionHistoryDTO.getAmount().longValue()
             );
 

@@ -6,7 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -44,8 +44,12 @@ jwt:
 external:
   bank:
     api:
-      url: https://finopenapi.ssafy.io/ssafy/api/v1/edu
+      url: https://finopenapi.ssafy.io/ssafy/api/v1/edu/
       key: 4c56f9b9514141e3a39dd6783f4c536a
+      accountType: 001-1-e03c49fc0efb4c
+  user:
+    api:
+      url: https://finopenapi.ssafy.io/ssafy/api/v1/
 
 server:
   port: 8080

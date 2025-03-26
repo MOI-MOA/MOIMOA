@@ -1,5 +1,10 @@
 package com.b110.jjeonchongmu.global.component;
 
+import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
+import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.BankTransferResponseDTO;
+import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
+import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.*;
 
 import java.time.LocalDate;
@@ -31,6 +36,7 @@ public class ExternalBankApiComponent {
 	private final RestTemplate restTemplate;
 	private final String apiUrl;
 	private final String apiKey;
+	private final String userUrl;
 
 	private static final Logger log = LoggerFactory.getLogger(ExternalBankApiComponent.class);
 
@@ -38,10 +44,12 @@ public class ExternalBankApiComponent {
 	public ExternalBankApiComponent(
 			RestTemplateBuilder builder,
 			@Value("${external.bank.api.url}") String apiUrl,
-			@Value("${external.bank.api.key}") String apiKey) {
+			@Value("${external.bank.api.key}") String apiKey,
+			@Value("${external.user.api.url}") String userUrl) {
 		this.restTemplate = builder.build();
 		this.apiUrl = apiUrl;
 		this.apiKey = apiKey;
+		this.userUrl = userUrl;
 	}
 
 	public void sendTransferWithRetry(BankTransferRequestDTO requestDTO)
@@ -125,13 +133,31 @@ public class ExternalBankApiComponent {
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
 		try {
-			String transferUrl = "demandDeposit/createDemandDepositAccount";
+			String demandDepositUrl = "demandDeposit/createDemandDepositAccount";
 			ResponseEntity<BankAccountResponseDTO> response =
-					restTemplate.exchange(apiUrl + transferUrl, HttpMethod.POST, entity,
+					restTemplate.exchange(apiUrl + demandDepositUrl, HttpMethod.POST, entity,
 							BankAccountResponseDTO.class);
 			return response.getBody();
 		} catch (Exception e) {
 			throw new RuntimeException("외부 은행 계좌 생성 중 오류 발생", e);
+		}
+	}
+
+	public MakeUserResponseDTO createBankAppUser(String email) {
+		Map<String, Object> requestBody = new HashMap<>();
+		requestBody.put("apiKey", apiKey);
+		requestBody.put("userId", email);
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+		try {
+			String makeUserUrl = "member/";
+			ResponseEntity<MakeUserResponseDTO> response =
+					restTemplate.exchange(userUrl + makeUserUrl, HttpMethod.POST, entity,
+							MakeUserResponseDTO.class);
+			return response.getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("회원 생성 중 오류 발생", e);
 		}
 	}
 

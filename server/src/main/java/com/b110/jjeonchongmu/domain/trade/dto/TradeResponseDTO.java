@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class TradeResponseDTO {
-    private Long accountNo;
+    private String accountNo;
     private Long accountBalance;
     private List<TradeDetailDTO> tradeList;
 

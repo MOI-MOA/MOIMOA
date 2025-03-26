@@ -11,6 +11,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 
+
+	/**
+	 * 모임 ID로 모임 조회
+	 */
+	Optional<Gathering> findById(Long gatheringId);
 	/**
 	 * 모임 계좌 ID로 모임 정보 조회
 	 */
