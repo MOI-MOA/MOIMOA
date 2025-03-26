@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TransferRequestDTO {
 
-	private AccountType fromAccountType;
 	private Long fromAccountId;
 	private AccountType toAccountType;
 	private Long toAccountId;
