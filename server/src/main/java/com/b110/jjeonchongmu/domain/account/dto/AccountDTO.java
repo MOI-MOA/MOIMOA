@@ -15,5 +15,5 @@ public class AccountDTO {
     private String userName;
     private String accountNo;
     private Long accountBalance;
-    private int accountPw;
+    private String accountPw;
 }

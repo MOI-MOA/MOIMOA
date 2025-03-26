@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class AutoPaymentResponse {
-    private int accountBalance;
+    private Long accountBalance;
     private List<AutoPaymentDto> autoTransfers = new ArrayList<>();
     public AutoPaymentResponse(User user) {
         this.accountBalance = user.getPersonalAccount().getAccountBalance();

@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class PasswordCheckRequestDTO {
     private AccountType accountType;
     private Long accountId;
-    private int accountPW;
+    private String accountPW;
 }

@@ -24,7 +24,7 @@ import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class ScheduleService {
 
     private final ScheduleRepo scheduleRepo;
@@ -50,7 +50,6 @@ public class ScheduleService {
     }
 
     // 일정 생성(총무만)
-    @Transactional
     public void createSchedule(Long userId,Long gatheringId ,ScheduleCreateDTO scheduleCreateDTO) {
         Gathering gathering = gatheringRepo.findById(gatheringId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gathering not found"));
@@ -83,7 +82,6 @@ public class ScheduleService {
 
     }
     // 일정 수정(총무만)
-    @Transactional
     public void updateSchedule(Long userId,Long scheduleId,ScheduleUpdateDTO scheduleUpdateDTO) {
         Schedule schedule = scheduleRepo.findById(scheduleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "schedule not found"));
@@ -95,7 +93,6 @@ public class ScheduleService {
 
     }
     // 일정 삭제(총무만)
-    @Transactional
     public void deleteSchedule(Long userId, Long scheduleId) {
 //        Schedule schedule = scheduleRepo.findById(scheduleId)
 //                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
