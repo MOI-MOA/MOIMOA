@@ -18,6 +18,7 @@ import java.util.ArrayList;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Schedule {
 
     @Id
@@ -56,11 +57,39 @@ public class Schedule {
     private LocalDateTime penaltyApplyDate;
 
     @Column(name = "penalty_rate")
-    private int penalty_rate;
+    private int penaltyRate;
 
     @Column(name = "schedule_status")
     private int status;
 
     @OneToMany(mappedBy = "schedule")
     private List<ScheduleMember> attendees = new ArrayList<>();
+    // 제목 수정
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+    // 상세 내용 수정
+    public void updateDetail(String detail) {
+        this.detail = detail;
+    }
+    // 장소 수정
+    public void updatePlace(String place) {
+        this.place = place;
+    }
+    // 1인당 예산 수정
+    public void updatePerBudget(Long perBudget) {
+        this.perBudget = perBudget;
+    }
+
+    // 모든 필드 한번에 수정
+    public void updateSchedule(String title, String detail, String place, 
+                             LocalDateTime startTime, Long perBudget, 
+                             LocalDateTime penaltyApplyDate) {
+        this.title = title;
+        this.detail = detail;
+        this.place = place;
+        this.startTime = startTime;
+        this.perBudget = perBudget;
+        this.penaltyApplyDate = penaltyApplyDate;
+    }
 }
