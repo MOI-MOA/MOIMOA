@@ -81,8 +81,7 @@ public class UserController {
      */
     @DeleteMapping("/withdraw")
     public ResponseEntity<String> withdraw() {
-        long userId = jwtTokenProvider.getUserId();
-        userService.withdraw(userId);
+        userService.withdraw();
         return ResponseEntity.status(200).body("회원 탈퇴 성공");
     }
 }

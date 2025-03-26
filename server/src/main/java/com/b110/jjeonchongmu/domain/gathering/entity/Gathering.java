@@ -22,7 +22,7 @@ public class Gathering {
     @Column(name = "gathering_id", nullable = false)
     private Long gatheringId;
 
-    //총무아이디
+    //유저 객체.(매니저)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User manager;

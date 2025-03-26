@@ -54,6 +54,7 @@ public class UserService {
         userRepo.save(user);
 
         //계좌 생성 로직 추가 하기.
+        //response.getUserKey.
 
     }
     /**
@@ -104,9 +105,9 @@ public class UserService {
      * 회원 탈퇴
      */
     @Transactional
-    public void withdraw(Long userId) {
-
-        userRepo.deleteById(userId);
+    public void withdraw() {
+        userRepo.delete(getCurrentUser());
+        SecurityContextHolder.clearContext();
     }
 
     /**
@@ -123,12 +124,20 @@ public class UserService {
         user.changePassword(passwordEncoder.encode(request.getNewPassword()));
     }
 
-//    /**
-//     * 현재 로그인한 사용자 조회
-//     */
-//    private User getCurrentUser() {
-//        String userId = jwtTokenProvider.getUserId();
-//        return userRepo.findById(Long.valueOf(userId))
+    // 현재 사용자 정보 조회
+    public User getCurrentUser() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepo.findById(Long.valueOf(userId))
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+//    private User getCurrentUser(HttpServletRequest request) {
+//        String token = jwtTokenProvider.resolveToken(request);
+//        if (token == null || !jwtTokenProvider.validateToken(token)) {
+//            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+//        }
+//        Long userId = jwtTokenProvider.getUserId(token);
+//        return userRepo.findById(userId)
 //                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 //    }
 }
