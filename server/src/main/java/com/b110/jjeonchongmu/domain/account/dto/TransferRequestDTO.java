@@ -12,8 +12,9 @@ import lombok.NoArgsConstructor;
 public class TransferRequestDTO {
 
 	private Long fromAccountId;
-	private AccountType toAccountType;
+	private AccountType fromAccountType;
 	private Long toAccountId;
 	private String tradeDetail;
 	private Long transferAmount;
+	private String accountPw;
 }
