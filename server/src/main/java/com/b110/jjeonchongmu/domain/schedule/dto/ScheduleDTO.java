@@ -1,8 +1,10 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
 
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
-import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,7 +24,7 @@ public class ScheduleDTO {
     private Long perBudget;
     private Integer attendeeCount;
 
-    public static ScheduleDTO from(Schedule schedule, ScheduleRepo scheduleRepo) {
+    public static ScheduleDTO from(Schedule schedule) {
         return ScheduleDTO.builder()
                 .gatheringId(schedule.getGathering().getGatheringId())
                 .gatheringName(schedule.getGathering().getGatheringName())
