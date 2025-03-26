@@ -7,6 +7,7 @@ import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.account.enums.TransactionStatus;
+import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
@@ -33,6 +34,7 @@ public class GatheringAccountService {
     private final TradeRepo tradeRepo;
     private final UserRepo userRepo;
     private final GatheringRepo gatheringRepo;
+    private final AccountRepo accountRepo;
 
     public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
         // 비밀번호 확인 로직 구현
@@ -142,11 +144,6 @@ public class GatheringAccountService {
      * 여기서 userId는 누가 찾은지 보려고 필요함.
      * 계좌 주인이랑 비교하는게 아님. 단순히 accountNo로 찾아오는 역할.
      */
-    public BankAccountInquiryResponseDTO findAccount(Long userId, String accountNo) {
-        // 계좌 조회
-        // 성공하면 true 반환
-        return
-    }
 
     public TransferRequestDTO getTransferRequestDto(Long userId, GatheringTransferRequestDTO transferRequestDto) {
         User user = userRepo.getUserByUserId(userId);
@@ -165,5 +162,8 @@ public class GatheringAccountService {
 
         PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
         Long toAccountId = personalAccount.getAccountId();
+
+        Account account = accountRepo.findAccountByAccountNo(accountNo);
+        account.getAccountId();
     }
 }
