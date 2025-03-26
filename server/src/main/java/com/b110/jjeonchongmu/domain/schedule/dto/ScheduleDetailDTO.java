@@ -1,4 +1,5 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,4 +25,18 @@ public class ScheduleDetailDTO {
     private int attendeeCount;
     // 참여자 몇명인지만 파악하고 참여자 리스트는 클릭했을때 보여주기
 
+    public static ScheduleDetailDTO from(Schedule schedule){
+        return ScheduleDetailDTO.builder()
+                .gatheringId(schedule.getGathering().getGatheringId())
+                .gatheringName(schedule.getGathering().getGatheringName())
+                .scheduleId(schedule.getId())
+                .scheduleTitle(schedule.getTitle())
+                .subManagerName(schedule.getSubManager().getName())
+                .scheduleStartTime(schedule.getStartTime())
+                .schedulePlace(schedule.getTitle())
+                .perBudget(schedule.getPerBudget())
+                .scheduleDetail(schedule.getDetail())
+                .attendeeCount(schedule.getAttendees().size())
+                .build();
+    }
 }

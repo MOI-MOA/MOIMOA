@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.global.exception;
 
+import org.springframework.http.HttpStatus;
+
 public class CustomException extends RuntimeException {
     private final ErrorCode errorCode;
 
