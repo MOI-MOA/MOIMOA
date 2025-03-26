@@ -1,20 +1,21 @@
 package com.b110.jjeonchongmu.domain.account.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class BankAccountResponseDTO {
+	@JsonProperty("Header")
 	private Header header;
+	@JsonProperty("REC")
 	private Rec rec;
 
 	@Getter
-	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
@@ -31,7 +32,6 @@ public class BankAccountResponseDTO {
 	}
 
 	@Getter
-	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
@@ -41,7 +41,6 @@ public class BankAccountResponseDTO {
 		private Currency currency;
 
 		@Getter
-		@Setter
 		@NoArgsConstructor
 		@AllArgsConstructor
 		@Builder

@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.account.api;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.AccountCheckResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AddAutoPaymentRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
@@ -77,6 +79,15 @@ public class PersonalAccountController {
 		return ResponseEntity.ok(response);
 	}
 
+	// 송금할 계좌번호 확인
+	@GetMapping("/check")
+	public ResponseEntity<AccountCheckResponseDTO> checkAccountNo(
+			@RequestBody AccountCheckRequestDTO accountCheckRequestDTO) {
+		AccountCheckResponseDTO response = personalAccountService.checkAccountNo(
+				accountCheckRequestDTO);
+		return ResponseEntity.ok(response);
+	}
+
 	/**
 	 * 자동이체 추가
 	 */
@@ -103,4 +114,5 @@ public class PersonalAccountController {
 		personalAccountService.deleteAccount(requestDTO);
 		return ResponseEntity.ok("계좌 삭제 성공");
 	}
+
 }

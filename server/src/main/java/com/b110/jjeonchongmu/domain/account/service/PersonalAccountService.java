@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.AccountCheckResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.dto.AddAutoPaymentRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
@@ -14,6 +16,7 @@ import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.account.enums.TransactionStatus;
+import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
@@ -39,6 +42,7 @@ public class PersonalAccountService {
 	private final PersonalAccountRepo personalAccountRepo;
 	private final GatheringAccountRepo gatheringAccountRepo;
 	private final ScheduleAccountRepo scheduleAccountRepo;
+	private final AccountRepo accountRepo;
 	private final TradeRepo tradeRepo;
 	private final UserRepo userRepo;
 
@@ -68,6 +72,14 @@ public class PersonalAccountService {
 			PersonalAccount fromAccount = personalAccountRepo.findByAccount(
 							transferTransactionHistoryDTO.getToAccountId())
 					.orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
+
+			String originAccountPw = fromAccount.getAccountPw();
+			String userAccountPw = transferTransactionHistoryDTO.getAccountPw();
+
+			boolean isPassword = passwordEncoder.matches(userAccountPw, originAccountPw);
+			if(!isPassword) {
+				throw new IllegalAccessException("비밀번호 불일치");
+			}
 
 			// 잔액 검증
 			if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
@@ -120,8 +132,8 @@ public class PersonalAccountService {
 
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
 					toAccount.getUser().getUserKey(),
-					toAccount.getAccountId(),
-					fromAccount.getAccountId(),
+					toAccount.getAccountNo(),
+					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount().longValue()
 					);
 
@@ -173,4 +185,12 @@ public class PersonalAccountService {
 		personalAccountRepo.save(personalAccount);
 	}
 
+	public AccountCheckResponseDTO checkAccountNo(AccountCheckRequestDTO accountCheckRequestDTO) {
+		Boolean isAccountNo = accountRepo.existsByAccountNo(accountCheckRequestDTO.getToAccountNo());
+		return new AccountCheckResponseDTO(
+				accountCheckRequestDTO.getToAccountNo(),
+				accountCheckRequestDTO.getAmount(),
+				isAccountNo
+		);
+	}
 }

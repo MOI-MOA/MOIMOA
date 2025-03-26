@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BankTransferRequestDTO {
 	private final String userKey;
-	private final Long toAccountNo;
-	private final Long fromAccountNo;
+	private final String toAccountNo;
+	private final String fromAccountNo;
 	private final Long amount;
 }

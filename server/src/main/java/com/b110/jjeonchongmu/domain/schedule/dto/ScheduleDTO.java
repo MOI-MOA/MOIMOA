@@ -1,13 +1,12 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
 
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
