@@ -35,7 +35,7 @@ public class Account {
         this.user = user;
         this.accountNo = accountNo;
         this.accountPw = accountPw;
-        this.accountBalance = 0;
+        this.accountBalance = 0L;
     }
 
     public void decreaseBalance(Long amount) {

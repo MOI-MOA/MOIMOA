@@ -17,7 +17,7 @@ import java.util.List;
 public class MyAccountResponseDto {
     private String gatheringName;
     private String gatheringAccountNo;
-    private int gatheringAccountBalance;
+    private Long gatheringAccountBalance;
     private List<TradeDto> tradeList = new ArrayList<>();
 
     public MyAccountResponseDto(User user, List<TradeHistoryDTO> tradeHistoryDTOList) {
