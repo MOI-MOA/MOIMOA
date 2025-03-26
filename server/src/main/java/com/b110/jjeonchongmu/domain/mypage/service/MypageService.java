@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.mypage.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
 import com.b110.jjeonchongmu.domain.account.repo.AutoPaymentRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
@@ -8,6 +9,7 @@ import com.b110.jjeonchongmu.domain.mypage.dto.*;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.myaccount.MyAccountResponseDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.GroupExpenseData;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData;
@@ -17,8 +19,11 @@ import com.b110.jjeonchongmu.domain.mypage.repo.MypageRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryDTO;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import com.b110.jjeonchongmu.global.component.TradeHistoryComponent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +44,7 @@ public class MypageService {
     private final ScheduleRepo scheduleRepo;
     private final GatheringRepo gatheringRepo;
     private final AutoPaymentRepo autoPaymentRepo;
+    private final TradeHistoryComponent tradeHistoryComponent;
 
     public List<AutoPaymentDto> getAutoPayments(String type) {
         return null;
@@ -141,5 +147,25 @@ public class MypageService {
         autoPayment.updateAutoPaymentAmount(amount);
         autoPayment.updateAutoPaymentDate(day);
         autoPayment.updateIsActive(status);
+    }
+
+    public MyAccountResponseDto getMyAccount(Long userId) {
+        User user;
+        try {
+            user = userRepo.getUserByUserId(userId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        AccountType accountType = AccountType.PERSONAL;
+        Long accountId = user.getPersonalAccount().getAccountId();
+        List<TradeHistoryDTO> tradeList;
+        try {
+            tradeList = tradeHistoryComponent.getTradeHistory(new TradeHistoryRequestDTO(
+                    accountType, accountId
+            ));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return new MyAccountResponseDto(user, tradeList);
     }
 }

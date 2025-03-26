@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.global.component;
 
+import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
@@ -116,10 +117,22 @@ public class ExternalBankApiComponent {
 		return sb.toString();
 	}
 
-	public void externalMakeAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
+	public BankAccountResponseDTO externalMakeAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
 		Map<String, Object> requestBody = createHeaderAndBody("createDemandDepositAccount",
 				"createDemandDepositAccount", makeExternalAccountDTO.getUserKey());
 		requestBody.put("accountTypeUniqueNo", makeExternalAccountDTO.getExternalAccountType());
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+		try {
+			String transferUrl = "demandDeposit/createDemandDepositAccount";
+			ResponseEntity<BankAccountResponseDTO> response =
+					restTemplate.exchange(apiUrl + transferUrl, HttpMethod.POST, entity,
+							BankAccountResponseDTO.class);
+			return response.getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("외부 은행 계좌 생성 중 오류 발생", e);
+		}
 	}
 
 	public Map<String, Object> createHeaderAndBody(String apiName, String apiServiceCode,

@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.account.service;
 
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.dto.AddAutoPaymentRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
@@ -18,11 +19,14 @@ import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PersonalAccountService {
 
+	private final PasswordEncoder passwordEncoder;
 	private final ExternalBankApiComponent externalBankApiComponent;
 	private final PersonalAccountRepo personalAccountRepo;
 	private final GatheringAccountRepo gatheringAccountRepo;
 	private final ScheduleAccountRepo scheduleAccountRepo;
 	private final TradeRepo tradeRepo;
+	private final UserRepo userRepo;
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
@@ -131,10 +137,15 @@ public class PersonalAccountService {
 	}
 
 	public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
-		requestDto.getAccountPW();
+		// 1. 계좌번호로 계좌 정보 조회
+		PersonalAccount account = personalAccountRepo.findByAccount(requestDto.getAccountId())
+				.orElseThrow(() -> new IllegalArgumentException("계좌를 찾을 수 없습니다."));
 
-		// 비밀번호 확인 로직 구현
-		return true;
+		// 2. 저장된 암호화된 비밀번호와 입력된 비밀번호 비교
+		String storedEncodedPassword = account.getAccountPw();
+
+		// 3. BCrypt 비밀번호 검증
+		return passwordEncoder.matches(String.valueOf(requestDto.getAccountPW()), storedEncodedPassword);
 	}
 
 	public void addAutoPayment() {
@@ -150,8 +161,16 @@ public class PersonalAccountService {
 		// 계좌 삭제 로직 구현
 	}
 
-	public void addPersonalAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
-		externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
+	public void addPersonalAccount(MakeExternalAccountDTO makeExternalAccountDTO, Long userId) {
+		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("회원 조회 실패"));
+		BankAccountResponseDTO responseDTO = externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
+		// 계좌 저장로직
+		PersonalAccount personalAccount = new PersonalAccount(
+				user,
+				responseDTO.getRec().getAccountNo(),
+				passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw()))
+		);
+		personalAccountRepo.save(personalAccount);
 	}
 
 }
