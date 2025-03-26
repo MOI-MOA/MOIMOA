@@ -5,12 +5,16 @@ import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
+import com.b110.jjeonchongmu.domain.account.dto.*;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,6 +180,37 @@ public class ExternalBankApiComponent {
 		requestBody.put("Header", header);
 		return requestBody;
 	}
+
+	/**
+	 * 계좌조회 ssafy api
+	 * user 객체와 accountNo를 넣으면
+	 * BankAccountInquiryResponseDTO 객체 반환
+	 */
+//	public BankAccountInquiryResponseDTO inquireAccount(User user, String accountNo) {
+//		String apiName = "inquireDemandDepositAccount";
+//		String apiServiceCode = "inquireDemandDepositAccount";
+//
+//		// requestBody 생성
+//		Map<String, Object> requestBody = createHeaderAndBody(
+//				apiName, apiServiceCode, user.getUserKey());
+//		requestBody.put("accountNo", accountNo);
+//
+//		// 통신용 데이터로 변환
+//		HttpHeaders httpHeaders = new HttpHeaders();
+//		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+//		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+//
+//		// url에 데이터 보냄
+//		try {
+//			String transferUrl = "demandDeposit/inquireDemandDepositAccount";
+//			ResponseEntity<BankAccountInquiryResponseDTO> response =
+//					restTemplate.exchange(apiUrl + transferUrl, HttpMethod.POST, entity,
+//							BankAccountInquiryResponseDTO.class);
+//			return response.getBody();
+//		} catch (Exception e) {
+//			throw new RuntimeException("외부 은행 계좌 조회 중 오류 발생", e);
+//		}
+//	}
 
 }
 
