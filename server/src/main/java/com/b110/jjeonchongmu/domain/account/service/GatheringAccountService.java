@@ -46,14 +46,12 @@ public class GatheringAccountService {
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
-
-
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
 				.fromAccountId(requestDto.getFromAccountId())
 				.fromAccountType(requestDto.getFromAccountType())
 				.toAccountId(requestDto.getToAccountId())
-				.toAccountType(requestDto.getToAccountType())
+				.toAccountType(null)
 				.amount(requestDto.getTransferAmount())
 				.detail(requestDto.getTradeDetail())
 				.status(TransactionStatus.BEFORE)
@@ -112,10 +110,10 @@ public class GatheringAccountService {
 					AccountType.PERSONAL,
 					toAccount,
 					transferTransactionHistoryDTO.getToAccountType(),
-					transferTransactionHistoryDTO.getAmount().longValue(),
+					transferTransactionHistoryDTO.getAmount(),
 					LocalDateTime.now(),
 					transferTransactionHistoryDTO.getDetail(),
-					fromAccount.getAccountBalance().longValue()
+					fromAccount.getAccountBalance()
 			);
 
 			tradeRepo.save(trade);
@@ -124,7 +122,7 @@ public class GatheringAccountService {
 					toAccount.getUser().getUserKey(),
 					toAccount.getAccountNo(),
 					fromAccount.getAccountNo(),
-					transferTransactionHistoryDTO.getAmount().longValue()
+					transferTransactionHistoryDTO.getAmount()
 			);
 
 			externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);

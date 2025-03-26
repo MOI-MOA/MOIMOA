@@ -1,20 +1,19 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.*;
+import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
-import com.b110.jjeonchongmu.domain.account.enums.TransactionStatus;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +29,13 @@ public class ScheduleAccountService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"FromScheduleAccount not found"));
     ScheduleAccount ToScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getToAccountId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ToScheduleAccount not found"));
-
+        ScheduleAccount scheduleAccount = new ScheduleAccount();
 
         Trade trade = Trade.builder()
                 .fromAccount(FromScheduleAccount)
                 .fromAccountType(requestDto.getFromAccountType())
                 .toAccount(ToScheduleAccount)
-                .toAccountType(requestDto.getToAccountType())
+                .toAccountType(ToScheduleAccount.getDtype())
                 .tradeAmount(requestDto.getTransferAmount())
                 .tradeTime(LocalDateTime.now())
                 .tradeDetail(requestDto.getTradeDetail())
