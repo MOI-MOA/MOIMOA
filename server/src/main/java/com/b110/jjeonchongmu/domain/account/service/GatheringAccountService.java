@@ -2,6 +2,12 @@ package com.b110.jjeonchongmu.domain.account.service;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
 import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
@@ -18,123 +24,124 @@ import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Service
 @RequiredArgsConstructor
 public class GatheringAccountService {
-    private final ExternalBankApiComponent externalBankApiComponent;
-    private final PersonalAccountRepo personalAccountRepo;
-    private final GatheringAccountRepo gatheringAccountRepo;
-    private final ScheduleAccountRepo scheduleAccountRepo;
-    private final TradeRepo tradeRepo;
+
+	private final ExternalBankApiComponent externalBankApiComponent;
+	private final PersonalAccountRepo personalAccountRepo;
+	private final GatheringAccountRepo gatheringAccountRepo;
+	private final ScheduleAccountRepo scheduleAccountRepo;
+	private final TradeRepo tradeRepo;
+	private final AccountRepo accountRepo;
     private final UserRepo userRepo;
     private final GatheringRepo gatheringRepo;
-    private final AccountRepo accountRepo;
 
-    public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
-        // 비밀번호 확인 로직 구현
-        return true;
-    }
+	public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
+		// 비밀번호 확인 로직 구현
+		return true;
+	}
 
-    public void deleteAccount(DeleteRequestDTO requestDTO) {
-        // 계좌 삭제 로직 구현
-    }
+	public void deleteAccount(DeleteRequestDTO requestDTO) {
+		// 계좌 삭제 로직 구현
+	}
 
-    @Transactional
-    public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
-
-        // 초기 송금기록
-        return TransferTransactionHistoryDTO.builder()
-                .fromAccountId(requestDto.getFromAccountId())
-                .fromAccountType(requestDto.getFromAccountType())
-                .toAccountId(requestDto.getToAccountId())
-                .toAccountType(requestDto.getToAccountType())
-                .amount(requestDto.getTransferAmount())
-                .detail(requestDto.getTradeDetail())
-                .status(TransactionStatus.BEFORE)
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
-
-    @Transactional
-    public boolean processTransfer(
-            TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
-
-        try {
-
-            transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
-            GatheringAccount fromAccount = gatheringAccountRepo.findByAccount(
-                            transferTransactionHistoryDTO.getToAccountId())
-                    .orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
-
-            // 잔액 검증
-            if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
-                transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
-                throw new IllegalStateException("잔액이 부족합니다");
-            }
+	@Transactional
+	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 
-            // 계좌 타입에 따라 입금 계좌 조회
-            Account toAccount;
-            String successMessage;
-            toAccount = switch (transferTransactionHistoryDTO.getToAccountType()) {
-                case GATHERING -> gatheringAccountRepo.findByAccount(
-                                transferTransactionHistoryDTO.getToAccountId())
-                        .orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류"));
-                case SCHEDULE -> scheduleAccountRepo.findByAccount(
-                                transferTransactionHistoryDTO.getToAccountId())
-                        .orElseThrow(() -> new IllegalArgumentException("일정계좌 조회 오류"));
-                case PERSONAL -> personalAccountRepo.findByAccount(
-                                transferTransactionHistoryDTO.getToAccountId())
-                        .orElseThrow(() -> new IllegalArgumentException("개인계좌 조회 오류"));
-            };
 
-            fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount());
-            toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
+		// 초기 송금기록
+		return TransferTransactionHistoryDTO.builder()
+				.fromAccountId(requestDto.getFromAccountId())
+				.fromAccountType(requestDto.getFromAccountType())
+				.toAccountId(requestDto.getToAccountId())
+				.toAccountType(requestDto.getToAccountType())
+				.amount(requestDto.getTransferAmount())
+				.detail(requestDto.getTradeDetail())
+				.status(TransactionStatus.BEFORE)
+				.createdAt(LocalDateTime.now())
+				.build();
+	}
 
-            gatheringAccountRepo.save(fromAccount);
+	@Transactional
+	public boolean processTransfer(
+			TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
 
-            if (toAccount instanceof PersonalAccount) {
-                personalAccountRepo.save((PersonalAccount) toAccount);
-            } else if (toAccount instanceof GatheringAccount) {
-                gatheringAccountRepo.save((GatheringAccount) toAccount);
-            } else {
-                scheduleAccountRepo.save((ScheduleAccount) toAccount);
-            }
+		try {
 
-            Trade trade = new Trade(
-                    null,
-                    fromAccount,
-                    AccountType.PERSONAL,
-                    toAccount,
-                    transferTransactionHistoryDTO.getToAccountType(),
-                    transferTransactionHistoryDTO.getAmount().longValue(),
-                    LocalDateTime.now(),
-                    transferTransactionHistoryDTO.getDetail(),
-                    fromAccount.getAccountBalance().longValue()
-            );
+			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
+			GatheringAccount fromAccount = gatheringAccountRepo.findByAccount(
+							transferTransactionHistoryDTO.getToAccountId())
+					.orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
-            tradeRepo.save(trade);
+			// 잔액 검증
+			if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
+				transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
+				throw new IllegalStateException("잔액이 부족합니다");
+			}
 
-            BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
-                    toAccount.getUser().getUserKey(),
-                    toAccount.getAccountNo(),
-                    fromAccount.getAccountNo(),
-                    transferTransactionHistoryDTO.getAmount().longValue()
-            );
+			// 계좌 타입에 따라 입금 계좌 조회
+			Account toAccount;
+			String successMessage;
+			toAccount = switch (transferTransactionHistoryDTO.getToAccountType()) {
+				case GATHERING -> gatheringAccountRepo.findByAccount(
+								transferTransactionHistoryDTO.getToAccountId())
+						.orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류"));
+				case SCHEDULE -> scheduleAccountRepo.findByAccount(
+								transferTransactionHistoryDTO.getToAccountId())
+						.orElseThrow(() -> new IllegalArgumentException("일정계좌 조회 오류"));
+				case PERSONAL -> personalAccountRepo.findByAccount(
+								transferTransactionHistoryDTO.getToAccountId())
+						.orElseThrow(() -> new IllegalArgumentException("개인계좌 조회 오류"));
+			};
 
-            externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
-            transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);
+			fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount());
+			toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
 
-        } catch (Exception e) {
-            transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
-            return false;
-        }
+			gatheringAccountRepo.save(fromAccount);
+
+			if (toAccount instanceof PersonalAccount) {
+				personalAccountRepo.save((PersonalAccount) toAccount);
+			} else if (toAccount instanceof GatheringAccount) {
+				gatheringAccountRepo.save((GatheringAccount) toAccount);
+			} else {
+				scheduleAccountRepo.save((ScheduleAccount) toAccount);
+			}
+
+			Trade trade = new Trade(
+					null,
+					fromAccount,
+					AccountType.PERSONAL,
+					toAccount,
+					transferTransactionHistoryDTO.getToAccountType(),
+					transferTransactionHistoryDTO.getAmount().longValue(),
+					LocalDateTime.now(),
+					transferTransactionHistoryDTO.getDetail(),
+					fromAccount.getAccountBalance().longValue()
+			);
+
+			tradeRepo.save(trade);
+
+			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
+					toAccount.getUser().getUserKey(),
+					toAccount.getAccountNo(),
+					fromAccount.getAccountNo(),
+					transferTransactionHistoryDTO.getAmount().longValue()
+			);
+
+			externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
+			transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);
+
+		} catch (Exception e) {
+			transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
+			return false;
+		}
 
         return true;
     }
@@ -149,7 +156,6 @@ public class GatheringAccountService {
         User user = userRepo.getUserByUserId(userId);
         Long groupId = transferRequestDto.getGroupId();
         String accountNo = transferRequestDto.getAccountNo();
-        String accountPw = transferRequestDto.getAccountPw();
 
         // 보내는 모임에서의 계좌를 찾는다.
         Gathering gathering;
@@ -158,12 +164,29 @@ public class GatheringAccountService {
         } catch (Exception e) {
             throw new RuntimeException("모임아이디로 모임을 찾을 수 없습니다");
         }
+        AccountType fromAccountType = AccountType.GATHERING;
         Long fromAccountId = gathering.getGatheringAccount().getAccountId();
+
+        Account account = accountRepo.findAccountByAccountNo(accountNo);
+        AccountType toAccountType = account.getDtype();
 
         PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
         Long toAccountId = personalAccount.getAccountId();
 
-        Account account = accountRepo.findAccountByAccountNo(accountNo);
-        account.getAccountId();
+        String tradeDetail = transferRequestDto.getTradeDetail();
+
+        Long transferAmount = transferRequestDto.getAmount();
+
+        String accountPw = transferRequestDto.getAccountPw();
+
+        return new TransferRequestDTO(
+                fromAccountType,
+                fromAccountId,
+                toAccountType,
+                toAccountId,
+                tradeDetail,
+                transferAmount,
+                accountPw
+        );
     }
 }

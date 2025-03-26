@@ -13,7 +13,7 @@ public class GatheringTransferRequestDTO {
     private Long groupId;
     private Long scheduleId;
     private String accountNo;
-    private Integer amount;
+    private Long amount;
     private String accountPw;
     private String tradeDetail;
 }
