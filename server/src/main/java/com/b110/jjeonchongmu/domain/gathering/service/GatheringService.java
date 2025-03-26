@@ -11,12 +11,15 @@ import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.b110.jjeonchongmu.domain.user.service.UserService;
 
 @Service
 @RequiredArgsConstructor
@@ -34,16 +37,26 @@ public class GatheringService {
      * @return
      * @throws CustomException 동일한 모임명이 이미 존재하는 경우
      */
+    UserService userService;
+    User currentUser = userService.getCurrentUser();
+
     @Transactional
     public GatheringDTO addGathering(GatheringDTO request) {
+
         // 동일한 모임명 존재 여부 확인
         if (gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(), request.getManagerId())) {
             throw new CustomException(ErrorCode.DUPLICATE_GATHERING_NAME);
         }
 
-        // 총무 조회
-        User manager = userRepo.findById(request.getManagerId())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        // 모임 계좌 생성.
+
+        // manager 설정 (모임 만든 현재 user)
+
+        // 모임 멤버에 유저 추가( 모임 만든 현재 user)
+
+
+        // 총무 설정.
+        User manager =currentUser;
 
         // 모임 계좌 조회
         GatheringAccount account = gatheringAccountRepo.findById(request.getGatheringAccountId())
@@ -54,13 +67,16 @@ public class GatheringService {
                 .gatheringAccount(account)
                 .gatheringName(request.getGatheringName())
                 .gatheringIntroduction(request.getGatheringIntroduction())
-                .memberCount(request.getMemberCount())
+                .memberCount(1) // 기본값 1 설정.
                 .penaltyRate(request.getPenaltyRate())
                 .depositDate(request.getDepositDate())
                 .basicFee((long) request.getBasicFee())
                 .gatheringDeposit((long) request.getGatheringDeposit())
                 .build();
-        
+
+
+
+
         gatheringRepo.save(gathering);
         return null;
     }

@@ -7,15 +7,14 @@ import lombok.Setter;
 import org.springframework.data.jpa.repository.Query;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class GatheringDTO {
     private Long gatheringId;
     private Long managerId;
     private Long gatheringAccountId;
-    private String gatheringName;
-    private String gatheringIntroduction;
-    private int memberCount;
+    private String gatheringName; //
+    private String gatheringIntroduction; //
+    private int memberCount; // 기본값 0에서 자동으로 추가.
     private int penaltyRate;
     private String depositDate;
     private Long basicFee;
@@ -23,8 +22,8 @@ public class GatheringDTO {
 
     @Builder
     public GatheringDTO(Long gatheringId, Long managerId, Long gatheringAccountId, String gatheringName,
-                       String gatheringIntroduction, int memberCount, int penaltyRate, String depositDate,
-        Long basicFee, Long gatheringDeposit) {
+                       String gatheringIntroduction, int penaltyRate, String depositDate,
+                       Long basicFee, Long gatheringDeposit, int memberCount) {
         this.gatheringId = gatheringId;
         this.managerId = managerId;
         this.gatheringAccountId = gatheringAccountId;
@@ -37,12 +36,10 @@ public class GatheringDTO {
         this.gatheringDeposit = gatheringDeposit;
     }
 
-
-    // GatheringDTO.java
     public GatheringDTO(Long gatheringId, Long managerId, Long accountId,
-        String gatheringName, String gatheringIntroduction,
-        String depositDate, Long basicFee, Integer penaltyRate,
-        Integer memberCount, Long gatheringDeposit) {
+                       String gatheringName, String gatheringIntroduction,
+                       String depositDate, Long basicFee, Integer penaltyRate,
+                       Long gatheringDeposit) {
         this.gatheringId = gatheringId;
         this.managerId = managerId;
         this.gatheringAccountId = accountId;

@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.user.service;
 
+import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
+import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.user.dto.request.LoginRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.request.PasswordChangeRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequestDTO;
@@ -30,6 +32,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
+    private final PersonalAccountRepo accountRepo; //추가. 
 
     /**
      * 회원가입
@@ -42,14 +45,18 @@ public class UserService {
 
         User user = User.builder()
                 .email(request.getEmail())
+                .name(request.getName())
                 .userKey(UUID.randomUUID().toString())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .birth(request.getBirth())
                 .build();
 
         userRepo.save(user);
-    }
 
+        //계좌 생성 로직 추가 하기.
+        //response.getUserKey.
+
+    }
     /**
      * 로그인
      */
@@ -76,15 +83,22 @@ public class UserService {
     public void logout() {
         String token = jwtTokenProvider.resolveToken(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
         if (token != null) {
-            tokenBlacklistService.addToBlacklist(token, jwtTokenProvider.getExpirationTime(token));
+            // 엑세스 토큰 블랙리스트 추가
+            long expirationTime = jwtTokenProvider.getExpirationTime(token);
+            tokenBlacklistService.addToBlacklist(token, expirationTime);
+
+            // 리프레시 토큰 블랙리스트 추가.
+            long userId = jwtTokenProvider.getUserId(token);
+            String refreshToken = jwtTokenProvider.createRefreshToken(userId); //현재 유효한 리프레시 토큰 조회 로직 필요
+            tokenBlacklistService.addToBlacklist(refreshToken, jwtTokenProvider.getExpirationTime(refreshToken));
         }
     }
 
     /**
      * 사용자 정보 조회
      */
-    public UserResponseDTO getMyInfo() {
-        return UserResponseDTO.from(getCurrentUser());
+    public UserResponseDTO getMyInfo(long userId) {
+        return UserResponseDTO.from(userRepo.getUserByUserId(userId));
     }
 
     /**
@@ -93,14 +107,15 @@ public class UserService {
     @Transactional
     public void withdraw() {
         userRepo.delete(getCurrentUser());
+        SecurityContextHolder.clearContext();
     }
 
     /**
      * 비밀번호 변경
      */
     @Transactional
-    public void changePassword(PasswordChangeRequestDTO request) {
-        User user = getCurrentUser();
+    public void changePassword(PasswordChangeRequestDTO request, long userId) {
+        User user = userRepo.getUserByUserId(userId);
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
@@ -109,12 +124,20 @@ public class UserService {
         user.changePassword(passwordEncoder.encode(request.getNewPassword()));
     }
 
-    /**
-     * 현재 로그인한 사용자 조회
-     */
-    private User getCurrentUser() {
+    // 현재 사용자 정보 조회
+    public User getCurrentUser() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepo.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
+
+//    private User getCurrentUser(HttpServletRequest request) {
+//        String token = jwtTokenProvider.resolveToken(request);
+//        if (token == null || !jwtTokenProvider.validateToken(token)) {
+//            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+//        }
+//        Long userId = jwtTokenProvider.getUserId(token);
+//        return userRepo.findById(userId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+//    }
 }
