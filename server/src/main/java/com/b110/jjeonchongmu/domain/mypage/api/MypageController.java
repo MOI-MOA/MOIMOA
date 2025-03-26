@@ -4,6 +4,7 @@ import com.b110.jjeonchongmu.domain.mypage.dto.*;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentResponseDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.myaccount.MyAccountResponseDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.StatisticsResponse;
 import com.b110.jjeonchongmu.domain.mypage.service.MypageService;
@@ -74,4 +75,19 @@ public class MypageController {
         }
         return ResponseEntity.ok(new UpdateAutoPaymentResponseDto("success"));
     }
+
+    @GetMapping("/profile/mypage/myaccount")
+    public ResponseEntity<MyAccountResponseDto> myAccount() {
+        Long id = jwtTokenProvider.getUserId();
+
+        MyAccountResponseDto response;
+        try {
+            response = myPageService.getMyAccount(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
 }
