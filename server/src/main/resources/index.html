@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<div>
+  <button onclick="connect()">Connect</button>
+  <button onclick="disconnect()">Disconnect</button>
+  <input type="text" id="accountId" placeholder="Enter account ID" value="2">
+</div>
+<div id="log" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll;"></div>
+
+<script>
+  let stompClient = null;
+
+  function log(message) {
+    const logElem = document.getElementById('log');
+    logElem.innerHTML += '<p>' + new Date().toLocaleTimeString() + ': ' + message + '</p>';
+    logElem.scrollTop = logElem.scrollHeight;
+  }
+
+  function connect() {
+    log('Attempting to connect...');
+
+    const socket = new SockJS('http://localhost:8080/ws');
+    stompClient = Stomp.over(socket);
+
+    // 디버그 로그 활성화 (선택 사항)
+    stompClient.debug = function(str) {
+      log('STOMP: ' + str);
+    };
+
+    stompClient.connect({},
+        function(frame) {
+          log('Connected: ' + frame);
+
+          const accountId = document.getElementById('accountId').value;
+          log('Subscribing to account ID: ' + accountId);
+
+          // 구독 설정
+          stompClient.subscribe('/queue/transfer-results' + accountId, function(message) {
+            log('Received: ' + message.body);
+          });
+        },
+        function(error) {
+          log('Connection error: ' + error);
+        }
+    );
+  }
+
+  function disconnect() {
+    if (stompClient !== null) {
+      stompClient.disconnect();
+      log('Disconnected');
+    }
+  }
+</script>
+</body>
+</html>

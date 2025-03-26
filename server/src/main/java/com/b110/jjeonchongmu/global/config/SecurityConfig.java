@@ -53,7 +53,6 @@ public class SecurityConfig {
                                 // 인증 없이 접근 가능한 경로 설정
                                 .requestMatchers("/api/v1/login", "/api/v1/signup", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                                 // 그 외 모든 요청은 인증 필요
-
 //                                .anyRequest().authenticated())
                                 .anyRequest().permitAll())
 

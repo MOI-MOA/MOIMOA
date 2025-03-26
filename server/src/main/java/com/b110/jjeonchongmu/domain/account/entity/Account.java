@@ -33,6 +33,7 @@ public class Account {
     private String accountPw;
 
     @Column(name = "dtype", insertable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
     private AccountType dtype;
 
     public Account(User user, String accountNo, String accountPw) {
