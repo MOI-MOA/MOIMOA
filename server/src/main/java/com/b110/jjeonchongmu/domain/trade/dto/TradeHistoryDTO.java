@@ -27,7 +27,7 @@ public class TradeHistoryDTO {
 			tradeType = TradeType.WITHDRAWAL;
 			otherUserName = trade.getToAccount().getUser().getName();
 		}else {
-			tradeType = TradeType.DEPOSIT;
+			tradeType = TradeType.PAYMENT;
 			otherUserName = trade.getFromAccount().getUser().getName();
 		}
 		TradeHistoryDTO tradeHistoryDTO = new TradeHistoryDTO(
