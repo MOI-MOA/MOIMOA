@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 public class ScheduleDTO {
     private Long gatheringId;
     private String gatheringName;
