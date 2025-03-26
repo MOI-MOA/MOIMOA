@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class GatheringAccountService {
-
 	private final ExternalBankApiComponent externalBankApiComponent;
 	private final PersonalAccountRepo personalAccountRepo;
 	private final GatheringAccountRepo gatheringAccountRepo;
@@ -188,5 +187,10 @@ public class GatheringAccountService {
                 transferAmount,
                 accountPw
         );
+    }
+
+    public String findNameByAccountNo(String accountNo) {
+		Account account = accountRepo.findAccountByAccountNo(accountNo);
+        return account.getUser().getName();
     }
 }

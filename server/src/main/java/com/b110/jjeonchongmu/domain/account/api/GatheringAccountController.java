@@ -2,6 +2,8 @@ package com.b110.jjeonchongmu.domain.account.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.entity.Account;
+import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
@@ -35,6 +37,7 @@ public class GatheringAccountController {
     private final GatheringAccountService gatheringAccountService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AccountRepo accountRepo;
 
     /**
      * 계좌 송금
@@ -80,10 +83,10 @@ public class GatheringAccountController {
     public ResponseEntity<Map<String, String>> checkAccount(@RequestBody AccountCheckRequestDTO requestDto) {
         Map<String, String> map = new HashMap<>();
         Long userId = jwtTokenProvider.getUserId();
-        BankAccountInquiryResponseDTO response;
+        String name;
         try {
             // 계좌 찾고
-            response = gatheringAccountService.findAccount(userId, requestDto.getAccountNo());
+            name = gatheringAccountService.findNameByAccountNo(requestDto.getAccountNo());
         } catch (Exception e) {
             // 없으면 실패 메시지 담아서 return
             e.printStackTrace();
@@ -92,21 +95,10 @@ public class GatheringAccountController {
         }
 
         // 있으면 name담아서 리턴
-        String name = response.getRec().getUserName();
         map.put("name", name);
 
         return ResponseEntity.status(HttpStatus.OK).body(map);
     }
-
-
-
-
-
-
-
-
-
-
 
 
     /**
