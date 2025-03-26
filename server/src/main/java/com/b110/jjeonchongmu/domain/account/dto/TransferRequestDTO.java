@@ -16,5 +16,5 @@ public class TransferRequestDTO {
 	private AccountType toAccountType;
 	private Long toAccountId;
 	private String tradeDetail;
-	private Integer transferAmount;
+	private Long transferAmount;
 }

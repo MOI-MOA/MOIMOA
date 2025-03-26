@@ -32,6 +32,7 @@ public class GatheringAccountController {
      * 계좌 송금
      */
     @PostMapping("/transfer")
+
     public ResponseEntity<Object> transfer(
             @RequestBody TransferRequestDTO requestDto) {
         TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);

@@ -17,7 +17,7 @@ public class TransferTransactionHistoryDTO {
 	private AccountType fromAccountType;
 	private Long toAccountId;
 	private AccountType toAccountType;
-	private Integer amount;
+	private Long amount;
 	private String detail;
 	private TransactionStatus status;
 	private String errorCode;
