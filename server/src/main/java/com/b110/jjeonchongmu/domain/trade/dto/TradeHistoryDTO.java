@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class TradeHistoryDTO {
 
 	private final Long tradeId;
-	private final Long tradeAmount;
+	private final Long tradeAmount; // 무조건 양수
 	private final Long tradeBalance;
 	private final String tradeDetail;
 	private final LocalDateTime tradeDateTime;
