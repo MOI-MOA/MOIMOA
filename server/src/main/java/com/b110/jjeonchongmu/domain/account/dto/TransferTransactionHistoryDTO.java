@@ -25,6 +25,7 @@ public class TransferTransactionHistoryDTO {
 	private String externalTransactionId;
 	private LocalDateTime createdAt;
 	private LocalDateTime completedAt;
+	private String accountPw;
 
 	public void updateStatus(TransactionStatus transactionStatus) {
 		this.status = transactionStatus;

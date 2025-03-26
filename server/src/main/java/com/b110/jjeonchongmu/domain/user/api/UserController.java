@@ -6,6 +6,7 @@ import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.TokenResponseDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.UserResponseDTO;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 회원가입 API
@@ -48,7 +50,7 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout() {
         userService.logout();
-        return ResponseEntity.status(200).body("토큰무효화 성공");
+        return ResponseEntity.status(200).body("로그아웃 성공");
     }
 
     /**
@@ -57,7 +59,8 @@ public class UserController {
      */
     @GetMapping("/user/me")
     public ResponseEntity<UserResponseDTO> getMyInfo() {
-        UserResponseDTO response = userService.getMyInfo();
+        long userId = jwtTokenProvider.getUserId();
+        UserResponseDTO response = userService.getMyInfo(userId);
         return ResponseEntity.status(200).body(response);
     }
 
@@ -67,7 +70,8 @@ public class UserController {
      */
     @PatchMapping("/user/password")
     public ResponseEntity<String> changePassword(@Valid @RequestBody PasswordChangeRequestDTO request) {
-        userService.changePassword(request);
+        long userId = jwtTokenProvider.getUserId();
+        userService.changePassword(request, userId);
         return ResponseEntity.status(200).body("비밀번호 변경 성공");
     }
 
@@ -75,9 +79,9 @@ public class UserController {
      * 회원 탈퇴 API
      * 사용자 정보를 삭제합니다.
      */
-    @DeleteMapping("/user")
+    @DeleteMapping("/withdraw")
     public ResponseEntity<String> withdraw() {
         userService.withdraw();
-        return ResponseEntity.status(200).body("사용자 정보 삭제");
+        return ResponseEntity.status(200).body("회원 탈퇴 성공");
     }
 }

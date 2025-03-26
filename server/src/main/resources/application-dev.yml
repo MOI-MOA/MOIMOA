@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/jjeonchongmu?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: root
-    password: ssafy
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -13,6 +13,7 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
+#      host: my-cache-server
       host: localhost
       port: 6379
 
@@ -26,6 +27,7 @@ logging.level:
     security: DEBUG
     web.socket: DEBUG
     messaging: DEBUG
+  com.b110.jjeonchongmu: DEBUG
 
 springdoc:
   swagger-ui:
@@ -42,8 +44,12 @@ jwt:
 external:
   bank:
     api:
-      url: https://finopenapi.ssafy.io/ssafy/api/v1
+      url: https://finopenapi.ssafy.io/ssafy/api/v1/edu/
       key: 4c56f9b9514141e3a39dd6783f4c536a
+      accountType: 001-1-e03c49fc0efb4c
+  user:
+    api:
+      url: https://finopenapi.ssafy.io/ssafy/api/v1/
 
 server:
   port: 8080

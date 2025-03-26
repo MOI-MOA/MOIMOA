@@ -20,7 +20,7 @@ public class AutoPayment {
     private PersonalAccount personalAccount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gahtering_account_id", nullable = false)
+    @JoinColumn(name = "gathering_account_id", nullable = false)
     private GatheringAccount gatheringAccount;
 
     @Column(name = "auto_payment_amount", nullable = true)

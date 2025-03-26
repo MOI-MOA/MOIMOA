@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class AccountDTO {
     private Long accountHolderId;
     private String userName;
-    private Long accountNo;
+    private String accountNo;
     private Long accountBalance;
     private String accountPw;
 }

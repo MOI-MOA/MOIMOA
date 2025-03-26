@@ -1,17 +1,23 @@
 package com.b110.jjeonchongmu.domain.user.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
+import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
+import com.b110.jjeonchongmu.domain.account.service.PersonalAccountService;
 import com.b110.jjeonchongmu.domain.user.dto.request.LoginRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.request.PasswordChangeRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequestDTO;
+import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.TokenResponseDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.UserResponseDTO;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import com.b110.jjeonchongmu.global.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,102 +25,135 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
 
-    private final UserRepo userRepo;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final TokenBlacklistService tokenBlacklistService;
+	private final UserRepo userRepo;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final TokenBlacklistService tokenBlacklistService;
+	private final PersonalAccountRepo accountRepo; //추가.
+	private final ExternalBankApiComponent externalBankApiComponent;
+	private final PersonalAccountService personalAccountService;
+	@Value("${external.bank.api.accountType}")
+	private String externalAccountType;
+	/**
+	 * 회원가입
+	 */
+	@Transactional
+	public void signup(SignupRequestDTO request) {
+		if (userRepo.existsByEmail(request.getEmail())) {
+			throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+		}
 
-    /**
-     * 회원가입
-     */
-    @Transactional
-    public void signup(SignupRequestDTO request) {
-        if (userRepo.existsByEmail(request.getEmail())) {
-            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
-        }
 
-        User user = User.builder()
-                .email(request.getEmail())
-                .userKey(UUID.randomUUID().toString())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .birth(request.getBirth())
-                .build();
 
-        userRepo.save(user);
-    }
+		MakeUserResponseDTO makeUserResponseDTO = externalBankApiComponent.createBankAppUser(
+				request.getEmail());
 
-    /**
-     * 로그인
-     */
-    public TokenResponseDTO login(LoginRequestDTO request) {
-        User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+//		private final String userKey;
+//		private final String externalAccountType;
+//		private final Long accountPw;
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
+		User user = User.builder()
+				.email(request.getEmail())
+				.name(request.getName())
+				.userKey(makeUserResponseDTO.getUserKey())
+				.password(passwordEncoder.encode(request.getPassword()))
+				.birth(request.getBirth())
+				.build();
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+		userRepo.save(user);
+		MakeExternalAccountDTO makeExternalAccountDTO = new MakeExternalAccountDTO(
+				makeUserResponseDTO.getUserKey(), externalAccountType, request.getPersonalAccountPW());
+		personalAccountService.addPersonalAccount(makeExternalAccountDTO, user.getUserId());
+	}
 
-        return TokenResponseDTO.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+	/**
+	 * 로그인
+	 */
+	public TokenResponseDTO login(LoginRequestDTO request) {
+		User user = userRepo.findByEmail(request.getEmail())
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-    /**
-     * 로그아웃
-     */
-    public void logout() {
-        String token = jwtTokenProvider.resolveToken(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
-        if (token != null) {
-            tokenBlacklistService.addToBlacklist(token, jwtTokenProvider.getExpirationTime(token));
-        }
-    }
+		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
+		}
 
-    /**
-     * 사용자 정보 조회
-     */
-    public UserResponseDTO getMyInfo() {
-        return UserResponseDTO.from(getCurrentUser());
-    }
+		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
+		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
-    /**
-     * 회원 탈퇴
-     */
-    @Transactional
-    public void withdraw() {
-        userRepo.delete(getCurrentUser());
-    }
+		return TokenResponseDTO.builder()
+				.accessToken(accessToken)
+				.refreshToken(refreshToken)
+				.build();
+	}
 
-    /**
-     * 비밀번호 변경
-     */
-    @Transactional
-    public void changePassword(PasswordChangeRequestDTO request) {
-        User user = getCurrentUser();
+	/**
+	 * 로그아웃
+	 */
+	public void logout() {
+		String token = jwtTokenProvider.resolveToken(
+				((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest());
+		if (token != null) {
+			// 엑세스 토큰 블랙리스트 추가
+			long expirationTime = jwtTokenProvider.getExpirationTime(token);
+			tokenBlacklistService.addToBlacklist(token, expirationTime);
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
+			// 리프레시 토큰 블랙리스트 추가.
+			long userId = jwtTokenProvider.getUserId(token);
+			String refreshToken = jwtTokenProvider.createRefreshToken(userId); //현재 유효한 리프레시 토큰 조회 로직 필요
+			tokenBlacklistService.addToBlacklist(refreshToken,
+					jwtTokenProvider.getExpirationTime(refreshToken));
+		}
+	}
 
-        user.changePassword(passwordEncoder.encode(request.getNewPassword()));
-    }
+	/**
+	 * 사용자 정보 조회
+	 */
+	public UserResponseDTO getMyInfo(long userId) {
+		return UserResponseDTO.from(userRepo.getUserByUserId(userId));
+	}
 
-    /**
-     * 현재 로그인한 사용자 조회
-     */
-    private User getCurrentUser() {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepo.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
+	/**
+	 * 회원 탈퇴
+	 */
+	@Transactional
+	public void withdraw() {
+		userRepo.delete(getCurrentUser());
+		SecurityContextHolder.clearContext();
+	}
+
+	/**
+	 * 비밀번호 변경
+	 */
+	@Transactional
+	public void changePassword(PasswordChangeRequestDTO request, long userId) {
+		User user = userRepo.getUserByUserId(userId);
+
+		if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
+		}
+
+		user.changePassword(passwordEncoder.encode(request.getNewPassword()));
+	}
+
+	// 현재 사용자 정보 조회
+	public User getCurrentUser() {
+		String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+		return userRepo.findById(Long.valueOf(userId))
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+	}
+
+//    private User getCurrentUser(HttpServletRequest request) {
+//        String token = jwtTokenProvider.resolveToken(request);
+//        if (token == null || !jwtTokenProvider.validateToken(token)) {
+//            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+//        }
+//        Long userId = jwtTokenProvider.getUserId(token);
+//        return userRepo.findById(userId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+//    }
 }

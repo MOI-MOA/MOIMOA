@@ -49,7 +49,7 @@ public class JwtTokenProvider {
 
     @PostConstruct
     protected void init() {
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
     /**

@@ -1,22 +1,25 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
-import com.b110.jjeonchongmu.domain.gathering.dto.*;
-import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
-import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
-import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
-import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
-import com.b110.jjeonchongmu.domain.user.entity.User;
-import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailResponseDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringListResponseDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringMemberDTO;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import com.b110.jjeonchongmu.domain.user.service.UserService;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,16 +37,26 @@ public class GatheringService {
      * @return
      * @throws CustomException 동일한 모임명이 이미 존재하는 경우
      */
+    private final UserService userService;
+
+
     @Transactional
     public GatheringDTO addGathering(GatheringDTO request) {
+        User currentUser = userService.getCurrentUser();
         // 동일한 모임명 존재 여부 확인
         if (gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(), request.getManagerId())) {
             throw new CustomException(ErrorCode.DUPLICATE_GATHERING_NAME);
         }
 
-        // 총무 조회
-        User manager = userRepo.findById(request.getManagerId())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        // 모임 계좌 생성.
+
+        // manager 설정 (모임 만든 현재 user)
+
+        // 모임 멤버에 유저 추가( 모임 만든 현재 user)
+
+
+        // 총무 설정.
+        User manager =currentUser;
 
         // 모임 계좌 조회
         GatheringAccount account = gatheringAccountRepo.findById(request.getGatheringAccountId())
@@ -54,20 +67,23 @@ public class GatheringService {
                 .gatheringAccount(account)
                 .gatheringName(request.getGatheringName())
                 .gatheringIntroduction(request.getGatheringIntroduction())
-                .memberCount(request.getMemberCount())
+                .memberCount(1) // 기본값 1 설정.
                 .penaltyRate(request.getPenaltyRate())
                 .depositDate(request.getDepositDate())
                 .basicFee((long) request.getBasicFee())
                 .gatheringDeposit((long) request.getGatheringDeposit())
                 .build();
-        
+
+
+
+
         gatheringRepo.save(gathering);
         return null;
     }
 
     /**
      * 모임 정보 수정
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param request 수정할 모임 정보
      * @throws CustomException 모임을 찾을 수 없거나, 동일한 모임명이 존재하는 경우
@@ -200,7 +216,7 @@ public class GatheringService {
 
     /**
      * 사용자가 해당 모임의 총무인지 확인
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param userId 사용자 ID
      * @return 총무 여부
@@ -214,7 +230,7 @@ public class GatheringService {
 
     /**
      * 사용자가 해당 모임의 회원인지 확인
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param userId 사용자 ID
      * @throws CustomException 모임을 찾을 수 없거나 회원이 아닌 경우
@@ -227,7 +243,7 @@ public class GatheringService {
 
     /**
      * 계좌 ID로 모임 조회
-     * 
+     *
      * @param accountId 계좌 ID
      * @return 모임 정보
      * @throws CustomException 모임을 찾을 수 없는 경우
@@ -252,7 +268,7 @@ public class GatheringService {
 
     /**
      * 모임 계좌 유효성 검증
-     * 
+     *
      * @param gatheringId 모임 ID
      * @param accountId 계좌 ID
      * @throws CustomException 모임을 찾을 수 없거나, 계좌가 유효하지 않은 경우
@@ -268,7 +284,7 @@ public class GatheringService {
 
     /**
      * 모임 회원 수 업데이트
-     * 
+     *
      * @param gatheringId 모임 ID
      * @throws CustomException 모임을 찾을 수 없는 경우
      */
@@ -283,7 +299,7 @@ public class GatheringService {
 
     /**
      * 총무가 관리하는 모임 목록 조회
-     * 
+     *
      * @param managerId 총무 ID
      * @return 모임 목록
      */

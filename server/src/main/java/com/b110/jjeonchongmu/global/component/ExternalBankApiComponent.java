@@ -1,7 +1,10 @@
 package com.b110.jjeonchongmu.global.component;
 
+import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferResponseDTO;
+import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
+import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -29,19 +32,23 @@ public class ExternalBankApiComponent {
 	private final RestTemplate restTemplate;
 	private final String apiUrl;
 	private final String apiKey;
+	private final String userUrl;
 
 	private static final Logger log = LoggerFactory.getLogger(ExternalBankApiComponent.class);
+
 	@Autowired
 	public ExternalBankApiComponent(
 			RestTemplateBuilder builder,
 			@Value("${external.bank.api.url}") String apiUrl,
-			@Value("${external.bank.api.key}") String apiKey) {
+			@Value("${external.bank.api.key}") String apiKey,
+			@Value("${external.user.api.url}") String userUrl) {
 		this.restTemplate = builder.build();
 		this.apiUrl = apiUrl;
 		this.apiKey = apiKey;
+		this.userUrl = userUrl;
 	}
 
-	public BankTransferResponseDTO sendTransferWithRetry(BankTransferRequestDTO requestDTO)
+	public void sendTransferWithRetry(BankTransferRequestDTO requestDTO)
 			throws IllegalAccessException {
 		int maxRetries = 3;
 		int retryDelayMs = 1000; // 1초
@@ -50,7 +57,7 @@ public class ExternalBankApiComponent {
 			try {
 				BankTransferResponseDTO response = externalTransfer(requestDTO);
 				log.info("외부 은행 API 호출 성공");
-				return response;
+				return;
 			} catch (Exception e) {
 				log.error("외부 은행 API 호출 실패 (시도 {}/{}): {}", attempt, maxRetries, e.getMessage());
 
@@ -77,24 +84,13 @@ public class ExternalBankApiComponent {
 		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
 
-		Map<String, Object> requestBody = new HashMap<>();
-		Map<String, Object> header = new HashMap<>();
+		Map<String, Object> requestBody = createHeaderAndBody("updateDemandDepositAccountTransfer",
+				"updateDemandDepositAccountTransfer", requestDTO.getUserKey());
 
-		header.put("apiName", "updateDemandDepositAccountTransfer");
-		header.put("transmissionDate", currentDate);
-		header.put("transmissionTime", currentTime);
-		header.put("institutionCode", "00100");
-		header.put("apiServiceCode", "createDemandDeposit");
-		header.put("institutionTransactionUniqueNo", generate20DigitRandomNumber());
-		header.put("apiKey", apiKey);
-		header.put("userKey", requestDTO.getUserKey()); // 필요한 경우 값 설정
-
-		requestBody.put("Header", header);
-
-		requestBody.put("depositAccountNo", requestDTO.getToAccountNo());
+		requestBody.put("depositAccountNo", requestDTO.getFromAccountNo());
 		requestBody.put("depositTransactionSummary", "(수시입출금) : 입금(이체)");
 		requestBody.put("transactionBalance", requestDTO.getAmount());
-		requestBody.put("withdrawAccountNo", requestDTO.getFromAccountNo());
+		requestBody.put("withdrawAccountNo", requestDTO.getToAccountNo());
 		requestBody.put("withdrawTransactionSummary", "(수시입출금) : 출금(이체)");
 
 		HttpHeaders httpHeaders = new HttpHeaders();
@@ -104,7 +100,8 @@ public class ExternalBankApiComponent {
 		try {
 			String transferUrl = "demandDeposit/updateDemandDepositAccountTransfer";
 			ResponseEntity<BankTransferResponseDTO> response =
-					restTemplate.exchange(apiUrl + transferUrl, HttpMethod.POST, entity, BankTransferResponseDTO.class);
+					restTemplate.exchange(apiUrl + transferUrl, HttpMethod.POST, entity,
+							BankTransferResponseDTO.class);
 
 			return response.getBody();
 		} catch (RestClientException e) {
@@ -123,4 +120,63 @@ public class ExternalBankApiComponent {
 		}
 		return sb.toString();
 	}
+
+	public BankAccountResponseDTO externalMakeAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
+		Map<String, Object> requestBody = createHeaderAndBody("createDemandDepositAccount",
+				"createDemandDepositAccount", makeExternalAccountDTO.getUserKey());
+		requestBody.put("accountTypeUniqueNo", makeExternalAccountDTO.getExternalAccountType());
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+		try {
+			String demandDepositUrl = "demandDeposit/createDemandDepositAccount";
+			ResponseEntity<BankAccountResponseDTO> response =
+					restTemplate.exchange(apiUrl + demandDepositUrl, HttpMethod.POST, entity,
+							BankAccountResponseDTO.class);
+			return response.getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("외부 은행 계좌 생성 중 오류 발생", e);
+		}
+	}
+
+	public MakeUserResponseDTO createBankAppUser(String email) {
+		Map<String, Object> requestBody = new HashMap<>();
+		requestBody.put("apiKey", apiKey);
+		requestBody.put("userId", email);
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+		try {
+			String makeUserUrl = "member/";
+			ResponseEntity<MakeUserResponseDTO> response =
+					restTemplate.exchange(userUrl + makeUserUrl, HttpMethod.POST, entity,
+							MakeUserResponseDTO.class);
+			return response.getBody();
+		} catch (Exception e) {
+			throw new RuntimeException("회원 생성 중 오류 발생", e);
+		}
+	}
+
+	public Map<String, Object> createHeaderAndBody(String apiName, String apiServiceCode,
+			String userKey) {
+		Map<String, Object> requestBody = new HashMap<>();
+		Map<String, Object> header = new HashMap<>();
+		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+		header.put("apiName", apiName);
+		header.put("transmissionDate", currentDate);
+		header.put("transmissionTime", currentTime);
+		header.put("institutionCode", "00100");
+		header.put("fintechAppNo", "001");
+		header.put("apiServiceCode", apiServiceCode);
+		header.put("institutionTransactionUniqueNo", generate20DigitRandomNumber());
+		header.put("apiKey", apiKey);
+		header.put("userKey", userKey);
+
+		requestBody.put("Header", header);
+		return requestBody;
+	}
+
 }
+
+
