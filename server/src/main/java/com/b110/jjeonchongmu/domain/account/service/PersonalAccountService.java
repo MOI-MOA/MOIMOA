@@ -128,7 +128,8 @@ public class PersonalAccountService {
 					transferTransactionHistoryDTO.getAmount(),
 					LocalDateTime.now(),
 					transferTransactionHistoryDTO.getDetail(),
-					fromAccount.getAccountBalance()
+					fromAccount.getAccountBalance(),
+					toAccount.getAccountBalance()
 			);
 
 			tradeRepo.save(trade);
@@ -139,7 +140,7 @@ public class PersonalAccountService {
 					toAccount.getAccountNo(),
 					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount()
-					);
+			);
 
 			externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);

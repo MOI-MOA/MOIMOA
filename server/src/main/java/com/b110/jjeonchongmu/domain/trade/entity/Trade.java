@@ -47,5 +47,8 @@ public class Trade {
     @Column(name = "trade_balance", nullable = true)
     private Long tradeBalance;
 
+    @Column(name = "to_trade_balance", nullable = true)
+    private Long toTradeBalance;
+
 
 }

@@ -159,7 +159,8 @@ public class GatheringAccountService {
 					transferTransactionHistoryDTO.getAmount(),
 					LocalDateTime.now(),
 					transferTransactionHistoryDTO.getDetail(),
-					fromAccount.getAccountBalance()
+					fromAccount.getAccountBalance(),
+					toAccount.getAccountBalance()
 			);
 
 			tradeRepo.save(trade);
@@ -231,3 +232,4 @@ public class GatheringAccountService {
 		return account.getUser().getName();
 	}
 }
+
