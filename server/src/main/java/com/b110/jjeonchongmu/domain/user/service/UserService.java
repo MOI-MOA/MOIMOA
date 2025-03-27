@@ -49,7 +49,7 @@ public class UserService {
 		}
 
 
-
+		//은행 유저 생성.
 		MakeUserResponseDTO makeUserResponseDTO = externalBankApiComponent.createBankAppUser(
 				request.getEmail());
 
