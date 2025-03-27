@@ -1,25 +1,28 @@
 package com.b110.jjeonchongmu.domain.account.entity;
-import jakarta.persistence.*;
-import lombok.*;
+
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "personal_account")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonalAccount {
+@DiscriminatorValue("PERSONAL")
+public class PersonalAccount extends Account {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "personal_account_id", nullable = false)
-    private Long personalAccountId;
+    @OneToMany(mappedBy = "personalAccount" , fetch = FetchType.LAZY)
+    private List<AutoPayment> autoPayments;
 
-    @Column(name = "personal_account_no", nullable = false, length = 255)
-    private String personalAccountNo;
+    public PersonalAccount(User user, String accountNo, String accountPw) {
+        super(user, accountNo, accountPw);
+        this.autoPayments = null;
+    }
 
-    @Column(name = "personal_account_balance", nullable = false)
-    private Integer personalAccountBalance;
-
-    @Column(name = "personal_account_pw", nullable = false)
-    private String personalAccountPw;
 }
