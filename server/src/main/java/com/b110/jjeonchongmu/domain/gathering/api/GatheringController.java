@@ -56,7 +56,7 @@ public class GatheringController {
      * 모임 생성
      */
     @PostMapping
-    public ResponseEntity<GatheringDTO> addGathering(@RequestBody GatheringDTO request) {
+    public ResponseEntity<GatheringDTO> addGathering(@RequestBody AddGatheringDTO request) {
         GatheringDTO gatheringDTO= gatheringService.addGathering(request);
         return ResponseEntity.status(201).body(gatheringDTO);
     }

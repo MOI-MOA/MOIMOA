@@ -32,7 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 @Service
 @RequiredArgsConstructor
 public class GatheringAccountService {
@@ -73,28 +73,30 @@ public class GatheringAccountService {
 		gatheringAccountRepo.deleteById(gatheringAccountId);
 	}
 
-	//    계좌 생성
+	//    계좌 DB 저장.
 	@Transactional
-	public boolean createAccount(MakeGatheringAccountDTO requestDTO){
-		User user = userRepo.findByUserId(requestDTO.getUserId())
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
-		Gathering gathering = gatheringRepo.findById(requestDTO.getGatheringId())
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
-
-		GatheringAccount gatheringAccount = new GatheringAccount(user,requestDTO.getGatheringAccountNo(),requestDTO.getAccountPw(),gathering);
-
+	public GatheringAccount addGroupAccount(MakeExternalAccountDTO makeExternalAccountDTO, Long userId){
+		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("계좌 DB 저장 - 회원 조회 실패"));
+		BankAccountResponseDTO responseDTO = externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
+		// 계좌 저장로직
+		GatheringAccount gatheringAccount = new GatheringAccount(
+				user,
+				responseDTO.getRec().getAccountNo(),
+				passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw())
+				)	);
 		gatheringAccountRepo.save(gatheringAccount);
-		return true;
+		return gatheringAccount;
 	}
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
+		Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
-				.fromAccountId(requestDto.getFromAccountId())
+				.fromAccountId(account.getAccountId())
 				.fromAccountType(requestDto.getFromAccountType())
-				.toAccountId(requestDto.getToAccountId())
+				.toAccountId(account.getAccountId())
 				.toAccountType(null)
 				.amount(requestDto.getTransferAmount())
 				.detail(requestDto.getTradeDetail())
@@ -217,7 +219,7 @@ public class GatheringAccountService {
 				fromAccountType,
 				fromAccountId,
 				toAccountType,
-				toAccountId,
+				transferRequestDto.getAccountNo(),
 				tradeDetail,
 				transferAmount,
 				accountPw

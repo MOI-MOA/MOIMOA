@@ -4,7 +4,9 @@ import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
 import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
+import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
@@ -30,20 +32,22 @@ public class ScheduleAccountService {
     private final TradeRepo tradeRepo;
     private final ScheduleRepo scheduleRepo;
     private final UserRepo userRepo;
+    private final AccountRepo accountRepo;
 //    계좌내역저장
     public Boolean initTransfer(TransferRequestDTO requestDto) {
 
     ScheduleAccount FromScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getFromAccountId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"FromScheduleAccount not found"));
-    ScheduleAccount ToScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getToAccountId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ToScheduleAccount not found"));
+//    ScheduleAccount ToScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getToAccountNo())
+//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ToScheduleAccount not found"));
+        Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
         ScheduleAccount scheduleAccount = new ScheduleAccount();
 
         Trade trade = Trade.builder()
                 .fromAccount(FromScheduleAccount)
                 .fromAccountType(requestDto.getFromAccountType())
-                .toAccount(ToScheduleAccount)
-                .toAccountType(ToScheduleAccount.getDtype())
+                .toAccount(account)
+                .toAccountType(account.getDtype())
                 .tradeAmount(requestDto.getTransferAmount())
                 .tradeTime(LocalDateTime.now())
                 .tradeDetail(requestDto.getTradeDetail())

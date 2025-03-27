@@ -50,14 +50,14 @@ public class PersonalAccountService {
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 		// 계좌를 db에서 확인
-		Account account = accountRepo.findById(requestDto.getToAccountId())
-				.orElseThrow(() -> new IllegalArgumentException("계좌 조회 실패"));
+		Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
 				.fromAccountId(requestDto.getFromAccountId())
 				.fromAccountType(requestDto.getFromAccountType())
-				.toAccountId(requestDto.getToAccountId())
+				.toAccountId(account.getAccountId())
 				.toAccountType(account.getDtype())
 				.amount(requestDto.getTransferAmount())
 				.detail(requestDto.getTradeDetail())

@@ -25,4 +25,8 @@ public class GatheringAccount extends Account {
         super(user, accountNo, accountPw);
         this.gathering = gathering;
     }
+
+    public GatheringAccount(User user, String accountNo, String accountPw){
+        super(user, accountNo, accountPw);
+    }
 }

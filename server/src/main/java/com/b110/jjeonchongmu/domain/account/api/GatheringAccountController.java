@@ -60,14 +60,14 @@ public class GatheringAccountController {
                 boolean isCompleted = gatheringAccountService.processTransfer(response);
 
                 simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results" + requestDto.getToAccountId(),
+                        "/queue/transfer-results" + requestDto.getFromAccountId(),
                         isCompleted
                 );
             } catch (Exception e) {
 
                 TransferResponseDTO result = new TransferResponseDTO();
                 simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results" + requestDto.getToAccountId(),
+                        "/queue/transfer-results" + requestDto.getFromAccountId(),
                         "송금중 오류가 발생"
                 );
             }
