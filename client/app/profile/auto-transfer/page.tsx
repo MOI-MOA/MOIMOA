@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Calendar,
@@ -21,60 +22,50 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { authApi, publicApi } from "@/lib/api";
+
+interface AutoTransfer {
+  id: number;
+  groupName: string;
+  amount: number;
+  day: number;
+  nextDate: string;
+  status: string;
+  account: string;
+  deposit: number;
+  myBalance: number;
+}
+
+interface AccountCheckResponse {
+  isValid: boolean;
+}
 
 export default function AutoTransferPage() {
   const router = useRouter();
+  const [accountBalance, setAccountBalance] = useState(0);
+  const [autoTransfers, setAutoTransfers] = useState<AutoTransfer[]>([]);
+  const [accountNumber, setAccountNumber] = useState("");
 
-  // 사용자의 계좌 잔액 (실제로는 API에서 가져와야 함)
-  const [accountBalance, setAccountBalance] = useState(500000);
+  // 자동이체 목록 가져오기
+  useEffect(() => {
+    const fetchAutoTransfers = async () => {
+      try {
+        const response = await authApi.get<AutoTransfer[], AutoTransfer[]>(
+          "/api/v1/auto-transfer/list"
+        );
+        setAutoTransfers(response);
+      } catch (error) {
+        console.error("자동이체 목록 조회 실패:", error);
+        toast({
+          title: "오류",
+          description: "자동이체 목록을 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      }
+    };
 
-  // 자동이체 데이터 (실제로는 API에서 가져와야 함)
-  const [autoTransfers, setAutoTransfers] = useState([
-    {
-      id: 1,
-      groupName: "회사 동료",
-      amount: 30000,
-      day: 15,
-      nextDate: "2024-04-15",
-      status: "active",
-      account: "신한은행 110-123-456789",
-      deposit: 100000, // 보증금
-      myBalance: 150000, // 나의 잔액
-    },
-    {
-      id: 2,
-      groupName: "대학 친구들",
-      amount: 20000,
-      day: 20,
-      nextDate: "2024-04-20",
-      status: "active",
-      account: "국민은행 123-45-6789012",
-      deposit: 50000,
-      myBalance: 100000,
-    },
-    {
-      id: 3,
-      groupName: "동호회",
-      amount: 15000,
-      day: 5,
-      nextDate: "2024-04-05",
-      status: "inactive",
-      account: "우리은행 1002-123-456789",
-      deposit: 80000,
-      myBalance: 120000,
-    },
-    {
-      id: 4,
-      groupName: "독서 모임",
-      amount: 10000,
-      day: 10,
-      nextDate: "2024-04-10",
-      status: "active",
-      account: "카카오뱅크 3333-12-3456789",
-      deposit: 50000,
-      myBalance: 30000, // 보증금보다 낮은 잔액
-    },
-  ]);
+    fetchAutoTransfers();
+  }, []);
 
   // 활성 자동이체 개수 계산
   const activeTransfers = autoTransfers.filter(
@@ -88,21 +79,14 @@ export default function AutoTransferPage() {
   );
 
   // 자동이체 수정 페이지로 이동
-  const handleEdit = (transfer: {
-    id: number;
-    groupName: string;
-    amount: number;
-    day: number;
-    account: string;
-    status: string;
-  }) => {
+  const handleEdit = (transfer: AutoTransfer) => {
     const params = new URLSearchParams({
       id: transfer.id.toString(),
       groupName: transfer.groupName,
       amount: transfer.amount.toString(),
       day: transfer.day.toString(),
       account: transfer.account,
-      status: transfer.status
+      status: transfer.status,
     });
     router.push(`/profile/auto-transfer/edit?${params.toString()}`);
   };
@@ -119,8 +103,45 @@ export default function AutoTransferPage() {
         groupName
       )}&account=${encodeURIComponent(account)}&cost=${encodeURIComponent(
         cost.toString()
-      )}`
+      )}&accountId=${id}`
     );
+  };
+
+  // 송금하기 버튼 클릭 핸들러
+  const handleSendMoney = async () => {
+    if (!accountNumber) {
+      toast({
+        title: "입력 오류",
+        description: "계좌번호를 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // 계좌 확인 API 호출
+      const response = await publicApi.get<
+        AccountCheckResponse,
+        AccountCheckResponse
+      >(`/api/v1/personal-account/check?accountNo=${accountNumber}`);
+
+      if (response.isValid) {
+        router.push("/profile/auto-transfer/send");
+      } else {
+        toast({
+          title: "계좌 확인 실패",
+          description: "존재하지 않는 계좌번호입니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("계좌 확인 중 오류 발생:", error);
+      toast({
+        title: "오류",
+        description: "계좌 확인 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -153,13 +174,21 @@ export default function AutoTransferPage() {
                     {accountBalance.toLocaleString()}원
                   </p>
                 </div>
-                <Button
-                  onClick={() => router.push("/profile/auto-transfer/send")}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  <SendHorizontal className="h-4 w-4 mr-2" />
-                  송금하기
-                </Button>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="계좌번호 입력"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    className="w-48"
+                  />
+                  <Button
+                    onClick={handleSendMoney}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <SendHorizontal className="h-4 w-4 mr-2" />
+                    송금하기
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>

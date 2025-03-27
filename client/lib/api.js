@@ -1,20 +1,21 @@
 import axios from "axios";
 
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-const instance = axios.create({
-  baseUrl,
+// 토큰이 필요한 인스턴스
+const authInstance = axios.create({
+  baseURL: baseUrl,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-instance.interceptors.request.use(
+authInstance.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`; // 템플릿 리터럴 수정
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -23,7 +24,7 @@ instance.interceptors.request.use(
   }
 );
 
-instance.interceptors.response.use(
+authInstance.interceptors.response.use(
   (response) => {
     return response.data;
   },
@@ -43,7 +44,7 @@ instance.interceptors.response.use(
         localStorage.setItem("accessToken", accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return instance(originalRequest);
+        return authInstance(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
@@ -55,4 +56,23 @@ instance.interceptors.response.use(
   }
 );
 
-export default instance;
+// 토큰이 필요 없는 인스턴스
+const publicInstance = axios.create({
+  baseURL: baseUrl,
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+publicInstance.interceptors.response.use(
+  (response) => {
+    return response.data;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export const authApi = authInstance;
+export const publicApi = publicInstance;
