@@ -15,9 +15,11 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class AutoPaymentResponse {
+    private Long userId;
     private Long accountBalance;
     private List<AutoPaymentDto> autoTransfers = new ArrayList<>();
     public AutoPaymentResponse(User user) {
+        this.userId = user.getUserId();
         this.accountBalance = user.getPersonalAccount().getAccountBalance();
         for (GatheringMember gatheringMember : user.getGatheringMembers()) {
             this.autoTransfers.add(new AutoPaymentDto(user.getUserId(), gatheringMember));

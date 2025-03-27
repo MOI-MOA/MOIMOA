@@ -15,8 +15,7 @@ export default function ProfilePage() {
     email: "user@example.com",
     avatar: "/placeholder.svg?height=80&width=80",
     joinedGroups: 4,
-    totalBalance: 850000,
-    totalDeposit: 400000,
+    totalBalance: 850000
   }
 
   const menuItems = [
@@ -67,7 +66,7 @@ export default function ProfilePage() {
                     <p className="font-semibold">{userInfo.joinedGroups}개</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">총 잔액</p>
+                    <p className="text-xs text-gray-500">모임 총 잔액</p>
                     <p className="font-semibold">{userInfo.totalBalance.toLocaleString()}원</p>
                   </div>
                 </div>

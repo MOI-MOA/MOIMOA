@@ -51,13 +51,15 @@ public class MypageController {
 
     @GetMapping("/profile/mypage")
     public ResponseEntity<MyPageResponse> getMyPage() {
-        Long id = jwtTokenProvider.getUserId();
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
         return ResponseEntity.ok(myPageService.getMyPage(id));
     }
 
     @GetMapping("/profile/mypage/statistics")
     public ResponseEntity<StatisticsResponse> getStatistics() {
-        Long id = jwtTokenProvider.getUserId();
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
         return ResponseEntity.ok(myPageService.getStatistics(id));
     }
 
@@ -66,7 +68,8 @@ public class MypageController {
             @PathVariable Long autoTransferId,
             @RequestBody UpdateAutoPaymentRequestDto requestDto
     ) {
-        Long id = jwtTokenProvider.getUserId();
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
         try {
             myPageService.updateAutoTransfer(id, autoTransferId, requestDto);
         } catch (Exception e) {
@@ -76,18 +79,19 @@ public class MypageController {
         return ResponseEntity.ok(new UpdateAutoPaymentResponseDto("success"));
     }
 
-//    @GetMapping("/profile/mypage/myaccount")
-//    public ResponseEntity<MyAccountResponseDto> myAccount() {
+    @GetMapping("/profile/mypage/myaccount")
+    public ResponseEntity<MyAccountResponseDto> myAccount() {
 //        Long id = jwtTokenProvider.getUserId();
-//
-//        MyAccountResponseDto response;
-//        try {
-//            response = myPageService.getMyAccount(id);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        return ResponseEntity.ok(response);
-//    }
+        Long id = 1L; // 임시로 id = 1
+
+        MyAccountResponseDto response;
+        try {
+            response = myPageService.getMyAccount(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok(response);
+    }
 
 }

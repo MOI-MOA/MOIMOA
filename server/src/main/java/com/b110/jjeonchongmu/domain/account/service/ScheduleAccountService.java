@@ -46,15 +46,16 @@ public class ScheduleAccountService {
 
     ScheduleAccount FromScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getFromAccountId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"FromScheduleAccount not found"));
-    ScheduleAccount ToScheduleAccount = scheduleAccountRepo.findByAccountNo(requestDto.getToAccountNo())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ToScheduleAccount not found"));
+//    ScheduleAccount ToScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getToAccountNo())
+//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ToScheduleAccount not found"));
+        Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
         ScheduleAccount scheduleAccount = new ScheduleAccount();
 
         Trade trade = Trade.builder()
                 .fromAccount(FromScheduleAccount)
                 .fromAccountType(requestDto.getFromAccountType())
-                .toAccount(ToScheduleAccount)
-                .toAccountType(ToScheduleAccount.getDtype())
+                .toAccount(account)
+                .toAccountType(account.getDtype())
                 .tradeAmount(requestDto.getTransferAmount())
                 .tradeTime(LocalDateTime.now())
                 .tradeDetail(requestDto.getTradeDetail())
