@@ -16,11 +16,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface ScheduleRepo extends JpaRepository<Schedule, Long> {
-    @Query("SELECT new com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData(CONCAT(YEAR(s.startTime), '년 ', MONTH(s.startTime), '월'), SUM(s.perBudget)) " +
+    @Query("SELECT new com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData(" +
+            "CONCAT(YEAR(s.startTime), '년 ', MONTH(s.startTime), '월'), SUM(s.perBudget)) " +
             "FROM Schedule s " +
             "WHERE s.subManager.userId = :userId AND s.startTime BETWEEN :startDate AND :endDate " +
-            "GROUP BY YEAR(s.startTime), MONTH(s.startTime) " +
-            "ORDER BY YEAR(s.startTime), MONTH(s.startTime)")
+            "GROUP BY CONCAT(YEAR(s.startTime), '년 ', MONTH(s.startTime), '월') " +
+            "ORDER BY MIN(s.startTime)")  // ORDER BY도 명확하게 표현!
     List<MonthlyExpenseData> findMonthlyExpenseDataByUserIdAndDateBetween(
             @Param("userId") Long userId,
             @Param("startDate") LocalDateTime startDate,

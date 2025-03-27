@@ -76,18 +76,18 @@ public class MypageController {
         return ResponseEntity.ok(new UpdateAutoPaymentResponseDto("success"));
     }
 
-//    @GetMapping("/profile/mypage/myaccount")
-//    public ResponseEntity<MyAccountResponseDto> myAccount() {
-//        Long id = jwtTokenProvider.getUserId();
-//
-//        MyAccountResponseDto response;
-//        try {
-//            response = myPageService.getMyAccount(id);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("/profile/mypage/myaccount")
+    public ResponseEntity<MyAccountResponseDto> myAccount() {
+        Long id = jwtTokenProvider.getUserId();
+
+        MyAccountResponseDto response;
+        try {
+            response = myPageService.getMyAccount(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok(response);
+    }
 
 }
