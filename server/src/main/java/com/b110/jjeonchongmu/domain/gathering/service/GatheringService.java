@@ -316,9 +316,16 @@ public class GatheringService {
 	 */
 	@Transactional
 	public void updateMemberCount(Long gatheringId) {
+
 		Gathering gathering = gatheringRepo.findById(gatheringId)
 				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
+		// 총무 권한 체크
+		User currentUser = userService.getCurrentUser();
+		if (!gathering.getManagerId().equals(currentUser.getUserId())) {
+			throw new CustomException(ErrorCode.NOT_GATHERING_MANAGER);
+		}
+				
 		long memberCount = gatheringMemberRepo.countByGatheringGatheringId(gatheringId);
 		gathering.updateMemberCount((int) memberCount);
 	}

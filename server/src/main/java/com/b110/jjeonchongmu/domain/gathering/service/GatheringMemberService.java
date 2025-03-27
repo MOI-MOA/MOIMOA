@@ -144,6 +144,7 @@ public class GatheringMemberService {
 		Gathering gathering = gatheringRepo.findById(gatheringId)
 				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
 
+
 		if (!gathering.getManagerId().equals(currentUserId)) {
 			throw new RuntimeException("총무만 회원 관리를 조회할 수 있습니다.");
 		}
