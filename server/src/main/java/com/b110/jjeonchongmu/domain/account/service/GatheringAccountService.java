@@ -19,6 +19,7 @@ import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
@@ -26,8 +27,11 @@ import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -38,18 +42,49 @@ public class GatheringAccountService {
 	private final ScheduleAccountRepo scheduleAccountRepo;
 	private final TradeRepo tradeRepo;
 	private final AccountRepo accountRepo;
-    private final UserRepo userRepo;
-    private final GatheringRepo gatheringRepo;
+	private final UserRepo userRepo;
+	private final GatheringRepo gatheringRepo;
+	private final PasswordEncoder passwordEncoder;
 
 	public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
+		Long gatheringAccountId = requestDto.getAccountId();
+		String gatheringAccountPW = requestDto.getAccountPW();
 		// 비밀번호 확인 로직 구현
-		return true;
+		GatheringAccount gatheringAccount =
+				gatheringAccountRepo.findByAccount(gatheringAccountId)
+						.orElseThrow(() -> new RuntimeException("Gathering Account Not Found"));
+
+		if (passwordEncoder.matches(gatheringAccountPW, gatheringAccount.getAccountPw())) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
+	// 계좌 삭제
 	public void deleteAccount(DeleteRequestDTO requestDTO) {
 		// 계좌 삭제 로직 구현
+		long gatheringAccountId = requestDTO.getAccountId();
+
+		// jpa 메서드는 1 or 0 을 반환안해서 delete가 성공했는지는 log 를 받아와서 판단하는 로직이 필요함
+
+		gatheringAccountRepo.deleteById(gatheringAccountId);
 	}
 
+	//    계좌 생성
+	public boolean createAccount(Long userId, MakeAccountDTO requestDTO){
+		User user = userRepo.findByUserId(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
+		String scheduleAccountNo = "123-45-67891011";
+		Long scheduleId = 2L;
+		Gathering gathering = gatheringRepo.findById(scheduleId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
+
+		GatheringAccount gatheringAccount = new GatheringAccount(user,scheduleAccountNo,requestDTO.getAccountPw(),gathering);
+
+		gatheringAccountRepo.save(gatheringAccount);
+		return true;
+	}
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
@@ -140,55 +175,55 @@ public class GatheringAccountService {
 			return false;
 		}
 
-        return true;
-    }
+		return true;
+	}
 
-    /**
-     *
-     * 여기서 userId는 누가 찾은지 보려고 필요함.
-     * 계좌 주인이랑 비교하는게 아님. 단순히 accountNo로 찾아오는 역할.
-     */
+	/**
+	 *
+	 * 여기서 userId는 누가 찾은지 보려고 필요함.
+	 * 계좌 주인이랑 비교하는게 아님. 단순히 accountNo로 찾아오는 역할.
+	 */
 
-    public TransferRequestDTO getTransferRequestDto(Long userId, GatheringTransferRequestDTO transferRequestDto) {
-        User user = userRepo.getUserByUserId(userId);
-        Long groupId = transferRequestDto.getGroupId();
-        String accountNo = transferRequestDto.getAccountNo();
+	public TransferRequestDTO getTransferRequestDto(Long userId, GatheringTransferRequestDTO transferRequestDto) {
+		User user = userRepo.getUserByUserId(userId);
+		Long groupId = transferRequestDto.getGroupId();
+		String accountNo = transferRequestDto.getAccountNo();
 
-        // 보내는 모임에서의 계좌를 찾는다.
-        Gathering gathering;
-        try {
-            gathering = gatheringRepo.getGatheringByGatheringId(groupId);
-        } catch (Exception e) {
-            throw new RuntimeException("모임아이디로 모임을 찾을 수 없습니다");
-        }
-        AccountType fromAccountType = AccountType.GATHERING;
-        Long fromAccountId = gathering.getGatheringAccount().getAccountId();
+		// 보내는 모임에서의 계좌를 찾는다.
+		Gathering gathering;
+		try {
+			gathering = gatheringRepo.getGatheringByGatheringId(groupId);
+		} catch (Exception e) {
+			throw new RuntimeException("모임아이디로 모임을 찾을 수 없습니다");
+		}
+		AccountType fromAccountType = AccountType.GATHERING;
+		Long fromAccountId = gathering.getGatheringAccount().getAccountId();
 
-        Account account = accountRepo.findAccountByAccountNo(accountNo);
-        AccountType toAccountType = account.getDtype();
-
-        PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
-        Long toAccountId = personalAccount.getAccountId();
-
-        String tradeDetail = transferRequestDto.getTradeDetail();
-
-        Long transferAmount = transferRequestDto.getAmount();
-
-        String accountPw = transferRequestDto.getAccountPw();
-
-        return new TransferRequestDTO(
-                fromAccountType,
-                fromAccountId,
-                toAccountType,
-                toAccountId,
-                tradeDetail,
-                transferAmount,
-                accountPw
-        );
-    }
-
-    public String findNameByAccountNo(String accountNo) {
 		Account account = accountRepo.findAccountByAccountNo(accountNo);
-        return account.getUser().getName();
-    }
+		AccountType toAccountType = account.getDtype();
+
+		PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
+		Long toAccountId = personalAccount.getAccountId();
+
+		String tradeDetail = transferRequestDto.getTradeDetail();
+
+		Long transferAmount = transferRequestDto.getAmount();
+
+		String accountPw = transferRequestDto.getAccountPw();
+
+		return new TransferRequestDTO(
+				fromAccountType,
+				fromAccountId,
+				toAccountType,
+				toAccountId,
+				tradeDetail,
+				transferAmount,
+				accountPw
+		);
+	}
+
+	public String findNameByAccountNo(String accountNo) {
+		Account account = accountRepo.findAccountByAccountNo(accountNo);
+		return account.getUser().getName();
+	}
 }
