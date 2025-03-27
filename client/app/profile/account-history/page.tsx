@@ -19,55 +19,51 @@ import { toast } from "@/components/ui/use-toast"
 interface Transaction {
   tradeDetail: string
   tradeTime: string
-  trade_amount: number
-  trade_balance: number
-  trade_partener_name: string
+  tradeAmount: number
+  tradeBalance: number
+  tradePartnerName: string
 }
 
 interface AccountData {
-  gathering_name: string
-  gathering_account_no: number
-  gathering_account_balance: number
-  totaldeposit: number
-  totalWithdrawal: number
+  gatheringName: string
+  gatheringAccountNo: number
+  gatheringAccountBalance: number
   tradeList: Transaction[]
 }
 
 // 기본 데이터
 const DEFAULT_ACCOUNT_DATA: AccountData = {
-  gathering_name: "배한진",
-  gathering_account_no: 12345678901234,
-  gathering_account_balance: 500000,
-  totaldeposit: 1200000,
-  totalWithdrawal: 700000,
+  gatheringName: "배한진",
+  gatheringAccountNo: 12345678901234,
+  gatheringAccountBalance: 500000,
   tradeList: [
     {
       tradeDetail: "송금받음",
       tradeTime: "2025-03-20T10:15:30",
-      trade_amount: 300000,
-      trade_balance: 500000,
-      trade_partener_name: "김철수"
+      tradeAmount: 300000,
+      tradeBalance: 500000,
+      tradePartnerName: "김철수"
     },
     {
       tradeDetail: "편의점 결제",
       tradeTime: "2025-03-19T18:45:10",
-      trade_amount: -5000,
-      trade_balance: 200000,
-      trade_partener_name: "GS25"
+      tradeAmount: -5000,
+      tradeBalance: 200000,
+      tradePartnerName: "GS25"
     },
     {
       tradeDetail: "회비 입금",
       tradeTime: "2025-03-18T14:30:00",
-      trade_amount: 500000,
-      trade_balance: 205000,
-      trade_partener_name: "이영희"
+      tradeAmount: 500000,
+      tradeBalance: 205000,
+      tradePartnerName: "이영희"
     },
     {
       tradeDetail: "음식점 결제",
       tradeTime: "2025-03-17T20:10:25",
-      trade_amount: -70000,
-      trade_balance: 5000,
-      trade_partener_name: "BBQ 치킨"
+      tradeAmount: -70000,
+      tradeBalance: 5000,
+      tradePartnerName: "BBQ 치킨"
     }
   ]
 }
@@ -78,6 +74,21 @@ export default function AccountHistoryPage() {
   const [transactionType, setTransactionType] = useState("all")
   const [accountData, setAccountData] = useState<AccountData>(DEFAULT_ACCOUNT_DATA)
   const [isLoading, setIsLoading] = useState(true)
+
+  // 총 입금액과 총 출금액 계산
+  const calculateTotals = (transactions: Transaction[]) => {
+    return transactions.reduce(
+      (acc, transaction) => {
+        if (transaction.tradeAmount > 0) {
+          acc.totalDeposit += transaction.tradeAmount
+        } else {
+          acc.totalWithdrawal += Math.abs(transaction.tradeAmount)
+        }
+        return acc
+      },
+      { totalDeposit: 0, totalWithdrawal: 0 }
+    )
+  }
 
   // API 데이터 가져오기
   useEffect(() => {
@@ -108,16 +119,19 @@ export default function AccountHistoryPage() {
     const matchesSearch =
       searchTerm === "" ||
       transaction.tradeDetail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.trade_partener_name.toLowerCase().includes(searchTerm.toLowerCase())
+      transaction.tradePartnerName.toLowerCase().includes(searchTerm.toLowerCase())
 
     // 거래 유형 필터링
     const matchesType =
       transactionType === "all" ||
-      (transactionType === "deposit" && transaction.trade_amount > 0) ||
-      (transactionType === "withdrawal" && transaction.trade_amount < 0)
+      (transactionType === "deposit" && transaction.tradeAmount > 0) ||
+      (transactionType === "withdrawal" && transaction.tradeAmount < 0)
 
     return matchesSearch && matchesType
   })
+
+  // 필터링된 거래 내역의 총액 계산
+  const { totalDeposit, totalWithdrawal } = calculateTotals(filteredTransactions)
 
   // 날짜/시간 포맷 함수
   const formatDateTime = (dateTimeString: string) => {
@@ -136,19 +150,19 @@ export default function AccountHistoryPage() {
         {/* 계좌 정보 */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{accountData.gathering_name}님의 계좌</CardTitle>
+            <CardTitle className="text-lg">{accountData.gatheringName}님의 계좌</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-2">{accountData.gathering_account_no}</p>
-            <div className="text-2xl font-bold">{accountData.gathering_account_balance.toLocaleString()}원</div>
+            <p className="text-sm text-gray-500 mb-2">{accountData.gatheringAccountNo}</p>
+            <div className="text-2xl font-bold">{accountData.gatheringAccountBalance.toLocaleString()}원</div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <p className="text-sm text-gray-500">총 입금액</p>
-                <p className="text-lg font-semibold text-green-600">+{accountData.totaldeposit.toLocaleString()}원</p>
+                <p className="text-lg font-semibold text-green-600">+{totalDeposit.toLocaleString()}원</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">총 출금액</p>
-                <p className="text-lg font-semibold text-red-600">-{accountData.totalWithdrawal.toLocaleString()}원</p>
+                <p className="text-lg font-semibold text-red-600">-{totalWithdrawal.toLocaleString()}원</p>
               </div>
             </div>
           </CardContent>
@@ -203,16 +217,16 @@ export default function AccountHistoryPage() {
                         {formatDateTime(transaction.tradeTime)}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        {transaction.trade_partener_name}
+                        {transaction.tradePartnerName}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`font-semibold ${transaction.trade_amount > 0 ? "text-green-600" : "text-red-600"}`}>
-                        {transaction.trade_amount > 0 ? "+" : ""}
-                        {transaction.trade_amount.toLocaleString()}원
+                      <div className={`font-semibold ${transaction.tradeAmount > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {transaction.tradeAmount > 0 ? "+" : ""}
+                        {transaction.tradeAmount.toLocaleString()}원
                       </div>
                       <div className="text-sm text-gray-500 mt-1">
-                        잔액: {transaction.trade_balance.toLocaleString()}원
+                        잔액: {transaction.tradeBalance.toLocaleString()}원
                       </div>
                     </div>
                   </div>

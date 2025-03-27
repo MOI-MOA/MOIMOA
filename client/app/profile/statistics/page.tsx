@@ -1,29 +1,28 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import axios from "axios"
 import { Header } from "@/components/Header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-export default function StatisticsPage() {
-  // 기존 데이터 유지
-  const monthlyExpenseData = [
+// 기본 데이터 정의
+const DEFAULT_DATA = {
+  monthlyExpenseData: [
     { name: "1월", amount: 120000 },
     { name: "2월", amount: 150000 },
     { name: "3월", amount: 180000 },
     { name: "4월", amount: 130000 },
     { name: "5월", amount: 160000 },
     { name: "6월", amount: 200000 },
-  ]
-
-  const groupExpenseData = [
+  ],
+  groupExpenseData: [
     { name: "회사 동료", amount: 320000 },
     { name: "대학 친구들", amount: 180000 },
     { name: "가족 모임", amount: 100000 },
     { name: "동호회", amount: 250000 },
-  ]
-
-  // 모임별 참여율 데이터 추가
-  const participationRateData = [
+  ],
+  participationRateData: [
     {
       name: "회사 동료",
       attendedSchedules: 8,
@@ -48,22 +47,58 @@ export default function StatisticsPage() {
       totalSchedules: 12,
       rate: 50,
     },
-  ]
+  ],
+}
 
-  // 원형 차트용 데이터
-  const pieChartData = participationRateData.map((item) => ({
-    name: item.name,
-    value: item.rate,
-  }))
+// 원형 차트 색상
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
 
-  // 원형 차트 색상
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
+export default function StatisticsPage() {
+  const [monthlyExpenseData, setMonthlyExpenseData] = useState(DEFAULT_DATA.monthlyExpenseData)
+  const [groupExpenseData, setGroupExpenseData] = useState(DEFAULT_DATA.groupExpenseData)
+  const [participationRateData, setParticipationRateData] = useState(DEFAULT_DATA.participationRateData)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/v1/mypage/statistics`)
+        const data = response.data
+        setMonthlyExpenseData(data.monthlyExpenseData)
+        setGroupExpenseData(data.groupExpenseData)
+        setParticipationRateData(data.participationRateData)
+      } catch (error) {
+        console.error("통계 데이터를 가져오는데 실패했습니다:", error)
+        // API 호출 실패 시 기본 데이터 사용
+        setMonthlyExpenseData(DEFAULT_DATA.monthlyExpenseData)
+        setGroupExpenseData(DEFAULT_DATA.groupExpenseData)
+        setParticipationRateData(DEFAULT_DATA.participationRateData)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <>
+        <Header title="통계 현황" showBackButton />
+        <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
+          <div className="flex items-center justify-center h-full">
+            <div className="text-lg">데이터를 불러오는 중...</div>
+          </div>
+        </main>
+      </>
+    )
+  }
 
   return (
     <>
       <Header title="통계 현황" showBackButton />
       <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
-        {/* 모임별 참여율 섹션 추가 */}
+        {/* 모임별 참여율 섹션 */}
         <Card>
           <CardHeader>
             <CardTitle>모임별 참여율</CardTitle>
@@ -100,7 +135,7 @@ export default function StatisticsPage() {
           </CardContent>
         </Card>
 
-        {/* 기존 카드들 유지 */}
+        {/* 월별 지출 현황 */}
         <Card>
           <CardHeader>
             <CardTitle>월별 지출 현황</CardTitle>
@@ -128,6 +163,7 @@ export default function StatisticsPage() {
           </CardContent>
         </Card>
 
+        {/* 모임별 지출 현황 */}
         <Card>
           <CardHeader>
             <CardTitle>모임별 지출 현황</CardTitle>
@@ -151,42 +187,6 @@ export default function StatisticsPage() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>통계 요약</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-500">총 지출</p>
-                <p className="text-xl font-bold text-blue-600">940,000원</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-500">평균 월 지출</p>
-                <p className="text-xl font-bold text-green-600">156,667원</p>
-              </div>
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <p className="text-sm text-gray-500">최대 지출 모임</p>
-                <p className="text-xl font-bold text-purple-600">회사 동료</p>
-              </div>
-              <div className="p-4 bg-yellow-50 rounded-lg">
-                <p className="text-sm text-gray-500">최대 지출 월</p>
-                <p className="text-xl font-bold text-yellow-600">6월</p>
-              </div>
-              {/* 평균 참여율 추가 */}
-              <div className="p-4 bg-indigo-50 rounded-lg">
-                <p className="text-sm text-gray-500">평균 참여율</p>
-                <p className="text-xl font-bold text-indigo-600">73.1%</p>
-              </div>
-              {/* 최고 참여율 모임 추가 */}
-              <div className="p-4 bg-pink-50 rounded-lg">
-                <p className="text-sm text-gray-500">최고 참여율 모임</p>
-                <p className="text-xl font-bold text-pink-600">가족 모임</p>
-              </div>
             </div>
           </CardContent>
         </Card>
