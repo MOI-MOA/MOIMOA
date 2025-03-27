@@ -46,6 +46,7 @@ public class GatheringAccountService {
 	private final GatheringRepo gatheringRepo;
 	private final PasswordEncoder passwordEncoder;
 
+	@Transactional
 	public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
 		Long gatheringAccountId = requestDto.getAccountId();
 		String gatheringAccountPW = requestDto.getAccountPW();
@@ -62,6 +63,7 @@ public class GatheringAccountService {
 	}
 
 	// 계좌 삭제
+	@Transactional
 	public void deleteAccount(DeleteRequestDTO requestDTO) {
 		// 계좌 삭제 로직 구현
 		long gatheringAccountId = requestDTO.getAccountId();
@@ -72,19 +74,19 @@ public class GatheringAccountService {
 	}
 
 	//    계좌 생성
-	public boolean createAccount(Long userId, MakeAccountDTO requestDTO){
-		User user = userRepo.findByUserId(userId)
+	@Transactional
+	public boolean createAccount(MakeGatheringAccountDTO requestDTO){
+		User user = userRepo.findByUserId(requestDTO.getUserId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
-		String scheduleAccountNo = "123-45-67891011";
-		Long scheduleId = 2L;
-		Gathering gathering = gatheringRepo.findById(scheduleId)
+		Gathering gathering = gatheringRepo.findById(requestDTO.getGatheringId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
 
-		GatheringAccount gatheringAccount = new GatheringAccount(user,scheduleAccountNo,requestDTO.getAccountPw(),gathering);
+		GatheringAccount gatheringAccount = new GatheringAccount(user,requestDTO.getGatheringAccountNo(),requestDTO.getAccountPw(),gathering);
 
 		gatheringAccountRepo.save(gatheringAccount);
 		return true;
 	}
+
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
@@ -183,7 +185,7 @@ public class GatheringAccountService {
 	 * 여기서 userId는 누가 찾은지 보려고 필요함.
 	 * 계좌 주인이랑 비교하는게 아님. 단순히 accountNo로 찾아오는 역할.
 	 */
-
+	@Transactional
 	public TransferRequestDTO getTransferRequestDto(Long userId, GatheringTransferRequestDTO transferRequestDto) {
 		User user = userRepo.getUserByUserId(userId);
 		Long groupId = transferRequestDto.getGroupId();
@@ -221,7 +223,7 @@ public class GatheringAccountService {
 				accountPw
 		);
 	}
-
+	@Transactional
 	public String findNameByAccountNo(String accountNo) {
 		Account account = accountRepo.findAccountByAccountNo(accountNo);
 		return account.getUser().getName();
