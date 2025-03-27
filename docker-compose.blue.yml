@@ -1,39 +1,28 @@
 services:
-  # nginx:
-  #   image: nginx:latest
-  #   ports:
-  #     - "3001:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
-  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
-  #   depends_on:
-  #     - client
-  #   restart: always
-  #   networks:
-  #     - app-network
 
   client:
-    build:
+    build-blue:
       context: ./client
       dockerfile: Dockerfile
+    container_name: client-blue
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
-      - server
+      - server-blue
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://server:8080
+      - NEXT_PUBLIC_API_URL=http://server-blue:8080
     restart: always
     networks:
       - app-network
 
-  server:
+  server-blue:
     build:
       context: ./server
       dockerfile: Dockerfile
+    container_name: server-blue
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=production
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -76,6 +65,20 @@ services:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       retries: 10
+    # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "3001:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
+  #   depends_on:
+  #     - client
+  #   restart: always
+  #   networks:
+  #     - app-network
+
 
 networks:
   app-network:
