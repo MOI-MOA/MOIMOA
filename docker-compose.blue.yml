@@ -1,0 +1,85 @@
+services:
+
+  client:
+    build-blue:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: client-blue
+    ports:
+      - "3001:3000"
+    depends_on:
+      - server-blue
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://server-blue:8080
+    restart: always
+    networks:
+      - app-network
+
+  server-blue:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: server-blue
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=production
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      # 추가 환경 변수가 필요하다면 여기에 추가
+    depends_on:
+      my-db:
+        condition: service_healthy
+      my-cache-server:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: always
+
+  my-db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    ports:
+      - 3307:3306
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping" ]
+      interval: 5s
+      retries: 10
+
+  my-cache-server:
+    image: redis
+    ports:
+      - 6379:6379
+    command: redis-server --port 6379 --protected-mode yes
+    volumes:
+      - ./redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      retries: 10
+    # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "3001:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
+  #   depends_on:
+  #     - client
+  #   restart: always
+  #   networks:
+  #     - app-network
+
+
+networks:
+  app-network:
+    driver: bridge
