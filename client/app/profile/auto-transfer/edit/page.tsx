@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import axios from "axios"
 import { Header } from "@/components/Header"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,66 +12,21 @@ import { Switch } from "@/components/ui/switch"
 import { toast } from "@/components/ui/use-toast"
 import { AlertCircle } from "lucide-react"
 
-export default function EditAutoTransferPage({ params }: { params: { id: string } }) {
+export default function EditAutoTransferPage() {
   const router = useRouter()
-  const transferId = Number.parseInt(params.id)
+  const searchParams = useSearchParams()
 
   // 초기 상태 설정
   const [formData, setFormData] = useState({
-    id: transferId,
-    groupName: "",
-    amount: "",
-    day: "",
-    account: "",
-    status: "active",
+    id: Number(searchParams.get("id")),
+    groupName: searchParams.get("groupName") || "",
+    amount: searchParams.get("amount") || "",
+    day: searchParams.get("day") || "",
+    account: searchParams.get("account") || "",
+    status: searchParams.get("status") || "active",
   })
 
   const [isLoading, setIsLoading] = useState(false)
-
-  // 실제 구현에서는 API에서 데이터를 가져와야 함
-  // 여기서는 목업 데이터를 사용
-  useEffect(() => {
-    // 실제 구현에서는 API 호출로 대체
-    const mockTransfers = [
-      {
-        id: 1,
-        groupName: "회사 동료",
-        amount: "30000",
-        day: "15",
-        account: "신한은행 110-123-456789",
-        status: "active",
-      },
-      {
-        id: 2,
-        groupName: "대학 친구들",
-        amount: "20000",
-        day: "20",
-        account: "국민은행 123-45-6789012",
-        status: "active",
-      },
-      {
-        id: 3,
-        groupName: "동호회",
-        amount: "15000",
-        day: "5",
-        account: "우리은행 1002-123-456789",
-        status: "inactive",
-      },
-    ]
-
-    const transfer = mockTransfers.find((t) => t.id === transferId)
-    if (transfer) {
-      setFormData(transfer)
-    } else {
-      // 데이터가 없으면 목록 페이지로 리다이렉트
-      toast({
-        title: "오류",
-        description: "자동이체 정보를 찾을 수 없습니다.",
-        variant: "destructive",
-      })
-      router.push("/profile/auto-transfer")
-    }
-  }, [transferId, router])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -90,23 +46,25 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
   const saveData = async () => {
     setIsLoading(true)
     try {
-      // 실제 구현에서는 API 호출로 데이터 저장
-      // await fetch(`/api/auto-transfers/${transferId}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // })
+      const response = await axios.put(
+        `/api/v1/autopayment/${formData.id}`,
+        {
+          id: formData.id,
+          amount: Number(formData.amount),
+          day: Number(formData.day),
+          status: formData.status
+        }
+      )
 
-      // 저장 성공 시 토스트 메시지 표시
-      setTimeout(() => {
+      if (response.status === 200) {
         toast({
           title: "저장 완료",
           description: "자동이체 정보가 성공적으로 업데이트되었습니다.",
         })
         router.push("/profile/auto-transfer")
-      }, 1000)
+      }
     } catch (error) {
-      console.error(error)
+      console.error("자동이체 정보 업데이트 실패:", error)
       toast({
         title: "오류 발생",
         description: "자동이체 정보 저장 중 문제가 발생했습니다.",
@@ -150,7 +108,7 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
 
               <div className="space-y-2">
                 <Label htmlFor="amount">금액</Label>
-                <div className="relative">
+                <div className="flex items-center space-x-2">
                   <Input
                     id="amount"
                     name="amount"
@@ -159,9 +117,7 @@ export default function EditAutoTransferPage({ params }: { params: { id: string 
                     onChange={handleInputChange}
                     required
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
-                    원
-                  </div>
+                  <div className="text-gray-500">원</div>
                 </div>
               </div>
 
