@@ -13,7 +13,7 @@ public class TransferRequestDTO {
 	private AccountType fromAccountType;
 	private Long fromAccountId;
 	private AccountType toAccountType;
-	private Long toAccountId;
+	private String  toAccountNo;
 	private String tradeDetail;
 	private Long transferAmount;
 	private String accountPw;
