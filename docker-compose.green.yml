@@ -1,39 +1,28 @@
 services:
-  # nginx:
-  #   image: nginx:latest
-  #   ports:
-  #     - "3001:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
-  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
-  #   depends_on:
-  #     - client
-  #   restart: always
-  #   networks:
-  #     - app-network
 
-  client:
+  client-green:
     build:
       context: ./client
       dockerfile: Dockerfile
+    container_name: client-green
     ports:
-      - "3000:3000"
+      - "3002:3000"
     depends_on:
-      - server
+      - server-green
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://server:8080
+      - NEXT_PUBLIC_API_URL=http://server-green:8080
     restart: always
     networks:
       - app-network
 
-  server:
+  server-green:
     build:
       context: ./server
       dockerfile: Dockerfile
+    container_name: server-green
     ports:
-      - "8080:8080"
+      - "8082:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=production
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -77,6 +66,20 @@ services:
       interval: 5s
       retries: 10
 
+    # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "3001:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
+  #   depends_on:
+  #     - client
+  #   restart: always
+  #   networks:
+  #     - app-network
+  
 networks:
   app-network:
     driver: bridge
