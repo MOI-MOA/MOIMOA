@@ -1,6 +1,8 @@
 package com.b110.jjeonchongmu.domain.schedule.service;
 
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleMemberDTO;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
@@ -28,8 +30,14 @@ public class ScheduleMemberService {
     private final ScheduleMemberRepo scheduleMemberRepo;
     private final UserRepo userRepo;
     private final ScheduleRepo scheduleRepo;
+    private final GatheringMemberRepo gatheringMemberRepo;
     // 일정 멤버(참여자) 목록 조회
     public List<ScheduleMemberDTO> getScheduleMember(Long userId, Long scheduleId){
+        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, scheduleId);
+        if (!isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
+        }
+
         return scheduleMemberRepo.findByScheduleId(scheduleId)
                 .stream()
                 .map(ScheduleMemberDTO::from)
@@ -39,16 +47,22 @@ public class ScheduleMemberService {
     // 일정 참석
     @Transactional
     public void attendSchedule(Long userId,Long scheduleId) {
+
         Schedule schedule = scheduleRepo.findById(scheduleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
 
         User user = userRepo.findByUserId(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+        Long gatheringId = schedule.getGathering().getGatheringId(); // schedule 로 gatheringId 조회
+        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
+        if (!isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this gathering");
+        }
+
         ScheduleMember scheduleMember = ScheduleMember.builder()
                 .schedule(schedule)
                 .scheduleMember(user)
-                .scheduleIsCheck(false)
                 .build();
 
         scheduleMemberRepo.save(scheduleMember);
@@ -56,6 +70,11 @@ public class ScheduleMemberService {
     // 일정 참석 취소
     @Transactional
     public void cancelAttendance(Long userId, Long scheduleId) {
+        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, scheduleId);
+        if (!isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
+        }
+
         ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserId(scheduleId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule member not found"));
         

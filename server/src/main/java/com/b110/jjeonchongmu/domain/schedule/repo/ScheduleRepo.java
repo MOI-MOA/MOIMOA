@@ -40,16 +40,10 @@ public interface ScheduleRepo extends JpaRepository<Schedule, Long> {
     // 일정 상세 조회
     Optional<Schedule> findById(Long scheduleId);
 
-    // 일정 생성(총무만)
-//    void insertSchedule(Long gatheringId, ScheduleCreateDTO scheduleCreateDTO);
-//
-//    // 일정 수정(총무만)
-//    void updateSchedule(Long scheduleId, ScheduleUpdateDTO scheduleUpdateDTO);
-    
-    // delete는 jpa에서 정의해놓은 메서드 사용하자
-    // 연관관계 매핑이 많은 경우 jdbc로 최적화해야함
-    // 일정 삭제(총무만)
-//    void deleteSchedule(Long scheduleId);
+
+
+    @Query("SELECT COUNT(s) > 0 FROM Schedule s WHERE s.subManager.userId = :userId AND s.id = :scheduleId")
+    boolean checkExistsByUserIdAndScheduleId(@Param("userId") Long userId, @Param("scheduleId") Long scheduleId);
 
 }
 
