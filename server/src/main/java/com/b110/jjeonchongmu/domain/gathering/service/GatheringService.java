@@ -54,7 +54,11 @@ public class GatheringService {
 	//계좌 생성 및 추가.
 	@Transactional
 	public GatheringDTO addGathering(AddGatheringDTO request) {
+		// 인증된 사용자 확인
 		User currentUser = userService.getCurrentUser();
+		if (currentUser == null) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED);
+		}
 
 		// 해당 총무가 동일한 모임명 갖고 있는지  확인
 		if (gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(),
@@ -63,10 +67,6 @@ public class GatheringService {
 		}
 		// 총무 설정.
 		User manager = currentUser;
-
-//        // 모임 계좌 조회
-//        GatheringAccount account = gatheringAccountRepo.findById(request.getGatheringAccountId())
-//                .orElseThrow(() -> new CustomException(ErrorCode.GATHERING_ACCOUNT_NOT_FOUND));
 
 		// 현재 유저(총무)로 모임 계좌 생성. (유저키, 계좌타입, 비밀번호) + ()
 		MakeExternalAccountDTO makeExternalAccountDTO = new MakeExternalAccountDTO(
@@ -107,6 +107,12 @@ public class GatheringService {
 		Gathering gathering = gatheringRepo.findById(gatheringId)
 				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
+		// 총무 권한 체크
+		User currentUser = userService.getCurrentUser();
+		if (!gathering.getManagerId().equals(currentUser.getUserId())) {
+			throw new CustomException(ErrorCode.NOT_GATHERING_MANAGER);
+		}
+
 		// 모임명 변경 시 중복 체크
 		if (!gathering.getGatheringName().equals(request.getGatheringName()) &&
 				gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(),
@@ -130,9 +136,15 @@ public class GatheringService {
 	 */
 	@Transactional
 	public void deleteGathering(Long gatheringId) {
-		if (!gatheringRepo.existsById(gatheringId)) {
-			throw new CustomException(ErrorCode.GATHERING_NOT_FOUND);
+		Gathering gathering = gatheringRepo.findById(gatheringId)
+				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
+
+		// 총무 권한 체크
+		User currentUser = userService.getCurrentUser();
+		if (!gathering.getManagerId().equals(currentUser.getUserId())) {
+			throw new CustomException(ErrorCode.NOT_GATHERING_MANAGER);
 		}
+
 		gatheringRepo.deleteById(gatheringId);
 	}
 

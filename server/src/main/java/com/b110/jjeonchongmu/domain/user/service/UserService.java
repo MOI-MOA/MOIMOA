@@ -147,13 +147,16 @@ public class UserService {
 				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
-//    private User getCurrentUser(HttpServletRequest request) {
-//        String token = jwtTokenProvider.resolveToken(request);
-//        if (token == null || !jwtTokenProvider.validateToken(token)) {
-//            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-//        }
-//        Long userId = jwtTokenProvider.getUserId(token);
-//        return userRepo.findById(userId)
-//                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-//    }
+	// 현재 사용자 아이디 조회
+	public Long getCurrentUserId() {
+		String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+		try {
+			return Long.valueOf(userId);
+		} catch (NumberFormatException e) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+	}
+
+
+
 }
