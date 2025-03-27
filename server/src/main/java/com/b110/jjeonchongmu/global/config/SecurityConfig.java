@@ -52,11 +52,8 @@ public class SecurityConfig {
                         authorizeRequests
                                 // 인증 없이 접근 가능한 경로 (로그인, 회원가입)
                                 .requestMatchers("/api/v1/login", "/api/v1/signup", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                                // 인증된 사용자만 접근 가능한 경로 (모임 생성)
-                                .requestMatchers("/api/v1/gathering").authenticated()
-                                // 총무 권한이 필요한 경로 (모임 수정, 삭제, 멤버 관리)
-                                .requestMatchers("/api/v1/gathering/{gatheringId}", "/api/v1/gathering/{gatheringId}/member/**").hasRole("MANAGER")
-                                // 그 외 모든 요청은 일단 전부 허용.
+
+                                // 요청은 일단 전부 허용 ().
                                 .anyRequest().permitAll())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {

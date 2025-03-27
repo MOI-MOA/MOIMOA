@@ -62,8 +62,8 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
 
     // User 클래스 내에서
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<PersonalAccount>  personalAccounts;
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private PersonalAccount personalAccount;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<GatheringAccount> gatheringAccounts = new ArrayList<>();
