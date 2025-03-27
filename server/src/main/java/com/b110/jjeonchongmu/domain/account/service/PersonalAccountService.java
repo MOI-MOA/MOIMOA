@@ -1,6 +1,5 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.AccountCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AccountCheckResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.dto.AddAutoPaymentRequestDTO;
@@ -50,8 +49,9 @@ public class PersonalAccountService {
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 		// 계좌를 db에서 확인
+		System.out.println(requestDto.getToAccountNo());
 		Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
-
+		System.out.println(account);
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
@@ -63,6 +63,7 @@ public class PersonalAccountService {
 				.detail(requestDto.getTradeDetail())
 				.status(TransactionStatus.BEFORE)
 				.createdAt(LocalDateTime.now())
+				.accountPw(requestDto.getAccountPw())
 				.build();
 	}
 
@@ -71,11 +72,9 @@ public class PersonalAccountService {
 			TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
 
 		try {
-			System.out.println("=".repeat(100));
-			System.out.println("여기 들어와?????");
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
 			PersonalAccount fromAccount = personalAccountRepo.findByAccount(
-							transferTransactionHistoryDTO.getToAccountId())
+							transferTransactionHistoryDTO.getFromAccountId())
 					.orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
 			String originAccountPw = fromAccount.getAccountPw();
@@ -133,9 +132,10 @@ public class PersonalAccountService {
 			);
 
 			tradeRepo.save(trade);
-
+			System.out.println(toAccount.getAccountNo());
+			System.out.println(fromAccount.getAccountNo());
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
-					toAccount.getUser().getUserKey(),
+					fromAccount.getUser().getUserKey(),
 					toAccount.getAccountNo(),
 					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount()
@@ -190,11 +190,11 @@ public class PersonalAccountService {
 		personalAccountRepo.save(personalAccount);
 	}
 
-	public AccountCheckResponseDTO checkAccountNo(AccountCheckRequestDTO accountCheckRequestDTO) {
-		Boolean isAccountNo = accountRepo.existsByAccountNo(accountCheckRequestDTO.getToAccountNo());
+	public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
+		Boolean isAccountNo = accountRepo.existsByAccountNo(toAccountNo);
 		return new AccountCheckResponseDTO(
-				accountCheckRequestDTO.getToAccountNo(),
-				accountCheckRequestDTO.getAmount(),
+				toAccountNo,
+				amount,
 				isAccountNo
 		);
 	}
