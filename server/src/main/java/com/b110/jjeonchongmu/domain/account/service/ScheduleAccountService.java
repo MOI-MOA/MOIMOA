@@ -6,6 +6,7 @@ import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.account.enums.TransactionStatus;
+import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
@@ -39,6 +40,7 @@ public class ScheduleAccountService {
     private final PersonalAccountRepo personalAccountRepo;
     private final PasswordEncoder passwordEncoder;
     private final ExternalBankApiComponent externalBankApiComponent;
+    private final AccountRepo accountRepo;
 //    계좌내역저장
     public Boolean initTransfer(TransferRequestDTO requestDto) {
 
