@@ -61,28 +61,26 @@ public class User implements UserDetails {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // cascade = CascadeType.REMOVE : user 삭제시 해당 personalAccount 자동삭제
-    @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    // User 클래스 내에서
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private PersonalAccount personalAccount;
 
-    // cascade = CascadeType.REMOVE : user 삭제시 해당 gatheringAccount 자동삭제
-    @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private GatheringAccount gatheringAccount;
 
-    // cascade = CascadeType.REMOVE : user 삭제시 해당 scheduleAccount 자동삭제
-    @OneToOne(mappedBy = "user" , fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private ScheduleAccount scheduleAccount;
 
-    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "manager" , fetch = FetchType.LAZY)
     private List<Gathering> gatherings;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "gatheringMemberUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GatheringMember> gatheringMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "subManager", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user" , fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "scheduleMember" , fetch = FetchType.LAZY)
     private List<ScheduleMember> scheduleMembers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

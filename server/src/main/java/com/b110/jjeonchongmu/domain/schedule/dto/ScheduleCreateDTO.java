@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -14,8 +15,10 @@ import java.time.LocalDateTime;
 public class ScheduleCreateDTO {
     private String scheduleTitle;
     private String scheduleDetail;
-    private String schedulePlace;
-    private LocalDateTime scheduleStartTime;
     private Long perBudget;
+    private String schedulePlace;
+    private LocalDateTime penaltyApplyDate;
+    private int penaltyRate;
+    private LocalDateTime scheduleStartTime;
 
 }

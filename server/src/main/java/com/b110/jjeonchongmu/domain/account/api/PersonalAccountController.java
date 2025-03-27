@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.account.api;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.AccountCheckResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AddAutoPaymentRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
@@ -10,11 +12,9 @@ import com.b110.jjeonchongmu.domain.account.service.PersonalAccountService;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,29 +44,31 @@ public class PersonalAccountController {
 	 * 계좌 송금
 	 */
 	@PostMapping("/transfer")
-	public ResponseEntity<TransferTransactionHistoryDTO> transfer(
+	public ResponseEntity<Object> transfer(
 			@RequestBody TransferRequestDTO requestDto) {
 		TransferTransactionHistoryDTO response = personalAccountService.initTransfer(requestDto);
 
 		CompletableFuture.runAsync(() -> {
 			try {
-				TransferResponseDTO result = personalAccountService.processTransfer(response);
+				// 성공하면 계좌 잔액을 함께 보내기??
+				boolean isCompleted = personalAccountService.processTransfer(response);
 
 				simpMessagingTemplate.convertAndSend(
-						"/queue/transfer-results" + requestDto.getToAccountId(),
-						result
+						"/queue/transfer-results" + requestDto.getFromAccountId(),
+						isCompleted
 				);
 			} catch (Exception e) {
 
 				TransferResponseDTO result = new TransferResponseDTO();
 				simpMessagingTemplate.convertAndSend(
-						"/queue/transfer-results" + requestDto.getToAccountId(),
-						result
+						"/queue/transfer-results" + requestDto.getFromAccountId(),
+						"송금중 오류가 발생"
 				);
 			}
 		});
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
+
 
 	/**
 	 * 계좌 비밀번호 확인
@@ -74,6 +76,15 @@ public class PersonalAccountController {
 	@PostMapping("/password/check")
 	public ResponseEntity<Boolean> checkPassword(@RequestBody PasswordCheckRequestDTO requestDto) {
 		Boolean response = personalAccountService.checkPassword(requestDto);
+		return ResponseEntity.ok(response);
+	}
+
+	// 송금할 계좌번호 확인
+	@GetMapping("/check")
+	public ResponseEntity<AccountCheckResponseDTO> checkAccountNo(
+			@RequestBody AccountCheckRequestDTO accountCheckRequestDTO) {
+		AccountCheckResponseDTO response = personalAccountService.checkAccountNo(
+				accountCheckRequestDTO);
 		return ResponseEntity.ok(response);
 	}
 
@@ -103,4 +114,5 @@ public class PersonalAccountController {
 		personalAccountService.deleteAccount(requestDTO);
 		return ResponseEntity.ok("계좌 삭제 성공");
 	}
+
 }

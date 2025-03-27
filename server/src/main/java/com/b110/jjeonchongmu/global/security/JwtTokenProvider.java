@@ -25,8 +25,6 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final CustomUserDetailsService userDetailsService;
-
     @Value("${jwt.secret}")
     private String secretKey;
 
@@ -51,7 +49,7 @@ public class JwtTokenProvider {
 
     @PostConstruct
     protected void init() {
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
     /**
@@ -84,13 +82,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    /**
-     * 토큰에서 인증 정보 추출
-     */
-    public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(getUserId(token)));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
+
 
     /**
      * 현재 사용자의 ID 추출

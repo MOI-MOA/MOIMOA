@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 public class UserResponseDTO {
-    private Integer userId;
+    private Long userId;
     private String userEmail;
     private String userKey;
     
@@ -29,7 +29,7 @@ public class UserResponseDTO {
     private LocalDateTime updatedAt;
 
     @Builder
-    public UserResponseDTO(Integer userId, String userEmail, String userKey, LocalDate birth,
+    public UserResponseDTO(Long userId, String userEmail, String userKey, LocalDate birth,
                          LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.userId = userId;
         this.userEmail = userEmail;
@@ -42,7 +42,7 @@ public class UserResponseDTO {
     public static UserResponseDTO from(User user) {
         return UserResponseDTO.builder()
                 .userId(user.getUserId())
-                .userEmail(user.getUserEmail())
+                .userEmail(user.getEmail())
                 .userKey(user.getUserKey())
                 .birth(user.getBirth())
                 .createdAt(user.getCreatedAt())

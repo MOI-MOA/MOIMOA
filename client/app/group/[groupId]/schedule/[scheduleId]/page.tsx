@@ -224,7 +224,7 @@ export default function ScheduleDetailPage({ params }: { params: Promise<{ group
               </div>
             </div>
             <Button
-              onClick={() => router.push(`/profile/auto-transfer/send`)}
+              onClick={() => router.push(`/group/${groupId}/schedule/${scheduleId}/send`)}
               className="bg-gray-200 hover:bg-gray-400 text-black"
             >
               <SendHorizontal className="h-4 w-4 mr-2" />

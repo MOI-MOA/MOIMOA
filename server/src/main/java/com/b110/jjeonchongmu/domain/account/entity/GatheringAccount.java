@@ -1,38 +1,32 @@
 package com.b110.jjeonchongmu.domain.account.entity;
-import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
-import jakarta.persistence.*;
-import lombok.*;
 
-import java.util.List;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "gathering_account")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DiscriminatorValue("GATHERING")  // 이 부분을 추가
 public class GatheringAccount extends Account {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "gathering_account_id", nullable = false)
-    private Long gatheringAccountId;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User gatheringAccountHolder;
-//
-    @Column(name = "gathering_account_no", nullable = true)
-    private String gatheringAccountNo;
-//
-//    @Column(name = "gathering_account_balance", nullable = false)
-//    private Integer gatheringAccountBalance = 0;
-//
-//    @Column(name = "gathering_account_pw", nullable = false)
-//    private Integer gatheringAccountPw;
 
     @OneToOne(mappedBy = "gatheringAccount" , fetch = FetchType.LAZY)
     private Gathering gathering;
 
-    @OneToMany(mappedBy = "gatheringAccount" , fetch = FetchType.LAZY)
-    private List<AutoPayment> autoPayments;
+    public GatheringAccount(User user, String accountNo, String accountPw, Gathering gathering) {
+        super(user, accountNo, accountPw);
+        this.gathering = gathering;
+    }
+
+    public GatheringAccount(User user, String accountNo, String accountPw){
+        super(user, accountNo, accountPw);
+    }
 }

@@ -2,6 +2,10 @@ package com.b110.jjeonchongmu.domain.mypage.api;
 
 import com.b110.jjeonchongmu.domain.mypage.dto.*;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
+import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentResponseDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.myaccount.MyAccountResponseDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.StatisticsResponse;
 import com.b110.jjeonchongmu.domain.mypage.service.MypageService;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
@@ -33,22 +37,61 @@ public class MypageController {
     private final MypageService myPageService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @GetMapping("/profile")
+    public ResponseEntity<ProfileDefaultResponse> getProfileDefault() {
+        Long id = jwtTokenProvider.getUserId();
+        return ResponseEntity.ok(myPageService.getProfileDefaultByUserId(id));
+    }
 
-    @GetMapping("/autopayment")
+    @GetMapping("/profile/autopayment")
     public ResponseEntity<AutoPaymentResponse> getAutoPayments() {
         Long id = jwtTokenProvider.getUserId();
         return ResponseEntity.ok(myPageService.getAutoPaymentResponseByUserId(id));
     }
 
-    @GetMapping("/mypage")
+    @GetMapping("/profile/mypage")
     public ResponseEntity<MyPageResponse> getMyPage() {
-        Long id = jwtTokenProvider.getUserId();
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
         return ResponseEntity.ok(myPageService.getMyPage(id));
     }
 
-    @GetMapping("/mypage/statistics")
+    @GetMapping("/profile/mypage/statistics")
     public ResponseEntity<StatisticsResponse> getStatistics() {
-        Long id = jwtTokenProvider.getUserId();
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
         return ResponseEntity.ok(myPageService.getStatistics(id));
     }
+
+    @PatchMapping("/profile/autopayment/{autoTransferId}")
+    public ResponseEntity<UpdateAutoPaymentResponseDto> updateAutoTransfer(
+            @PathVariable Long autoTransferId,
+            @RequestBody UpdateAutoPaymentRequestDto requestDto
+    ) {
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
+        try {
+            myPageService.updateAutoTransfer(id, autoTransferId, requestDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(new UpdateAutoPaymentResponseDto("success"));
+    }
+
+    @GetMapping("/profile/mypage/myaccount")
+    public ResponseEntity<MyAccountResponseDto> myAccount() {
+//        Long id = jwtTokenProvider.getUserId();
+        Long id = 1L; // 임시로 id = 1
+
+        MyAccountResponseDto response;
+        try {
+            response = myPageService.getMyAccount(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
 }

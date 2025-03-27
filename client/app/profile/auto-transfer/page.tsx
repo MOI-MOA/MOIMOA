@@ -88,8 +88,23 @@ export default function AutoTransferPage() {
   );
 
   // 자동이체 수정 페이지로 이동
-  const handleEdit = (id: number) => {
-    router.push(`/profile/auto-transfer/edit/${id}`);
+  const handleEdit = (transfer: {
+    id: number;
+    groupName: string;
+    amount: number;
+    day: number;
+    account: string;
+    status: string;
+  }) => {
+    const params = new URLSearchParams({
+      id: transfer.id.toString(),
+      groupName: transfer.groupName,
+      amount: transfer.amount.toString(),
+      day: transfer.day.toString(),
+      account: transfer.account,
+      status: transfer.status,
+    });
+    router.push(`/profile/auto-transfer/edit?${params.toString()}`);
   };
 
   // 송금 페이지로 이동하는 함수
@@ -262,7 +277,7 @@ export default function AutoTransferPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEdit(transfer.id)}
+                      onClick={() => handleEdit(transfer)}
                     >
                       수정
                     </Button>

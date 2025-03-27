@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.account.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,17 +30,22 @@ public class ScehduleAccountController {
      */
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
-        String response = scheduleAccountService.transfer(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        if(scheduleAccountService.initTransfer(requestDto)){
+            // 실제 송금하는 api 호출 (SSAFY금융망)
+            // if (api 호출 성공) 그대로 처리
+            // else (api 호출 실패) initTransfer한 데이터 삭제
+            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 송금 성공");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌 송금 실패");
     }
 
     /**
      * 계좌 비밀번호 확인
      */
+
     @PostMapping("/password/check")
     public ResponseEntity<Boolean> checkPassword(@RequestBody PasswordCheckRequestDTO requestDto) {
-        Boolean response = scheduleAccountService.checkPassword(requestDto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(scheduleAccountService.checkPassword(requestDto));
     }
 
     /**
@@ -47,7 +53,22 @@ public class ScehduleAccountController {
      */
     @DeleteMapping
     public ResponseEntity<String> deleteAccount(@RequestBody DeleteRequestDTO requestDTO) {
-        scheduleAccountService.deleteAccount(requestDTO);
-        return ResponseEntity.ok("계좌 삭제 성공");
+        if(scheduleAccountService.deleteAccount(requestDTO)){
+             return ResponseEntity.ok("계좌 삭제 성공");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게좌 삭제 실패");
     }
+
+    @PostMapping
+    public ResponseEntity<String> createAccount(@RequestBody MakeAccountDTO requestDTO){
+
+        System.out.println("사용자가 입력한 비밀번호" + requestDTO.getAccountPw());
+        if(scheduleAccountService.createAccount(requestDTO)){
+            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 생성 성공");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌생성실패");
+    }
+
+
+
 }

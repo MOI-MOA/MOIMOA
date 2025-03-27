@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.schedule.entity;
 
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 @Table(name = "schedule_member")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ScheduleMember {
 
     @Id

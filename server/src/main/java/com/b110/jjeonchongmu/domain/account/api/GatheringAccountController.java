@@ -1,11 +1,22 @@
 package com.b110.jjeonchongmu.domain.account.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.*;
+import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.entity.Account;
+import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 계좌 관련 API 컨트롤러
@@ -20,18 +31,75 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RestController
-@RequestMapping("/api/v1/Gathering-account")
+@RequestMapping("/api/v1/gathering-account")
 @RequiredArgsConstructor
 public class GatheringAccountController {
     private final GatheringAccountService gatheringAccountService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AccountRepo accountRepo;
+
     /**
      * 계좌 송금
      */
     @PostMapping("/transfer")
-    public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
-        String response = gatheringAccountService.transfer(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+    public ResponseEntity<Object> transfer(
+            @RequestBody GatheringTransferRequestDTO transferRequestDto) {
+
+        Long userId = jwtTokenProvider.getUserId();
+
+
+        TransferRequestDTO requestDto = gatheringAccountService.getTransferRequestDto(userId, transferRequestDto);
+
+        TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 성공하면 계좌 잔액을 함께 보내기??
+                boolean isCompleted = gatheringAccountService.processTransfer(response);
+
+                simpMessagingTemplate.convertAndSend(
+                        "/queue/transfer-results" + requestDto.getFromAccountId(),
+                        isCompleted
+                );
+            } catch (Exception e) {
+
+                TransferResponseDTO result = new TransferResponseDTO();
+                simpMessagingTemplate.convertAndSend(
+                        "/queue/transfer-results" + requestDto.getFromAccountId(),
+                        "송금중 오류가 발생"
+                );
+            }
+        });
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+    /**
+     * 계좌 존재하는지 확인
+     * 존재하면 200 ok
+     * 존재하지 않으면 404 notFound
+     */
+    @GetMapping("/account/check")
+    public ResponseEntity<Map<String, String>> checkAccount(@RequestBody AccountCheckRequestDTO requestDto) {
+        Map<String, String> map = new HashMap<>();
+        Long userId = jwtTokenProvider.getUserId();
+        String name;
+        try {
+            // 계좌 찾고
+            name = gatheringAccountService.findNameByAccountNo(requestDto.getAccountNo());
+        } catch (Exception e) {
+            // 없으면 실패 메시지 담아서 return
+            e.printStackTrace();
+            map.put("message", "account를 찾을때 문제가 생겼습니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
+        }
+
+        // 있으면 name담아서 리턴
+        map.put("name", name);
+
+        return ResponseEntity.status(HttpStatus.OK).body(map);
+    }
+
 
     /**
      * 계좌 비밀번호 확인

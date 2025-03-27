@@ -1,34 +1,30 @@
 package com.b110.jjeonchongmu.domain.account.entity;
+
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
-import jakarta.persistence.*;
-import lombok.*;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "schedule_account")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@DiscriminatorValue("SCHEDULE")
+@Builder
 public class ScheduleAccount extends Account {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "schedule_account_id", nullable = false)
-    private Long scheduleAccountId;
-
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User scheduleAccountHolder;
-//
-//    @Column(name = "schedule_account_no", nullable = true)
-//    private Long scheduleAccountNo;
-//
-//    @Column(name = "schedule_account_balance", nullable = true)
-//    private Integer scheduleAccountBalance;
-//
-//    @Column(name = "schedule_account_pw", nullable = false)
-//    private Integer scheduleAccountPw;
 
     @OneToOne(mappedBy = "scheduleAccount" , fetch = FetchType.LAZY)
     private Schedule schedule;
+
+    public ScheduleAccount(User user, String accountNo, String accountPw,Schedule schedule) {
+        super(user, accountNo, accountPw);
+        this.schedule = schedule;
+    }
 
 }

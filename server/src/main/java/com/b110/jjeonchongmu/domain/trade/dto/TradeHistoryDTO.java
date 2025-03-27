@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class TradeHistoryDTO {
 
 	private final Long tradeId;
-	private final Long tradeAmount;
+	private final Long tradeAmount; // 무조건 양수
 	private final Long tradeBalance;
 	private final String tradeDetail;
 	private final LocalDateTime tradeDateTime;
@@ -25,10 +25,10 @@ public class TradeHistoryDTO {
 
 		if (accountId.equals(trade.getFromAccount().getAccountId())) {
 			tradeType = TradeType.WITHDRAWAL;
-			otherUserName = trade.getToAccount().getAccountHolder().getName();
+			otherUserName = trade.getToAccount().getUser().getName();
 		}else {
-			tradeType = TradeType.DEPOSIT;
-			otherUserName = trade.getFromAccount().getAccountHolder().getName();
+			tradeType = TradeType.PAYMENT;
+			otherUserName = trade.getFromAccount().getUser().getName();
 		}
 		TradeHistoryDTO tradeHistoryDTO = new TradeHistoryDTO(
 				trade.getTradeId(),

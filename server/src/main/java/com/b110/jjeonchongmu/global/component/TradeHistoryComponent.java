@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TradeHistoryComponent {
 
-	private TradeRepo tradeRepo;
+	private final TradeRepo tradeRepo;
 
 	public List<TradeHistoryDTO> getTradeHistory(TradeHistoryRequestDTO tradeHistoryRequestDTO) {
 		List<Trade> trades = tradeRepo.findByAccountId(tradeHistoryRequestDTO.getAccountId(),

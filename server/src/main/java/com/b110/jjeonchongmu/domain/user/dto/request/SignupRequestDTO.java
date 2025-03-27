@@ -18,8 +18,8 @@ public class SignupRequestDTO {
     private String name;
 
     @NotBlank(message = "비밀번호는 필수 입력값입니다")
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
-            message = "비밀번호는 8~20자리수여야 합니다. 영문 대소문자, 숫자, 특수문자를 1개 이상 포함해야 합니다.")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{4,20}$",
+            message = "비밀번호는 4~20자리수여야 합니다. 영문 대소문자, 숫자, 특수문자를 1개 이상 포함해야 합니다.")
     private String password;
 
     @NotNull(message = "생년월일은 필수 입력값입니다")
@@ -30,4 +30,4 @@ public class SignupRequestDTO {
     @Min(value = 0000, message = "개인계좌 비밀번호는 4자리 이상이어야 합니다")
     @Max(value = 999999, message = "개인계좌 비밀번호는 6자리 이하여야 합니다")
     private Integer personalAccountPW;
-} 
+}
