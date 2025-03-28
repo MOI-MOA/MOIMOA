@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.repo;
 
+import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
 
 import java.util.List;
@@ -18,4 +19,7 @@ public interface PersonalAccountRepo extends JpaRepository<PersonalAccount, Long
 	Optional<PersonalAccount> findByUserId(Long userId);
 
 	PersonalAccount findByAccountNo(String accountNo);
+
+	Boolean existsByAccountNo(String toAccountNo);
+
 }

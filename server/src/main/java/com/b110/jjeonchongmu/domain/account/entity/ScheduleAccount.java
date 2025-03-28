@@ -22,8 +22,8 @@ public class ScheduleAccount extends Account {
     @OneToOne(mappedBy = "scheduleAccount" , fetch = FetchType.LAZY)
     private Schedule schedule;
 
-    public ScheduleAccount(User user, String accountNo, String accountPw,Schedule schedule) {
-        super(user, accountNo, accountPw);
+    public ScheduleAccount(User user, String accountPw,Schedule schedule) {
+        super(user, accountPw);
         this.schedule = schedule;
     }
 

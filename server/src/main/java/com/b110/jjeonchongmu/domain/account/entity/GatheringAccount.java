@@ -3,10 +3,7 @@ package com.b110.jjeonchongmu.domain.account.entity;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.user.entity.User;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,15 +15,24 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("GATHERING")  // 이 부분을 추가
 public class GatheringAccount extends Account {
 
+    @Column(name = "account_no", nullable = false)
+    private String accountNo;
+
     @OneToOne(mappedBy = "gatheringAccount" , fetch = FetchType.LAZY)
     private Gathering gathering;
 
+
     public GatheringAccount(User user, String accountNo, String accountPw, Gathering gathering) {
-        super(user, accountNo, accountPw);
+        super(user, accountPw);
         this.gathering = gathering;
+        this.accountNo = accountNo;
     }
 
     public GatheringAccount(User user, String accountNo, String accountPw){
-        super(user, accountNo, accountPw);
+        super(user,  accountPw);
+        this.accountNo = accountNo;
+
     }
+
+
 }
