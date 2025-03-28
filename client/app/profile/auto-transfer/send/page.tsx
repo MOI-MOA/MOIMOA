@@ -26,12 +26,19 @@ import {
 } from "@/components/ui/dialog";
 import axios from "axios";
 import { publicApi } from "@/lib/api";
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
 interface AccountCheckResponse {
+  toAccountNo: string;
+  amount: number;
   isAccount: boolean;
-  datas: {
-    accountOwner: string;
-  };
+}
+
+interface TransferResponse {
+  transactionId: string;
+  status: string;
+  // 필요한 다른 필드들 추가
 }
 
 export default function SendMoneyPage() {
@@ -49,6 +56,8 @@ export default function SendMoneyPage() {
     useState(false);
   const [showPinInput, setShowPinInput] = useState(false);
   const [accountOwner, setAccountOwner] = useState("");
+  const [transferStatus, setTransferStatus] = useState<string>("");
+  const [stompClient, setStompClient] = useState<any>(null);
 
   useEffect(() => {
     const account = searchParams.get("account");
@@ -60,22 +69,55 @@ export default function SendMoneyPage() {
     if (cost) {
       setAmount(cost);
     }
-  }, [searchParams]);
+
+    // WebSocket 연결 설정
+    const socket = new SockJS("http://localhost:8080/ws");
+    const client = Stomp.over(socket);
+
+    client.connect({}, () => {
+      console.log("WebSocket Connected");
+      // 송금 결과 구독
+      client.subscribe(`/queue/transfer-results1`, (message) => {
+        const result = message.body;
+        if (result === "true") {
+          toast({
+            title: "송금 완료",
+            description: `${accountNumber}로 ${amount}원이 성공적으로 송금되었습니다.`,
+          });
+          router.back();
+        } else if (result === "송금중 오류가 발생") {
+          toast({
+            title: "송금 실패",
+            description: "송금 중 오류가 발생했습니다. 다시 시도해주세요.",
+            variant: "destructive",
+          });
+        }
+        setIsLoading(false);
+      });
+    });
+
+    setStompClient(client);
+
+    return () => {
+      if (client) {
+        client.disconnect();
+      }
+    };
+  }, [accountNumber, amount, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await publicApi.get<
-        AccountCheckResponse,
-        AccountCheckResponse
-      >(`/api/v1/personal-account/${accountNumber}/${amount}/check`);
+      const response: AccountCheckResponse = await publicApi.get(
+        `/api/v1/personal-account/${accountNumber}/${amount}/check`
+      );
 
-      console.log(response);
+      console.log("API Response:", response);
 
       if (response.isAccount) {
-        setAccountName(response.datas.accountOwner);
-        setIsAccountCheckDialogOpen(true);
+        setAccountName(response.toAccountNo);
+        setIsConfirmDialogOpen(true);
       } else {
         toast({
           title: "계좌 확인 실패",
@@ -84,6 +126,7 @@ export default function SendMoneyPage() {
         });
       }
     } catch (error: any) {
+      console.error("API Error:", error);
       if (error.response?.status === 404) {
         toast({
           title: "계좌 확인 실패",
@@ -111,35 +154,40 @@ export default function SendMoneyPage() {
   };
 
   const handlePinSubmit = async () => {
-    if (pinCode !== "000000") {
-      toast({
-        title: "PIN 오류",
-        description: "올바른 PIN 번호를 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     setIsPinDialogOpen(false);
+    setTransferStatus("송금 처리 중...");
 
     try {
-      // 여기에 실제 송금 로직을 구현합니다.
-      // API 호출 등을 수행합니다.
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // 임시 지연
+      const response: TransferResponse = await publicApi.post(
+        `/api/v1/personal-account/transfer`,
+        {
+          fromAccountType: "PERSONAL",
+          fromAccountId: 1,
+          toAccountType: "PERSONAL",
+          toAccountNo: accountNumber,
+          tradeDetail: message || "",
+          transferAmount: Number(amount),
+          accountPw: pinCode,
+        }
+      );
 
-      toast({
-        title: "송금 완료",
-        description: `${accountNumber}로 ${amount}원이 성공적으로 송금되었습니다.`,
-      });
-      router.back();
-    } catch (error) {
-      toast({
-        title: "송금 실패",
-        description: "송금 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive",
-      });
-    } finally {
+      // WebSocket을 통해 결과를 받을 때까지 대기
+      // 결과는 WebSocket 구독 핸들러에서 처리됨
+    } catch (error: any) {
+      if (error.response?.status === 400) {
+        toast({
+          title: "PIN 오류",
+          description: "올바른 PIN 번호를 입력해주세요.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "송금 실패",
+          description: "송금 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      }
       setIsLoading(false);
     }
   };
@@ -209,7 +257,7 @@ export default function SendMoneyPage() {
                 className="w-full mt-4"
                 disabled={isLoading}
               >
-                {isLoading ? "송금 중..." : "송금하기"}
+                {isLoading ? transferStatus : "송금하기"}
               </Button>
             </form>
           </CardContent>
