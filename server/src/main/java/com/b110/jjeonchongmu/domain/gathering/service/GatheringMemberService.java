@@ -140,7 +140,8 @@ public class GatheringMemberService {
 	 * @throws RuntimeException 모임을 찾을 수 없거나 총무가 아닌 경우
 	 */
 	public MemberManageResponseDTO getMemberManage(Long gatheringId) {
-		Long currentUserId = jwtTokenProvider.getUserId();
+//		Long currentUserId = jwtTokenProvider.getUserId();
+		Long currentUserId = 1L;
 		Gathering gathering = gatheringRepo.findById(gatheringId)
 				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
 

@@ -16,7 +16,7 @@ public class GatheringDetailResponseDTO {
     private String description;
     private Integer totalMembers;
     private Long monthlyFee;
-    private boolean isManager;
+    private Boolean isManager;
     private GatheringDetailManagerDTO manager;
     private GatheringDetailAccountDTO accounts;
     private List<GatheringDetailSchedules> schedules;
