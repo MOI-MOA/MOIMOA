@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
