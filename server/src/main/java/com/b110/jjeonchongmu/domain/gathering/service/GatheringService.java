@@ -39,6 +39,8 @@ public class GatheringService {
 	private final UserRepo userRepo;
 	private final GatheringAccountRepo gatheringAccountRepo;
 	private final ExternalBankApiComponent externalBankApiComponent;
+	private final GatheringMemberService gatheringMemberService;
+
 	@Value("${external.bank.api.accountType}")
 	private String externalAccountType;
 
@@ -85,17 +87,7 @@ public class GatheringService {
 				.build();
 		//모임 저장.
 		gatheringRepo.save(gathering);
-
-		// 총무를 모임 멤버로 추가
-		GatheringMember managerMember = GatheringMember.builder()
-				.gathering(gathering)
-				.gatheringMemberUser(manager)
-				.gatheringAttendCount(0)
-				.gatheringMemberAccountBalance(0)
-				.gatheringMemberAccountDeposit(0)
-				.gatheringPaymentStatus(false)
-				.build();
-		gatheringMemberRepo.save(managerMember);
+		 gatheringMemberService.addMember(gathering.getGatheringId(),manager.getUserId());
 
 		return GatheringDTO.builder()
 				.gatheringId(gathering.getGatheringId())
@@ -190,6 +182,20 @@ public class GatheringService {
 				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
 		List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
+		
+		// 멤버 정보가 비어있으면 총무만 포함
+		if (members.isEmpty()) {
+			GatheringMember managerMember = GatheringMember.builder()
+					.gatheringMemberId(0L)  // 임시 ID
+					.gathering(gathering)
+					.gatheringMemberUser(gathering.getManager())
+					.gatheringAttendCount(0)
+					.gatheringMemberAccountBalance(0)
+					.gatheringMemberAccountDeposit(0)
+					.gatheringPaymentStatus(false)
+					.build();
+			members.add(managerMember);
+		}
 
 		return GatheringDetailResponseDTO.builder()
 				.gathering(GatheringDTO.builder()

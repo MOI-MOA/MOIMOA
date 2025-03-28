@@ -251,4 +251,44 @@ public class GatheringMemberService {
 
 		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
 	}
+
+	/**
+	 * 모임 멤버 추가
+	 *
+	 * @param gatheringId 모임 ID
+	 * @param userId      추가할 사용자 ID
+	 * @throws RuntimeException 모임을 찾을 수 없거나, 사용자를 찾을 수 없거나, 이미 가입된 회원인 경우
+	 */
+	@Transactional
+	public void addMember(Long gatheringId, Long userId) {
+		// 모임 조회
+		Gathering gathering = gatheringRepo.findById(gatheringId)
+				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
+
+		// 사용자 조회
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+		// 이미 가입된 회원인지 확인
+		if (gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)) {
+			throw new RuntimeException("이미 가입된 회원입니다.");
+		}
+
+		// 새로운 회원 정보 생성
+		GatheringMember member = GatheringMember.builder()
+				.gathering(gathering)
+				.gatheringMemberUser(user)
+				.gatheringAttendCount(0)
+				.gatheringMemberAccountBalance(0)
+				.gatheringMemberAccountDeposit(0)
+				.gatheringPaymentStatus(false)
+				.build();
+
+		// 회원 저장
+		gatheringMemberRepo.save(member);
+
+		// 모임의 회원 수 업데이트
+		long memberCount = gatheringMemberRepo.countByGatheringGatheringId(gatheringId);
+		gathering.updateMemberCount((int) memberCount);
+	}
 }
