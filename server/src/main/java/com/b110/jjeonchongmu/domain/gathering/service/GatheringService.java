@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.b110.jjeonchongmu.domain.account.dto.MakeGatheringAccountDTO;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -59,12 +60,7 @@ public class GatheringService {
 		if (currentUser == null) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED);
 		}
-
-		// 해당 총무가 동일한 모임명 갖고 있는지  확인
-		if (gatheringRepo.existsByGatheringNameAndManager_UserId(request.getGatheringName(),
-				currentUser.getUserId())) {
-			throw new CustomException(ErrorCode.DUPLICATE_GATHERING_NAME);
-		}
+		
 		// 총무 설정.
 		User manager = currentUser;
 
@@ -81,7 +77,7 @@ public class GatheringService {
 				.gatheringAccount(account)
 				.gatheringName(request.getGatheringName())
 				.gatheringIntroduction(request.getGatheringIntroduction())
-				.memberCount(1) // 기본값 1 설정.
+				.memberCount(0) // 기본값 0 설정.
 				.penaltyRate(request.getPenaltyRate())
 				.depositDate(request.getDepositDate())
 				.basicFee((long) request.getBasicFee())
@@ -90,9 +86,29 @@ public class GatheringService {
 		//모임 저장.
 		gatheringRepo.save(gathering);
 
-		// 모임계좌 DB 저장.
+		// 총무를 모임 멤버로 추가
+		GatheringMember managerMember = GatheringMember.builder()
+				.gathering(gathering)
+				.gatheringMemberUser(manager)
+				.gatheringAttendCount(0)
+				.gatheringMemberAccountBalance(0)
+				.gatheringMemberAccountDeposit(0)
+				.gatheringPaymentStatus(false)
+				.build();
+		gatheringMemberRepo.save(managerMember);
 
-		return null;
+		return GatheringDTO.builder()
+				.gatheringId(gathering.getGatheringId())
+				.managerId(gathering.getManagerId())
+				.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
+				.gatheringName(gathering.getGatheringName())
+				.gatheringIntroduction(gathering.getGatheringIntroduction())
+				.memberCount(gathering.getMemberCount())
+				.penaltyRate(gathering.getPenaltyRate())
+				.depositDate(gathering.getDepositDate())
+				.basicFee(gathering.getBasicFee())
+				.gatheringDeposit(gathering.getGatheringDeposit())
+				.build();
 	}
 
 	/**
