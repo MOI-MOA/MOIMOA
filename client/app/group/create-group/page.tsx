@@ -92,30 +92,32 @@ export default function CreateGroupPage() {
     setIsCreatingAccount(true);
     try {
       const response = await authApi.post("/api/v1/gathering", {
+        gatheringTitle: formData.gatheringTitle,
+        gatheringIntroduction: formData.gatheringIntroduction,
+        memberCount: parseInt(formData.memberCount),
+        basicFee: parseInt(formData.basicFee),
         bankName: formData.bankName,
         pinNumber: formData.pinNumber,
       });
 
       if (response.data.httpStatus === 200) {
-        setFormData((prev) => ({
-          ...prev,
-          accountNumber: response.data.datas.accountNumber,
-        }));
-        setShowPinInput(false);
-        // 계좌 개설 성공 후 바로 모임 생성 API 호출
-        await handleSubmit(new Event("submit") as any);
+        toast({
+          title: "모임 생성 성공",
+          description: response.data.message,
+        });
+        router.push("/group");
       } else {
         toast({
-          title: "계좌 개설 실패",
+          title: "모임 생성 실패",
           description: response.data.message,
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("계좌 개설 실패:", error);
+      console.error("모임 생성 실패:", error);
       toast({
         title: "오류 발생",
-        description: "계좌 개설 중 오류가 발생했습니다.",
+        description: "모임 생성 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     } finally {
@@ -176,38 +178,30 @@ export default function CreateGroupPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch("/api/v1/gathering", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          gatheringTitle: formData.gatheringTitle,
-          gatheringIntroduction: formData.gatheringIntroduction,
-          memberCount: parseInt(formData.memberCount),
-          basicFee: parseInt(formData.basicFee),
-          accountNumber: formData.accountNumber,
-          bankName: formData.bankName,
-        }),
+      const response = await authApi.post("/api/v1/gathering", {
+        gatheringTitle: formData.gatheringTitle,
+        gatheringIntroduction: formData.gatheringIntroduction,
+        memberCount: parseInt(formData.memberCount),
+        basicFee: parseInt(formData.basicFee),
+        bankName: formData.bankName,
+        pinNumber: formData.pinNumber,
       });
 
-      const data: ApiResponse = await response.json();
-
-      if (data.httpStatus === 200) {
+      if (response.data.httpStatus === 200) {
         toast({
           title: "모임 생성 성공",
-          description: data.message,
+          description: response.data.message,
         });
         router.push("/group");
       } else {
         toast({
           title: "모임 생성 실패",
-          description: data.message,
+          description: response.data.message,
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error("그룹 생성 실패:", error);
+      console.error("모임 생성 실패:", error);
       toast({
         title: "오류 발생",
         description: "모임 생성 중 오류가 발생했습니다.",
@@ -383,7 +377,7 @@ export default function CreateGroupPage() {
                 ></div>
               </div>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-4">
               {renderStep()}
               <div className="flex justify-between mt-6">
                 {step > 1 && (
@@ -407,7 +401,7 @@ export default function CreateGroupPage() {
                   </Button>
                 )}
               </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
       </main>
