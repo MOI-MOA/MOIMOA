@@ -130,3 +130,7 @@ if (project.hasProperty('includePackage')) {
 	}
 }
 /////////////////////////////////////////////////////////
+// 메인 클래스 명시적 지정
+bootJar {
+    mainClass.set("com.b110.jjeonchongmu.JjeonchongmuApplication")
+}
