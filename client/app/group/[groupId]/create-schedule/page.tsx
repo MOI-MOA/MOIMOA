@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
 import axios from "axios";
+import { publicApi } from "@/lib/api";
 
 interface Member {
   name: string;
@@ -40,10 +41,10 @@ interface ApiResponse {
 export default function CreateSchedulePage({
   params,
 }: {
-  params: Promise<{ groupId: string }>;
+  params: { groupId: string };
 }) {
   const router = useRouter();
-  const { groupId } = use(params);
+  const { groupId: gatheringId } = params;
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: "",
@@ -94,20 +95,23 @@ export default function CreateSchedulePage({
         schedulePlace: formData.location,
         scheduleStartTime: formData.date?.toISOString(),
         perBudget: Number(formData.budgetPerPerson),
-        totalBudget:
-          Number(formData.budgetPerPerson) * Number(formData.participants),
         penaltyApplyDate: formData.paybackDate?.toISOString(),
+        penaltyRate: 5, // 기본값으로 5% 설정
       };
 
-      const response = await axios.post(`/api/v1/schedule`, scheduleData);
+      const response = await publicApi.post(
+        `/api/v1/schedule/${gatheringId}`,
+        scheduleData
+      );
+      console.log("API 응답:", response);
 
       toast({
         title: "일정 생성 완료",
         description: "새로운 일정이 성공적으로 생성되었습니다.",
       });
-      router.push(`/group/${groupId}`);
+      router.push(`/group/${gatheringId}`);
     } catch (error) {
-      console.error(error);
+      console.error("일정 생성 실패:", error);
       toast({
         title: "오류 발생",
         description: "일정 생성 중 문제가 발생했습니다. 다시 시도해주세요.",
@@ -121,7 +125,7 @@ export default function CreateSchedulePage({
   const checkInsufficientMembers = async () => {
     try {
       const { data } = await axios.get<ApiResponse>(
-        `/api/v1/group/${groupId}/members`
+        `/api/v1/group/${gatheringId}/members`
       );
 
       const budgetPerPerson = Number(formData.budgetPerPerson);
