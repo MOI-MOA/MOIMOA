@@ -119,10 +119,10 @@ public class GatheringMemberService {
 			throw new RuntimeException("이미 가입된 회원입니다.");
 		}
 
-		// 새로운 회원 정보 생성
+		// 새로운 멤버 객체  생성
 		GatheringMember member = GatheringMember.builder()
 				.gathering(gathering)
-				.gatheringMemberId(user.getUserId())
+				.gatheringMemberUser(user)
 				.gatheringAttendCount(0)
 				.gatheringMemberAccountBalance(0)
 				.gatheringMemberAccountDeposit(0)
