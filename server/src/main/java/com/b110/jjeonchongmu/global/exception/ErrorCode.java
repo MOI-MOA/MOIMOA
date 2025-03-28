@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.global.exception;
 
 public enum ErrorCode {
     GATHERING_NOT_FOUND("모임을 찾을 수 없습니다."),
+    UNAUTHORIZED("인가되지 않은 사용자 : 접근권한이 없습니다."),
     DUPLICATE_GATHERING_NAME("이미 존재하는 모임 이름입니다."),
     GATHERING_MEMBER_LIMIT("모임 회원 수가 초과되었습니다."),
     GATHERING_ACCOUNT_NOT_FOUND("모임 계좌를 찾을 수 없습니다."),

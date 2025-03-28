@@ -14,5 +14,8 @@ public interface PersonalAccountRepo extends JpaRepository<PersonalAccount, Long
 	@Query("SELECT a FROM Account a WHERE a.accountId = :accountId AND TYPE(a) = PersonalAccount")
 	Optional<PersonalAccount> findByAccount(Long accountId);
 
+	@Query("SELECT a FROM Account a WHERE a.user.userId = :userId AND TYPE(a) = PersonalAccount")
+	Optional<PersonalAccount> findByUserId(Long userId);
+
 	PersonalAccount findByAccountNo(String accountNo);
 }

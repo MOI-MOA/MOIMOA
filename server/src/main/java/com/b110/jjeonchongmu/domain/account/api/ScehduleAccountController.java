@@ -31,9 +31,7 @@ public class ScehduleAccountController {
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
         if(scheduleAccountService.initTransfer(requestDto)){
-            // 실제 송금하는 api 호출 (SSAFY금융망)
-            // if (api 호출 성공) 그대로 처리
-            // else (api 호출 실패) initTransfer한 데이터 삭제
+
             return ResponseEntity.status(HttpStatus.CREATED).body("계좌 송금 성공");
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌 송금 실패");
@@ -49,8 +47,9 @@ public class ScehduleAccountController {
     }
 
     /**
-     * 계좌 삭제 (일정 계좌 삭제 포함)
+     * 계좌 삭제
      */
+
     @DeleteMapping
     public ResponseEntity<String> deleteAccount(@RequestBody DeleteRequestDTO requestDTO) {
         if(scheduleAccountService.deleteAccount(requestDTO)){
@@ -58,17 +57,6 @@ public class ScehduleAccountController {
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("게좌 삭제 실패");
     }
-
-    @PostMapping
-    public ResponseEntity<String> createAccount(@RequestBody MakeAccountDTO requestDTO){
-
-        System.out.println("사용자가 입력한 비밀번호" + requestDTO.getAccountPw());
-        if(scheduleAccountService.createAccount(requestDTO)){
-            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 생성 성공");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌생성실패");
-    }
-
 
 
 }
