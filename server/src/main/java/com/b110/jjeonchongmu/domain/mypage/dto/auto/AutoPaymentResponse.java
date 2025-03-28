@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.mypage.dto.auto;
 
+import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import lombok.AllArgsConstructor;
@@ -18,9 +19,10 @@ public class AutoPaymentResponse {
     private Long userId;
     private Long accountBalance;
     private List<AutoPaymentDto> autoTransfers = new ArrayList<>();
+    private PersonalAccountRepo personalAccountRepo;
     public AutoPaymentResponse(User user) {
         this.userId = user.getUserId();
-        this.accountBalance = user.getPersonalAccount().getAccountBalance();
+        this.accountBalance = personalAccountRepo.findByUserId(userId).get().getAccountBalance();
         for (GatheringMember gatheringMember : user.getGatheringMembers()) {
             this.autoTransfers.add(new AutoPaymentDto(user.getUserId(), gatheringMember));
         }

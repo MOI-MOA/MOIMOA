@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class TradeService {
+public class  TradeService {
 
     private final TradeRepo tradeRepo;
     public TradeResponseDTO getTradeHistory(TradeHistoryRequestDTO tradeHistoryRequestDTO) {
