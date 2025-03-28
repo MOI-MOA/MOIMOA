@@ -5,15 +5,12 @@ import com.b110.jjeonchongmu.domain.account.dto.MakeGatheringAccountDTO;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
-import com.b110.jjeonchongmu.domain.gathering.dto.AddGatheringDTO;
-import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
-import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailResponseDTO;
-import com.b110.jjeonchongmu.domain.gathering.dto.GatheringListResponseDTO;
-import com.b110.jjeonchongmu.domain.gathering.dto.GatheringMemberDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.*;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
@@ -21,6 +18,7 @@ import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -157,34 +155,37 @@ public class GatheringService {
 	/**
 	 * 모임 상세 조회
 	 */
-	public GatheringDetailResponseDTO getGatheringDetail(Long gatheringId) {
+	public GatheringDetailResponseDTO getGatheringDetail(Long userId, Long gatheringId) {
+		System.out.println(gatheringId);
 		Gathering gathering = gatheringRepo.findById(gatheringId)
 				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
 		List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
+		User user = userRepo.getUserByUserId(userId);
+		List<Schedule> schedules = gathering.getSchedules();
+
+		GatheringMember gatheringMember =
+				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(
+						gathering.getGatheringId(), user.getUserId())
+						.orElseThrow(() -> new RuntimeException("NOTFOUND: gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
 
 		return GatheringDetailResponseDTO.builder()
-				.gathering(GatheringDTO.builder()
-						.gatheringId(gathering.getGatheringId())
-						.managerId(gathering.getManagerId())
-						.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
-						.gatheringName(gathering.getGatheringName())
-						.gatheringIntroduction(gathering.getGatheringIntroduction())
-						.memberCount(gathering.getMemberCount())
-						.penaltyRate(gathering.getPenaltyRate())
-						.depositDate(gathering.getDepositDate())
-						.basicFee(gathering.getBasicFee())
-						.gatheringDeposit(gathering.getGatheringDeposit())
-						.build())
-				.members(members.stream()
-						.map(member -> GatheringMemberDTO.builder()
-								.gatheringMemberId(member.getGatheringMemberId())
-								.gatheringId(member.getGathering().getGatheringId())
-								.gatheringMemberUserId(member.getGatheringMemberUser().getUserId())
-								.gatheringAttendCount(member.getGatheringAttendCount())
-								.gatheringMemberAccountBalance(member.getGatheringMemberAccountBalance())
-								.gatheringMemberAccountDeposit(member.getGatheringMemberAccountDeposit())
-								.gatheringPaymentStatus(member.isGatheringPaymentStatus())
+				.id(gathering.getGatheringId())
+				.name(gathering.getGatheringName())
+				.description(gathering.getGatheringIntroduction())
+				.totalMembers(gathering.getGatheringMembers().size())
+				.monthlyFee(gathering.getBasicFee())
+				.isManager(Objects.equals(gathering.getManagerId(), userId))
+				.manager(new GatheringDetailManagerDTO(user))
+				.accounts(new GatheringDetailAccountDTO(gathering, gatheringMember))
+				.schedules(schedules.stream()
+						.map(schedule -> GatheringDetailSchedules.builder()
+								.id(schedule.getId())
+								.date(schedule.getStartTime())
+								.participants(schedule.getAttendees().size())
+								.budgetPerPerson(schedule.getPerBudget())
+								.totalBudget(schedule.getAttendees().size() * schedule.getPerBudget())
+								.location(schedule.getPlace())
 								.build())
 						.collect(Collectors.toList()))
 				.build();
