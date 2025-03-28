@@ -8,7 +8,5 @@ import java.util.List;
 public interface AccountRepo extends JpaRepository<Account, Long> {
 
 
-	Boolean existsByAccountNo(String toAccountNo);
 
-	Account findAccountByAccountNo(String accountNo);
 }

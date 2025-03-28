@@ -48,10 +48,13 @@ public class PersonalAccountService {
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
-		// 계좌를 db에서 확인
-		System.out.println(requestDto.getToAccountNo());
-		Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
-		System.out.println(account);
+		Account account = null;
+		if(requestDto.getToAccountType()==AccountType.PERSONAL){
+			account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+		} else if (requestDto.getToAccountType()==AccountType.GATHERING){
+			account = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+		}
+
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
@@ -133,11 +136,17 @@ public class PersonalAccountService {
 			);
 
 			tradeRepo.save(trade);
-			System.out.println(toAccount.getAccountNo());
-			System.out.println(fromAccount.getAccountNo());
+
+			String accountNo = null;
+			if(toAccount instanceof PersonalAccount){
+				accountNo = ((PersonalAccount) toAccount).getAccountNo();
+			} else if (toAccount instanceof  GatheringAccount){
+				accountNo =((GatheringAccount) toAccount).getAccountNo();
+			}
+
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
 					fromAccount.getUser().getUserKey(),
-					toAccount.getAccountNo(),
+					accountNo,
 					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount()
 			);
@@ -192,7 +201,7 @@ public class PersonalAccountService {
 	}
 
 	public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
-		Boolean isAccountNo = accountRepo.existsByAccountNo(toAccountNo);
+		Boolean isAccountNo = personalAccountRepo.existsByAccountNo(toAccountNo);
 		return new AccountCheckResponseDTO(
 				toAccountNo,
 				amount,

@@ -90,7 +90,13 @@ public class GatheringAccountService {
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
-		Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+		Account account = null;
+		if(requestDto.getToAccountType()==AccountType.PERSONAL){
+			account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+		} else if (requestDto.getToAccountType()==AccountType.GATHERING){
+			account = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+		}
+
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
@@ -165,9 +171,16 @@ public class GatheringAccountService {
 
 			tradeRepo.save(trade);
 
+			String accountNo = null;
+			if (toAccount instanceof PersonalAccount) {
+				accountNo = ((PersonalAccount) toAccount).getAccountNo();
+			} else if(toAccount instanceof GatheringAccount){
+				accountNo = ((GatheringAccount) toAccount).getAccountNo();
+			}
+
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
 					toAccount.getUser().getUserKey(),
-					toAccount.getAccountNo(),
+					accountNo,
 					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount()
 			);
@@ -204,7 +217,13 @@ public class GatheringAccountService {
 		AccountType fromAccountType = AccountType.GATHERING;
 		Long fromAccountId = gathering.getGatheringAccount().getAccountId();
 
-		Account account = accountRepo.findAccountByAccountNo(accountNo);
+
+
+		Account account = personalAccountRepo.findByAccountNo(accountNo);
+
+
+
+
 		AccountType toAccountType = account.getDtype();
 
 		PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
@@ -228,7 +247,12 @@ public class GatheringAccountService {
 	}
 	@Transactional
 	public String findNameByAccountNo(String accountNo) {
-		Account account = accountRepo.findAccountByAccountNo(accountNo);
+		Account account;
+		if(personalAccountRepo.existsByAccountNo(accountNo)){
+			account = personalAccountRepo.findByAccountNo(accountNo);
+		}
+		account = gatheringAccountRepo.findAccountByAccountNo(accountNo);
+
 		return account.getUser().getName();
 	}
 }
