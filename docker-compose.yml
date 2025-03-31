@@ -1,18 +1,4 @@
 services:
-  # nginx:
-  #   image: nginx:latest
-  #   ports:
-  #     - "3001:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
-  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
-  #   depends_on:
-  #     - client
-  #   restart: always
-  #   networks:
-  #     - app-network
-
   client:
     build:
       context: ./client
@@ -37,7 +23,10 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=production
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      # 추가 환경 변수가 필요하다면 여기에 추가
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://my-db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
     depends_on:
       my-db:
         condition: service_healthy
@@ -76,6 +65,20 @@ services:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       retries: 10
+
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "3001:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d        # 로컬 설정 파일을 컨테이너 내부로 마운트
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro    # SSL 인증서 마운트
+  #   depends_on:
+  #     - client
+  #   restart: always
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:
