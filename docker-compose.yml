@@ -60,8 +60,6 @@ services:
       test: [ "CMD", "mysqladmin", "ping" ]
       interval: 5s
       retries: 10
-  volumes:
-   mysql_data_volume:
 
   my-cache-server:
     image: redis
@@ -90,6 +88,9 @@ services:
   #   restart: always
   #   networks:
   #     - app-network
+
+volumes:
+  mysql_data_volume:
 
 networks:
   app-network:
