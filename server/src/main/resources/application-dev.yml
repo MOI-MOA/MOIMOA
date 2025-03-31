@@ -6,8 +6,9 @@ spring:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
 
     url: jdbc:mysql://my-db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: root
-    password: ${MYSQL_ROOT_PASSWORD}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    # password: ${MYSQL_ROOT_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
