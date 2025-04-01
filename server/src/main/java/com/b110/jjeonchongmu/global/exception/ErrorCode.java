@@ -2,6 +2,8 @@ package com.b110.jjeonchongmu.global.exception;
 
 public enum ErrorCode {
     GATHERING_NOT_FOUND("모임을 찾을 수 없습니다."),
+    ALREADY_GATHERING_MEMBER("이미 해당 모임에 가입된 회원입니다."),
+    UNAUTHORIZED("인가되지 않은 사용자 : 접근권한이 없습니다."),
     DUPLICATE_GATHERING_NAME("이미 존재하는 모임 이름입니다."),
     GATHERING_MEMBER_LIMIT("모임 회원 수가 초과되었습니다."),
     GATHERING_ACCOUNT_NOT_FOUND("모임 계좌를 찾을 수 없습니다."),
@@ -21,7 +23,8 @@ public enum ErrorCode {
     INVALID_MANAGER("모임 관리자가 아닙니다."),
     SCHEDULE_BUDGET_NOT_SET("일정 예산이 설정되지 않았습니다."),
     ALREADY_SCHEDULE_MEMBER("이미 일정 멤버입니다."),
-    SCHEDULE_MEMBER_NOT_FOUND("일정 멤버를 찾을 수 없습니다.");
+    SCHEDULE_MEMBER_NOT_FOUND("일정 멤버를 찾을 수 없습니다."),
+    INVALID_MEMBER_STATUS("유효하지 않은 회원 상태입니다.");
 
     private final String message;
 

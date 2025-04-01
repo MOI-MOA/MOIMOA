@@ -119,3 +119,4 @@ public class GatheringAccountController {
         return ResponseEntity.ok("계좌 삭제 성공");
     }
 }
+

@@ -20,5 +20,5 @@ public class ScheduleCreateDTO {
     private LocalDateTime penaltyApplyDate;
     private int penaltyRate;
     private LocalDateTime scheduleStartTime;
-
+    private String scheduleAccountPw;
 }

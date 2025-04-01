@@ -115,7 +115,7 @@ public class MainService {
         for (Object[] row : data) {
             if (row.length >= 2) {
                 DateDTO dateDTO = new DateDTO();
-                dateDTO.setDate((Integer) row[0]); // DAY(s.start_time)
+                dateDTO.setDate(((Number) row[0]).intValue());
                 result.add(dateDTO);
             }
         }
@@ -167,7 +167,10 @@ public class MainService {
             if (row.length > 0 && row[0] != null) dto.setScheduleId((Long) row[0]);
             if (row.length > 1 && row[1] != null) dto.setScheduleTitle((String) row[1]);
             if (row.length > 3 && row[3] != null) dto.setSchedulePlace((String) row[3]);
-            if (row.length > 4 && row[4] != null) dto.setScheduleStartTime((LocalDateTime) row[4]);
+            if (row.length > 4 && row[4] != null) {
+                java.sql.Timestamp timestamp = (java.sql.Timestamp) row[4];
+                dto.setScheduleStartTime(timestamp.toLocalDateTime());
+            }
             if (row.length > 5 && row[5] != null) dto.setGatheringId((Long) row[5]);
             if (row.length > 6 && row[6] != null) dto.setGatheringName((String) row[6]);
             if (row.length > 7 && row[7] != null) dto.setAttendeeCount(((Number) row[7]).intValue());
