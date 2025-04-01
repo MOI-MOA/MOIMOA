@@ -19,6 +19,12 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { publicApi } from "@/lib/api";
+import axios from "axios";
+
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,13 +44,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await publicApi.post("/api/auth/login", {
+      const response: LoginResponse = await publicApi.post("/api/v1/login", {
         email: formData.email,
         password: formData.password,
       });
 
       // 응답에서 토큰 추출 및 저장
-      const { accessToken, refreshToken } = response.data;
+      const { accessToken, refreshToken } = response;
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
 
@@ -75,6 +81,7 @@ export default function LoginPage() {
           duration: 3000,
         });
       } else {
+        console.error(error);
         toast({
           title: "로그인 실패 😢",
           description: "알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
