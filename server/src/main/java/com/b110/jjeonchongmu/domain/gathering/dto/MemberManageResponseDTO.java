@@ -13,9 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MemberManageResponseDTO {
-    private Integer memberCount;
-    private Integer paymentCount;
-    private Integer inviteCount;
     private List<InviteMemberDTO> inviteList;
     private ManagerDTO manager;
     private List<MemberDTO> memberList;
@@ -25,6 +22,7 @@ public class MemberManageResponseDTO {
     @AllArgsConstructor
     @Builder
     public static class InviteMemberDTO {
+        private Long id;
         private String name;
         private String email;
         private LocalDateTime createdAt;
@@ -38,6 +36,7 @@ public class MemberManageResponseDTO {
         private String name;
         private String email;
         private LocalDateTime createdAt;
+        private Integer balance;
         private Boolean gatheringPaymentStatus;
     }
 
@@ -49,6 +48,7 @@ public class MemberManageResponseDTO {
         private String name;
         private String email;
         private LocalDateTime createdAt;
+        private Integer balance;
         private Boolean gatheringPaymentStatus;
     }
 }
