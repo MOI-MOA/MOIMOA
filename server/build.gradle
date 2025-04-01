@@ -75,7 +75,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	//
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
 }
 
 tasks.named('test') {
