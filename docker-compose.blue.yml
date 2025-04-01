@@ -52,8 +52,8 @@ services:
       # - MYSQL_ROOT_HOST=%
     command: --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./mysql_data:/var/lib/mysql
-    # - mysql_data_volume:/var/lib/mysql
+      # - ./mysql_data:/var/lib/mysql
+      - mysql_data_volume:/var/lib/mysql
     ports:
       - 3307:3306
     networks:
@@ -90,8 +90,8 @@ services:
   #   networks:
   #     - app-network
 
-# volumes:
-#   mysql_data_volume:
+volumes:
+  mysql_data_volume:
 
 networks:
   app-network:
