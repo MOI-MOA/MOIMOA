@@ -1,15 +1,24 @@
-"use client"
-import { useRouter } from "next/navigation"
-import { Plus, User, Clock, Settings, CalendarIcon, Users, Wallet, AlertCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Header } from "@/components/Header"
-import React, { use, useState, useEffect } from "react"
-import { toast } from "@/components/ui/use-toast"
-import { publicApi } from "@/lib/api"
-import { LOCALHOST } from "@/lib/constants"
+"use client";
+import { useRouter } from "next/navigation";
+import {
+  Plus,
+  User,
+  Clock,
+  Settings,
+  CalendarIcon,
+  Users,
+  Wallet,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Header } from "@/components/Header";
+import React, { use, useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { publicApi } from "@/lib/api";
+import { LOCALHOST } from "@/lib/constants";
 import {
   Dialog,
   DialogContent,
@@ -17,19 +26,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 type Manager = {
   name: string;
   avatar: string;
-}
+};
 
 type Accounts = {
   groupBalance: number;
   myBalance: number;
   myDeposit: number;
-}
+};
 
 type Schedule = {
   id: number;
@@ -38,7 +47,7 @@ type Schedule = {
   budgetPerPerson: number;
   totalBudget: number;
   location: string;
-}
+};
 
 type GroupData = {
   id: number;
@@ -50,20 +59,26 @@ type GroupData = {
   manager: Manager;
   accounts: Accounts;
   schedules: Schedule[];
-}
+};
 
-export default function GroupDetailPage({ params }: { params: Promise<{ groupId: string }> }) {
-  const router = useRouter()
-  const { groupId } = use(params)
-  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
-  const [groupData, setGroupData] = useState<GroupData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export default function GroupDetailPage({
+  params,
+}: {
+  params: Promise<{ groupId: string }>;
+}) {
+  const router = useRouter();
+  const { groupId } = use(params);
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
+  const [groupData, setGroupData] = useState<GroupData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // 그룹 상세 정보 가져오기
   const fetchGroupDetail = async () => {
     try {
       setIsLoading(true);
-      const response = await publicApi.get<GroupData>(LOCALHOST + `api/v1/gathering/${groupId}/detail`) as unknown as GroupData;
+      const response = (await publicApi.get<GroupData>(
+        `api/v1/gathering/${groupId}/detail`
+      )) as unknown as GroupData;
       console.log(response);
       response.id = parseInt(groupId);
       setGroupData(response);
@@ -102,26 +117,26 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const handleLeaveGroup = async () => {
     try {
       await publicApi.post(LOCALHOST + `api/v1/gathering/${groupId}/leave`);
-      
+
       toast({
         title: "모임 탈퇴 완료",
         description: "모임에서 탈퇴되었습니다.",
-      })
-      
-      router.push('/') // 메인 페이지로 이동
+      });
+
+      router.push("/"); // 메인 페이지로 이동
     } catch (error) {
       toast({
         title: "오류 발생",
         description: "탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive",
-      })
+      });
     }
-    setIsLeaveDialogOpen(false)
-  }
+    setIsLeaveDialogOpen(false);
+  };
 
   return (
     <>
-    {/* 여기에 */}
+      {/* 여기에 */}
       <Header title={groupData.name} showBackButton />
       <main className="flex-1 overflow-auto p-4 space-y-4 pb-20">
         {/* Group Info */}
@@ -131,7 +146,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
               {/* 그룹 이름 & 설명 */}
               <div>
                 <h2 className="text-xl font-semibold">{groupData.name}</h2>
-                <p className="text-sm text-gray-500 mt-1">{groupData.description}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {groupData.description}
+                </p>
               </div>
 
               {/* 총무 정보 */}
@@ -141,7 +158,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                     <User className="h-4 w-4 mr-1" />
                     <span className="font-medium">총무</span>
                   </div>
-                  <div className="text-sm text-gray-800 mt-0.5">{groupData.manager.name}</div>
+                  <div className="text-sm text-gray-800 mt-0.5">
+                    {groupData.manager.name}
+                  </div>
                 </div>
               </div>
             </div>
@@ -173,19 +192,25 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
           <Card>
             <CardContent className="p-3">
               <div className="text-xs text-gray-500 mb-1">모임계좌 잔액</div>
-              <div className="font-semibold text-blue-600">{groupData.accounts.groupBalance.toLocaleString()}원</div>
+              <div className="font-semibold text-blue-600">
+                {groupData.accounts.groupBalance.toLocaleString()}원
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-3">
               <div className="text-xs text-gray-500 mb-1">내 계좌 잔액</div>
-              <div className="font-semibold text-green-600">{groupData.accounts.myBalance.toLocaleString()}원</div>
+              <div className="font-semibold text-green-600">
+                {groupData.accounts.myBalance.toLocaleString()}원
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-3">
               <div className="text-xs text-gray-500 mb-1">보증금</div>
-              <div className="font-semibold">{groupData.accounts.myDeposit.toLocaleString()}원</div>
+              <div className="font-semibold">
+                {groupData.accounts.myDeposit.toLocaleString()}원
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -214,7 +239,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">일정</h2>
-            <Button onClick={() => router.push(`/group/${groupId}/create-schedule`)}>
+            <Button
+              onClick={() => router.push(`/group/${groupId}/create-schedule`)}
+            >
               <Plus className="h-4 w-4 mr-2" />새 일정 만들기
             </Button>
           </div>
@@ -223,7 +250,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             <Card
               key={schedule.id}
               className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => router.push(`/group/${groupId}/schedule/${schedule.id}`)}
+              onClick={() =>
+                router.push(`/group/${groupId}/schedule/${schedule.id}`)
+              }
             >
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
@@ -269,12 +298,15 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
           <DialogHeader>
             <DialogTitle>모임 탈퇴</DialogTitle>
             <DialogDescription>
-              정말로 {groupData.name} 모임을 탈퇴하시겠습니까?
-              탈퇴 시 모임 내역과 보증금이 삭제되며, 이 작업은 되돌릴 수 없습니다.
+              정말로 {groupData.name} 모임을 탈퇴하시겠습니까? 탈퇴 시 모임
+              내역과 보증금이 삭제되며, 이 작업은 되돌릴 수 없습니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsLeaveDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsLeaveDialogOpen(false)}
+            >
               취소
             </Button>
             <Button variant="destructive" onClick={handleLeaveGroup}>
@@ -284,6 +316,5 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
-

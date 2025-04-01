@@ -44,16 +44,16 @@ public class Schedule {
     @Column(name = "schedule_detail", nullable = false)
     private String detail;
 
-    @Column(name = "schedule_place")
+    @Column(name = "schedule_place", nullable = false)
     private String place;
 
-    @Column(name = "schedule_start_time")
+    @Column(name = "schedule_start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(name = "per_budget")
+    @Column(name = "per_budget", nullable = false)
     private Long perBudget;
 
-    @Column(name = "penalty_apply_date")
+    @Column(name = "penalty_apply_date", nullable = false)
     private LocalDateTime penaltyApplyDate;
 
     @Column(name = "penalty_rate")
@@ -80,6 +80,8 @@ public class Schedule {
     public void updatePerBudget(Long perBudget) {
         this.perBudget = perBudget;
     }
+    // 일정 계좌 수정
+    public void updateScheduleAccount(ScheduleAccount scheduleAccount) { this.scheduleAccount = scheduleAccount; }
 
     // 모든 필드 한번에 수정
     public void updateSchedule(String title, String detail, String place, 

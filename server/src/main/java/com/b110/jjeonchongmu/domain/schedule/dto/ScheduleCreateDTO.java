@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 public class ScheduleCreateDTO {
     private String scheduleTitle;
     private String scheduleDetail;
-    private Long perBudget;
     private String schedulePlace;
     private LocalDateTime penaltyApplyDate;
     private int penaltyRate;
     private LocalDateTime scheduleStartTime;
     private String scheduleAccountPw;
+    private Long subManagerId;
+    private Long perBudget;
 }

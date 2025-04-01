@@ -70,10 +70,6 @@ export default function AutoTransferPage() {
 
     const fetchData = async () => {
       try {
-        // 토큰 확인
-        const token = localStorage.getItem("accessToken");
-        console.log("Current Token:", token);
-
         setIsLoading(true);
         const response = await authApi.get<
           AutoTransferResponse,
@@ -110,7 +106,6 @@ export default function AutoTransferPage() {
           throw new Error("응답 데이터가 올바르지 않습니다.");
         }
       } catch (error) {
-        console.error("API Error:", error);
         if (!isMounted) return;
         toast({
           title: "오류",
