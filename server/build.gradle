@@ -82,3 +82,51 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+
+
+/////////////////////////////////////////////////////////
+// jenkins 테스트용 코드 //
+//test {
+//	// SimpleJenkinsTest만 실행하고 다른 테스트는 무시
+//	filter {
+//		includeTestsMatching "com.b110.jjeonchongmu.test.SimpleJenkinsTest"
+//	}
+//
+//	// 테스트 출력 로그 표시
+//	testLogging {
+//		events "passed", "skipped", "failed", "standardOut", "standardError"
+//		showStandardStreams = true
+//	}
+//
+//	// 실패해도 빌드 계속 진행
+//	ignoreFailures = true
+//}
+//
+//// 컴파일 시 오류가 있어도 계속 진행
+//tasks.withType(JavaCompile) {
+//	options.failOnError = false
+//}
+
+// 특정 패키지만 컴파일하는 옵션 추가
+if (project.hasProperty('includePackage')) {
+	def includePackage = project.getProperty('includePackage')
+
+	sourceSets {
+		main {
+			java {
+				// 지정된 패키지만 포함
+				include "**/${includePackage.replace('.', '/')}/**"
+			}
+		}
+	}
+
+	tasks.withType(JavaCompile) {
+		options.failOnError = false
+	}
+
+	test {
+		// 모든 테스트 스킵
+		enabled = false
+	}
+}
+/////////////////////////////////////////////////////////
