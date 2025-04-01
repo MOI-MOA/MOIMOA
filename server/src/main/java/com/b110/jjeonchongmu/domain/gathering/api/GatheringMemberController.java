@@ -85,15 +85,4 @@ public class GatheringMemberController {
         gatheringMemberService.leaveGathering(gatheringId);
         return ResponseEntity.status(204).body("모임탈퇴성공");
     }
-
-    /**
-     * 모임 멤버 추가 (총무)
-     */
-    @PostMapping("/{gatheringId}/members/{userId}")
-    public ResponseEntity<String> addMember(
-            @PathVariable Long gatheringId,
-            @PathVariable Long userId) {
-        gatheringMemberService.addMember(gatheringId, userId);
-        return ResponseEntity.status(201).body("모임 멤버 추가 성공");
-    }
 }
