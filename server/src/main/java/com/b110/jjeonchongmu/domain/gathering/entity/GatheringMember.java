@@ -27,10 +27,10 @@ public class GatheringMember {
     private Integer gatheringAttendCount;
 
     @Column(name = "gathering_member_account_balance")
-    private Integer gatheringMemberAccountBalance;
+    private Long gatheringMemberAccountBalance;
 
     @Column(name = "gathering_member_account_deposit")
-    private Integer gatheringMemberAccountDeposit;
+    private Long gatheringMemberAccountDeposit;
 
     @Column(name = "gathering_payment_status")
     private boolean gatheringPaymentStatus;
@@ -42,7 +42,7 @@ public class GatheringMember {
     @Builder
     public GatheringMember(Gathering gathering, User gatheringMemberUser, Integer gatheringAttendCount,
 
-                          Integer gatheringMemberAccountBalance, Integer gatheringMemberAccountDeposit,
+                          Long gatheringMemberAccountBalance, Long gatheringMemberAccountDeposit,
                           boolean gatheringPaymentStatus, GatheringMemberStatus gatheringMemberStatus) {
         this.gathering = gathering;
         this.gatheringMemberUser = gatheringMemberUser;
@@ -56,5 +56,13 @@ public class GatheringMember {
     public void updateStatus(GatheringMemberStatus status) {
         this.gatheringMemberStatus = status;
     }
+
+    public void decreaseGatheringMemberAccountBalance(Long amount) {
+        this.gatheringMemberAccountBalance -= amount;
+    }
+    public void increaseGatheringMemberAccountBalance(Long amount) {
+        this.gatheringMemberAccountBalance += amount;
+    }
+
 
 }
