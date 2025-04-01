@@ -15,4 +15,4 @@ public enum GatheringMemberStatus {
     public String getDescription() {
         return description;
     }
-} 
+}

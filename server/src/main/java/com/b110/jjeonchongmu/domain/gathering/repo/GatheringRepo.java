@@ -61,8 +61,8 @@ public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 
 	Gathering getGatheringByGatheringId(Long gatheringId);
 
-	@Query("SELECT COUNT(g) > 0 FROM Gathering g WHERE g.manager.userId = :userId AND g.gatheringId = :gatheringId")
-	boolean existsByUserIdAndGatheringId(
+	@Query("SELECT COUNT(*) FROM Gathering g WHERE g.manager.userId = :userId AND g.gatheringId = :gatheringId")
+	long countByUserIdAndGatheringId(
 			@Param("userId") Long userId,
 			@Param("gatheringId") Long gatheringId
 	);
