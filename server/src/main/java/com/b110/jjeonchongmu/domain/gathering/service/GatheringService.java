@@ -204,7 +204,7 @@ public class GatheringService {
 				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(
 						gathering.getGatheringId(), user.getUserId())
 						.orElseThrow(() -> new RuntimeException("NOTFOUND: gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
->>>>>>> 0806ae3417d0dc392f3c11625f809499fd69d180
+//>>>>>>> 0806ae3417d0dc392f3c11625f809499fd69d180
 
 		return GatheringDetailResponseDTO.builder()
 				.id(gathering.getGatheringId())
