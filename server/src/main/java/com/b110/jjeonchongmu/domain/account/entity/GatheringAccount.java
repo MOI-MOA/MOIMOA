@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("GATHERING")  // 이 부분을 추가
 public class GatheringAccount extends Account {
 
-    @Column(name = "account_no", nullable = false)
+    @Column(name = "account_no", nullable = true)
     private String accountNo;
 
     @OneToOne(mappedBy = "gatheringAccount" , fetch = FetchType.LAZY)
@@ -23,13 +23,13 @@ public class GatheringAccount extends Account {
 
 
     public GatheringAccount(User user, String accountNo, String accountPw, Gathering gathering) {
-        super(user, accountPw);
+        super(user, accountPw,0L);
         this.gathering = gathering;
         this.accountNo = accountNo;
     }
 
     public GatheringAccount(User user, String accountNo, String accountPw){
-        super(user,  accountPw);
+        super(user,  accountPw,0L);
         this.accountNo = accountNo;
 
     }

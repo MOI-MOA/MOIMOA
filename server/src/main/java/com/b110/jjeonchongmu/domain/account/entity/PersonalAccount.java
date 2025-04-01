@@ -15,14 +15,14 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("PERSONAL")
 public class PersonalAccount extends Account {
 
-    @Column(name = "account_no", nullable = false)
+    @Column(name = "account_no", nullable = true)
     private String accountNo;
 
     @OneToMany(mappedBy = "personalAccount" , fetch = FetchType.LAZY)
     private List<AutoPayment> autoPayments;
 
     public PersonalAccount(User user, String accountNo, String accountPw) {
-        super(user, accountPw);
+        super(user, accountPw,0L);
         this.autoPayments = null;
         this.accountNo = accountNo;
     }

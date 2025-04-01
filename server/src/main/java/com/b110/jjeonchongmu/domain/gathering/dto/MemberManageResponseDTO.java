@@ -36,7 +36,7 @@ public class MemberManageResponseDTO {
         private String name;
         private String email;
         private LocalDateTime createdAt;
-        private Integer balance;
+        private Long balance;
         private Boolean gatheringPaymentStatus;
     }
 
@@ -48,7 +48,7 @@ public class MemberManageResponseDTO {
         private String name;
         private String email;
         private LocalDateTime createdAt;
-        private Integer balance;
+        private Long balance;
         private Boolean gatheringPaymentStatus;
     }
 }
