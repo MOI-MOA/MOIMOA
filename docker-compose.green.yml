@@ -1,37 +1,33 @@
 services:
-  client:
+
+  client-green:
     build:
       context: ./client
       dockerfile: Dockerfile
+    container_name: client-green
     ports:
-      - "3000:3000"
+      - "3002:3000"
     depends_on:
-      - server
+      - server-green
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=/api
-      # - NEXT_PUBLIC_API_URL=https://server:8080
+      # - NEXT_PUBLIC_API_URL=https://server-green:8080
     restart: always
     networks:
       - app-network
 
-  server:
+  server-green:
     build:
       context: ./server
       dockerfile: Dockerfile
+    container_name: server-green
     ports:
-      - "8080:8080"
+      - "8082:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=production
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - SPRING_DATASOURCE_URL=jdbc:mysql://my-db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
-      # - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
-
+      # 추가 환경 변수가 필요하다면 여기에 추가
     depends_on:
       my-db:
         condition: service_healthy
@@ -42,17 +38,12 @@ services:
     restart: always
 
   my-db:
-    image: mysql:8.0
+    image: mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      # - MYSQL_ROOT_HOST=%
-    command: --default-authentication-plugin=mysql_native_password
     volumes:
-      # - ./mysql_data:/var/lib/mysql
-    - mysql_data_volume:/var/lib/mysql
+      - ./mysql_data:/var/lib/mysql
     ports:
       - 3307:3306
     networks:
@@ -76,7 +67,7 @@ services:
       interval: 5s
       retries: 10
 
-  # nginx:
+    # nginx:
   #   image: nginx:latest
   #   ports:
   #     - "3001:80"
@@ -89,10 +80,7 @@ services:
   #   restart: always
   #   networks:
   #     - app-network
-
-volumes:
-  mysql_data_volume:
-
+  
 networks:
   app-network:
     driver: bridge

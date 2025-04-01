@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import axios from "axios";
+import { publicApi } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("/api/auth/login", {
+      const response = await publicApi.post("/api/auth/login", {
         email: formData.email,
         password: formData.password,
       });

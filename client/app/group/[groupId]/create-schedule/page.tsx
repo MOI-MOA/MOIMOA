@@ -1,11 +1,10 @@
 "use client";
 import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, AlertCircle } from "lucide-react";
+import { ArrowRight, AlertCircle, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +16,17 @@ import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import axios from "axios";
-
+import { publicApi, authApi } from "@/lib/api";
 interface Member {
   name: string;
   balance: number;
@@ -47,12 +55,12 @@ export default function CreateSchedulePage({
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: "",
-    date: null as Date | null,
+    date: undefined as Date | undefined,
     participants: "",
     budgetPerPerson: "",
     location: "",
     description: "",
-    paybackDate: null as Date | null,
+    paybackDate: undefined as Date | undefined,
   });
   const [insufficientMembers, setInsufficientMembers] = useState<
     MemberWithStatus[]
@@ -99,7 +107,7 @@ export default function CreateSchedulePage({
         penaltyApplyDate: formData.paybackDate?.toISOString(),
       };
 
-      const response = await axios.post(`/api/v1/schedule`, scheduleData);
+      const response = await authApi.post(`/api/v1/schedule`, scheduleData);
 
       toast({
         title: "일정 생성 완료",
@@ -115,35 +123,6 @@ export default function CreateSchedulePage({
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const checkInsufficientMembers = async () => {
-    try {
-      const { data } = await axios.get<ApiResponse>(
-        `/api/v1/group/${groupId}/members`
-      );
-
-      const budgetPerPerson = Number(formData.budgetPerPerson);
-      const membersWithStatus: MemberWithStatus[] = data.data.map(
-        (member: Member) => ({
-          name: member.name,
-          balance: member.balance,
-          avatar: member.profileImage || "/placeholder.svg?height=40&width=40",
-          insufficientAmount: Math.max(0, budgetPerPerson - member.balance),
-          status: member.balance >= budgetPerPerson ? "충분" : "부족",
-        })
-      );
-
-      setInsufficientMembers(membersWithStatus);
-      setIsDialogOpen(true);
-    } catch (error) {
-      console.error("멤버 정보 조회 실패:", error);
-      toast({
-        title: "오류 발생",
-        description: "멤버 정보를 불러오는데 실패했습니다.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -165,11 +144,13 @@ export default function CreateSchedulePage({
             </div>
             <div>
               <Label htmlFor="date">날짜</Label>
-              <DatePicker
+              <Calendar
+                mode="single"
                 selected={formData.date}
-                onChange={(date: Date | null) =>
+                onSelect={(date: Date | undefined) =>
                   setFormData((prev) => ({ ...prev, date }))
                 }
+                className="rounded-md border [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
               />
             </div>
             <div>
@@ -201,9 +182,6 @@ export default function CreateSchedulePage({
                   placeholder="인당 예산을 입력하세요"
                   required
                 />
-                <Button type="button" onClick={checkInsufficientMembers}>
-                  확인
-                </Button>
               </div>
             </div>
             <div>
@@ -234,11 +212,13 @@ export default function CreateSchedulePage({
             </div>
             <div>
               <Label htmlFor="paybackDate">페이백 적용 날짜</Label>
-              <DatePicker
+              <Calendar
+                mode="single"
                 selected={formData.paybackDate}
-                onChange={(date: Date | null) =>
+                onSelect={(date: Date | undefined) =>
                   setFormData((prev) => ({ ...prev, paybackDate: date }))
                 }
+                className="rounded-md border [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
               />
             </div>
           </>

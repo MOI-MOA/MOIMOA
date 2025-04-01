@@ -2,12 +2,14 @@ package com.b110.jjeonchongmu.domain.mypage.service;
 
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
+import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
 import com.b110.jjeonchongmu.domain.account.repo.AutoPaymentRepo;
+import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
-import com.b110.jjeonchongmu.domain.mypage.dto.*;
-import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
+import com.b110.jjeonchongmu.domain.mypage.dto.MyPageResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.myaccount.MyAccountResponseDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
@@ -24,15 +26,14 @@ import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.TradeHistoryComponent;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +45,7 @@ public class MypageService {
     private final ScheduleRepo scheduleRepo;
     private final GatheringRepo gatheringRepo;
     private final AutoPaymentRepo autoPaymentRepo;
+    private PersonalAccountRepo personalAccountRepo;
     private final TradeHistoryComponent tradeHistoryComponent;
 
     public List<AutoPaymentDto> getAutoPayments(String type) {
@@ -114,12 +116,12 @@ public class MypageService {
 
     public AutoPaymentResponse getAutoPaymentResponseByUserId(Long id) {
         User user = userRepo.getUserByUserId(id);
-        return new AutoPaymentResponse(user);
+        return new AutoPaymentResponse(user, personalAccountRepo.findByUserId(user.getUserId()).map(
+            PersonalAccount::getAccountBalance).orElse(0L));
     }
 
     public ProfileDefaultResponse getProfileDefaultByUserId(Long id) {
         User user = userRepo.getUserByUserId(id);
-
         return new ProfileDefaultResponse(user);
     }
 

@@ -41,8 +41,9 @@ public class GatheringMember {
 
     @Builder
     public GatheringMember(Gathering gathering, User gatheringMemberUser, Integer gatheringAttendCount,
-                           Integer gatheringMemberAccountBalance, Integer gatheringMemberAccountDeposit,
-                           boolean gatheringPaymentStatus, GatheringMemberStatus gatheringMemberStatus) {
+
+                          Integer gatheringMemberAccountBalance, Integer gatheringMemberAccountDeposit,
+                          boolean gatheringPaymentStatus, GatheringMemberStatus gatheringMemberStatus) {
         this.gathering = gathering;
         this.gatheringMemberUser = gatheringMemberUser;
         this.gatheringAttendCount = gatheringAttendCount;
@@ -55,4 +56,5 @@ public class GatheringMember {
     public void updateStatus(GatheringMemberStatus status) {
         this.gatheringMemberStatus = status;
     }
+
 }
