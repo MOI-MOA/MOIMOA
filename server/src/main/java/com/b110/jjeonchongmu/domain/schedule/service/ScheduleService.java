@@ -27,7 +27,7 @@ import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+//@Transactional
 public class ScheduleService {
 
     private final ScheduleRepo scheduleRepo;

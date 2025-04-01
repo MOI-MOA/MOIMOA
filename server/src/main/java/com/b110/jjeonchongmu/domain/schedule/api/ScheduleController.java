@@ -51,9 +51,11 @@ public class ScheduleController {
     @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
 //        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = 5L;
         Long scheduleId = scheduleService.createSchedule(userId,gatheringId,scheduleCreateDTO);
-        MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
+        System.out.println(scheduleCreateDTO.getScheduleAccountPw());
+            MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
+        System.out.println("ㅇㅇㅇㅇㅇ2222");
 
         scheduleAccountService.createAccount(userId,scheduleId,makeAccountDTO);
 
