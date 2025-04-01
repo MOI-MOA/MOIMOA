@@ -73,11 +73,11 @@ public class MypageService {
 
         // ###################################
         List<MonthlyExpenseData> monthlyExpenseDatas =
-                scheduleRepo.findMonthlyExpenseDataByUserIdAndDateBetween(
-                        userId, start, end);
+            scheduleRepo.findMonthlyExpenseDataByUserIdAndDateBetween(
+                userId, start, end);
 
         List<GroupExpenseData> groupExpenseDatas = scheduleRepo.findGroupExpensesByUserId(
-                userId);
+            userId);
 
         List<ParticipationRateData> participationRateDatas = new ArrayList<>();
         // ###################################
@@ -100,7 +100,7 @@ public class MypageService {
             }
             String name = gathering.getGatheringName();
             ParticipationRateData participationRateData = new ParticipationRateData(
-                    name, participate, scheduleSize
+                name, participate, scheduleSize
             );
             participationRateDatas.add(participationRateData);
         }
@@ -127,7 +127,7 @@ public class MypageService {
         User user = userRepo.getUserByUserId(id);
 
         AutoPayment autoPayment = autoPaymentRepo.findById(autoPaymentId)
-                .orElseThrow(() -> new RuntimeException("autoPayment를 autoPaymentId로 찾을 수 없습니다"));
+            .orElseThrow(() -> new RuntimeException("autoPayment를 autoPaymentId로 찾을 수 없습니다"));
 
         if (!autoPayment.getPersonalAccount().getUser().getUserId().equals(user.getUserId())) {
             throw new RuntimeException("유저가 자동이체의 주인이 아닙니다.");
@@ -161,7 +161,7 @@ public class MypageService {
         List<TradeHistoryDTO> tradeList;
         try {
             tradeList = tradeHistoryComponent.getTradeHistory(new TradeHistoryRequestDTO(
-                    accountType, accountId
+                accountType, accountId
             ));
         } catch (Exception e) {
             throw new RuntimeException(e);

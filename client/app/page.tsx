@@ -37,23 +37,27 @@ type HomeData = {
 
 export default function HomePage() {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [uncheckScheduleCount, setUncheckScheduleCount] = useState(0);
   const [dateList, setDateList] = useState<DateData[]>([]);
   const [todaySchedules, setTodaySchedules] = useState<ScheduleData[]>([]);
-  const [upcomingSchedules, setUpcomingSchedules] = useState<ScheduleData[]>([]);
+  const [upcomingSchedules, setUpcomingSchedules] = useState<ScheduleData[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
-
 
   // API에서 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await publicApi.get<HomeData>(LOCALHOST + "api/v1/main") as unknown as HomeData;
+        const response = (await publicApi.get<HomeData>(
+          LOCALHOST + "api/v1/main"
+        )) as unknown as HomeData;
         console.log(response);
-        
-        
+
         setUncheckScheduleCount(response.uncheckScheduleCount);
         setDateList(response.dateList);
         setTodaySchedules(response.todayScheduleList);
@@ -79,11 +83,10 @@ export default function HomePage() {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
-      
-      const response = await publicApi.get<ScheduleData[]>(
-        LOCALHOST +
-        `api/v1/main/schedule/${year}/${month}/${day}`
-      ) as unknown as ScheduleData[];
+
+      const response = (await publicApi.get<ScheduleData[]>(
+        LOCALHOST + `api/v1/main/schedule/${year}/${month}/${day}`
+      )) as unknown as ScheduleData[];
       console.log(response);
       setTodaySchedules(response);
     } catch (error) {
@@ -101,11 +104,10 @@ export default function HomePage() {
     try {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
-      
-      const response = await publicApi.get<DateData[]>(
-        LOCALHOST +
-        `api/v1/main/schedule/${year}/${month}`
-      ) as unknown as DateData[];
+
+      const response = (await publicApi.get<DateData[]>(
+        LOCALHOST + `api/v1/main/schedule/${year}/${month}`
+      )) as unknown as DateData[];
       console.log(response);
       setDateList(response);
     } catch (error) {
@@ -121,18 +123,25 @@ export default function HomePage() {
   // 달력 데이터 포맷 변환
   const scheduleData = useMemo(() => {
     const formattedData: Record<string, any[]> = {};
-    
+
     dateList.forEach((dateData) => {
       const dateStr = format(
-        new Date(currentMonth.getFullYear(), currentMonth.getMonth(), dateData.date),
+        new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          dateData.date
+        ),
         "yyyy-MM-dd"
       );
       formattedData[dateStr] = todaySchedules
-        .filter(schedule => {
-          const scheduleDate = format(new Date(schedule.scheduleStartTime), "yyyy-MM-dd");
+        .filter((schedule) => {
+          const scheduleDate = format(
+            new Date(schedule.scheduleStartTime),
+            "yyyy-MM-dd"
+          );
           return scheduleDate === dateStr;
         })
-        .map(schedule => ({
+        .map((schedule) => ({
           id: schedule.scheduleId,
           groupId: schedule.gatheringId,
           title: schedule.scheduleTitle,

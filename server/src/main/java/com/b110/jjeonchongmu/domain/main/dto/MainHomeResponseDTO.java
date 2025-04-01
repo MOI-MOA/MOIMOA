@@ -1,12 +1,12 @@
 package com.b110.jjeonchongmu.domain.main.dto;
 
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * 메인 홈 화면 응답 DTO
