@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { toast } from "@/components/ui/use-toast";
+import { publicApi } from "@/lib/api";
+import { LOCALHOST } from "@/lib/constants";
 import {
   Dialog,
   DialogContent,
@@ -18,26 +20,21 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-interface Group {
-  id: number;
-  name: string;
-  description: string;
-  members: number;
-  totalAmount: number;
-  currency: string;
-}
-
-interface GatheringData {
-  gatheringTitle: string;
+type Gathering = {
+  gatheringId: number;
+  managerId: number;
+  gatheringAccountId: number;
+  gatheringName: string;
   gatheringIntroduction: string;
   memberCount: number;
+  penaltyRate: number;
+  depositDate: string;
   basicFee: number;
+  gatheringDeposit: number;
 }
 
-interface ApiResponse {
-  httpStatus: number;
-  message: string;
-  datas: GatheringData[];
+type ApiResponse = {
+  gatherings: Gathering[];
 }
 
 export default function GroupsPage() {
@@ -45,43 +42,37 @@ export default function GroupsPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [groups, setGroups] = useState<Group[]>(() => {
-    if (typeof window !== "undefined") {
-      const savedGroups = localStorage.getItem("groups");
-      if (savedGroups) {
-        return JSON.parse(savedGroups);
-      }
-    }
-    return [
-      {
-        id: 1,
-        name: "SSAFY 12기",
-        description: "SSAFY 12기 모임",
-        members: 5,
-        totalAmount: 150000,
-        currency: "KRW",
-      },
-    ];
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [groups, setGroups] = useState<Gathering[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    gatheringTitle: "",
-    gatheringIntroduction: "",
-    memberCount: "",
-    basicFee: "",
-  });
+  // 그룹 목록 가져오기
+  const fetchGroups = async () => {
+    try {
+      setIsLoading(true);
+      const response = await publicApi.get<ApiResponse>(LOCALHOST + "api/v1/gathering") as unknown as ApiResponse;
+      setGroups(response.gatherings);
+    } catch (error) {
+      console.error("그룹 목록을 가져오는데 실패했습니다:", error);
+      toast({
+        title: "데이터 로딩 실패",
+        description: "그룹 목록을 가져오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 그룹 데이터가 변경될 때마다 로컬 스토리지에 저장
+  // 초기 데이터 로드
   useEffect(() => {
-    localStorage.setItem("groups", JSON.stringify(groups));
-  }, [groups]);
+    fetchGroups();
+  }, []);
 
   const filteredGroups = groups.filter(
     (group) =>
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.description.toLowerCase().includes(searchTerm.toLowerCase())
+      group.gatheringName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.gatheringIntroduction.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // 초대 링크로 모임 참가 함수
@@ -99,30 +90,20 @@ export default function GroupsPage() {
     setIsJoining(true);
 
     try {
-      // 실제로는 API 호출로 초대 코드 검증 및 모임 참가 처리
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // 임시 지연
-
-      // 새로운 그룹 추가
-      const newGroup: Group = {
-        id: groups.length + 1,
-        name: "새로운 모임",
-        description: "초대 코드로 참가한 모임",
-        members: 1,
-        totalAmount: 0,
-        currency: "KRW",
-      };
-
-      setGroups((prevGroups) => [...prevGroups, newGroup]);
+      // API 호출로 초대 코드 검증 및 모임 참가 처리
+      await publicApi.post(LOCALHOST + "api/v1/gathering/join", {
+        inviteCode: inviteCode,
+      });
 
       // 성공 시 처리
       toast({
         title: "모임 참가 신청 완료",
-        description:
-          "모임 참가 신청이 완료되었습니다. 총무의 승인을 기다려주세요.",
+        description: "모임 참가 신청이 완료되었습니다. 총무의 승인을 기다려주세요.",
         duration: 3000,
       });
       setIsJoinDialogOpen(false);
       setInviteCode("");
+      fetchGroups(); // 그룹 목록 새로고침
     } catch (error) {
       toast({
         title: "모임 참가 실패",
@@ -173,36 +154,50 @@ export default function GroupsPage() {
 
         {/* Group List */}
         <div className="space-y-3">
-          {filteredGroups.map((group) => (
-            <Card
-              key={group.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => router.push(`/group/${group.id}`)}
-            >
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-medium text-lg text-gray-800">
-                      {group.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {group.description}
-                    </div>
-                    <div className="text-sm mt-1 text-gray-600">
-                      참여인원: {group.members}명
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-blue-100 text-blue-800"
-                      >
-                        {group.totalAmount.toLocaleString()} {group.currency}
-                      </Badge>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </div>
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-4 text-center text-gray-500">
+                로딩 중...
               </CardContent>
             </Card>
-          ))}
+          ) : filteredGroups.length > 0 ? (
+            filteredGroups.map((group) => (
+              <Card
+                key={group.gatheringId}
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => router.push(`/group/${group.gatheringId}`)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium text-lg text-gray-800">
+                        {group.gatheringName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {group.gatheringIntroduction}
+                      </div>
+                      <div className="text-sm mt-1 text-gray-600">
+                        참여인원: {group.memberCount}명
+                        <Badge
+                          variant="secondary"
+                          className="ml-2 bg-blue-100 text-blue-800"
+                        >
+                          {group.gatheringDeposit.toLocaleString()} 원
+                        </Badge>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <CardContent className="p-4 text-center text-gray-500">
+                모임이 없습니다
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
 

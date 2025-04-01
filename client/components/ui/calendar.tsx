@@ -49,7 +49,7 @@ export const Calendar: FC<CustomCalendarProps> = ({
   const modifiers = {
     hasSchedule: (day: Date) => {
       const dateStr = format(day, "yyyy-MM-dd");
-      return schedules[dateStr]?.length > 0;
+      return Object.keys(schedules).includes(dateStr);
     },
     today: (day: Date) => {
       const today = new Date();
@@ -77,18 +77,8 @@ export const Calendar: FC<CustomCalendarProps> = ({
         modifiers={modifiers}
         modifiersClassNames={modifiersClassNames}
         classNames={{
-          // root: "w-full",
-          // months: "w-full flex justify-center",
-          // month: "w-full",
-          // table: "w-full border-collapse",
-          // head: "w-full grid grid-cols-7",
-          // head_cell: "h-12 flex items-center justify-center text-lg font-semibold",
-          // row: "w-full grid grid-cols-7",
-          // cell: "w-full flex-1 aspect-square flex justify-center items-center",
           day: "w-[100px] h-[50px]",
           day_button: "w-full text-center",
-          // selected: "bg-blue-100 text-blue-600",
-          // today: "bg-blue-50",
         }}
         {...props}
       />
