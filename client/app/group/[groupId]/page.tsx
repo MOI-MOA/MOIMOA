@@ -77,7 +77,7 @@ export default function GroupDetailPage({
     try {
       setIsLoading(true);
       const response = (await publicApi.get<GroupData>(
-        `api/v1/gathering/${groupId}/detail`
+        LOCALHOST + `api/v1/gathering/${groupId}/detail`
       )) as unknown as GroupData;
       console.log(response);
       response.id = parseInt(groupId);

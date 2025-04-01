@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Header } from "@/components/Header";
 import { format } from "date-fns";
-import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { publicApi } from "@/lib/api";
 import { LOCALHOST } from "@/lib/constants";
