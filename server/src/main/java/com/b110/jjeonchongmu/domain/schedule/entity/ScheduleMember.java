@@ -31,4 +31,5 @@ public class ScheduleMember {
 
     @Column(name = "schedule_is_check")
     private Boolean scheduleIsCheck;
+
 }

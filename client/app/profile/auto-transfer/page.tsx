@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
-import { publicApi } from "@/lib/api";
+import { authApi, publicApi } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -70,8 +70,12 @@ export default function AutoTransferPage() {
 
     const fetchData = async () => {
       try {
+        // 토큰 확인
+        const token = localStorage.getItem("accessToken");
+        console.log("Current Token:", token);
+
         setIsLoading(true);
-        const response = await publicApi.get<
+        const response = await authApi.get<
           AutoTransferResponse,
           AutoTransferResponse
         >("/api/v1/profile/autopayment");
@@ -106,6 +110,7 @@ export default function AutoTransferPage() {
           throw new Error("응답 데이터가 올바르지 않습니다.");
         }
       } catch (error) {
+        console.error("API Error:", error);
         if (!isMounted) return;
         toast({
           title: "오류",
@@ -189,7 +194,7 @@ export default function AutoTransferPage() {
 
   return (
     <>
-      <Header title="자동이체 현황" showBackButton />
+      <Header title="" showBackButton />
       <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">

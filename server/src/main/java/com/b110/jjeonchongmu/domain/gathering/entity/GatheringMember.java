@@ -8,8 +8,6 @@ import lombok.*;
 @Table(name = "gathering_member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder
-@AllArgsConstructor
 public class GatheringMember {
 
     @Id
@@ -26,14 +24,35 @@ public class GatheringMember {
     private User gatheringMemberUser;
 
     @Column(name = "gathering_attend_count")
-    private int gatheringAttendCount;
+    private Integer gatheringAttendCount;
 
     @Column(name = "gathering_member_account_balance")
-    private int gatheringMemberAccountBalance;
+    private Integer gatheringMemberAccountBalance;
 
     @Column(name = "gathering_member_account_deposit")
-    private int gatheringMemberAccountDeposit;
+    private Integer gatheringMemberAccountDeposit;
 
     @Column(name = "gathering_payment_status")
     private boolean gatheringPaymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gathering_member_status")
+    private GatheringMemberStatus gatheringMemberStatus;
+
+    @Builder
+    public GatheringMember(Gathering gathering, User gatheringMemberUser, Integer gatheringAttendCount,
+                          Integer gatheringMemberAccountBalance, Integer gatheringMemberAccountDeposit,
+                          boolean gatheringPaymentStatus, GatheringMemberStatus gatheringMemberStatus) {
+        this.gathering = gathering;
+        this.gatheringMemberUser = gatheringMemberUser;
+        this.gatheringAttendCount = gatheringAttendCount;
+        this.gatheringMemberAccountBalance = gatheringMemberAccountBalance;
+        this.gatheringMemberAccountDeposit = gatheringMemberAccountDeposit;
+        this.gatheringPaymentStatus = gatheringPaymentStatus;
+        this.gatheringMemberStatus = gatheringMemberStatus != null ? gatheringMemberStatus : GatheringMemberStatus.PENDING;
+    }
+
+    public void updateStatus(GatheringMemberStatus status) {
+        this.gatheringMemberStatus = status;
+    }
 }
