@@ -64,7 +64,7 @@ public class ScheduleService {
 
     // 일정 생성(총무만)
     public Long createSchedule(Long userId,Long gatheringId ,ScheduleCreateDTO scheduleCreateDTO) {
-        boolean isManager = gatheringRepo.existsByUserIdAndGatheringId(userId, gatheringId);
+        boolean isManager = (gatheringRepo.countByUserIdAndGatheringId(userId, gatheringId))>0;
         if (!isManager) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
@@ -72,8 +72,9 @@ public class ScheduleService {
         Gathering gathering = gatheringRepo.findById(gatheringId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gathering not found"));
 
-        User subManager = userRepo.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        System.out.println("11111 부총무 아이디 : " + scheduleCreateDTO.getSubManagerId());
+        User subManager = userRepo.findByUserId(scheduleCreateDTO.getSubManagerId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SubManger not found"));
 
 //        일정 생성후에 계좌를 생성해야하고  부총무가 일정멤버로 지정되어야 함
         Schedule schedule = Schedule.builder()

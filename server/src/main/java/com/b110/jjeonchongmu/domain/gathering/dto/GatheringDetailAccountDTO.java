@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GatheringDetailAccountDTO {
     private Long groupBalance;
-    private Integer myBalance;
-    private Integer myDeposit;
+    private Long myBalance;
+    private Long myDeposit;
     public GatheringDetailAccountDTO(Gathering gathering, GatheringMember gatheringMember) {
         this.groupBalance = gathering.getGatheringAccount().getAccountBalance();
         this.myBalance = gatheringMember.getGatheringMemberAccountBalance();

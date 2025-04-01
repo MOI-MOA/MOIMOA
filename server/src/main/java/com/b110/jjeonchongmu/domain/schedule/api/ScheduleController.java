@@ -53,12 +53,13 @@ public class ScheduleController {
 //        Long userId = jwtTokenProvider.getUserId();
         Long userId = 5L;
         Long scheduleId = scheduleService.createSchedule(userId,gatheringId,scheduleCreateDTO);
-        System.out.println(scheduleCreateDTO.getScheduleAccountPw());
+
             MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
-        System.out.println("ㅇㅇㅇㅇㅇ2222");
 
-        scheduleAccountService.createAccount(userId,scheduleId,makeAccountDTO);
+        scheduleAccountService.createAccount(userId,scheduleId,makeAccountDTO,scheduleCreateDTO.getPerBudget());
 
+        System.out.println("일정 번호" + scheduleId);
+        scheduleMemberService.setSubManager(gatheringId,scheduleId,scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
     }
     // 일정 수정(총무만)

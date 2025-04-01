@@ -45,7 +45,7 @@ public class MypageService {
     private final ScheduleRepo scheduleRepo;
     private final GatheringRepo gatheringRepo;
     private final AutoPaymentRepo autoPaymentRepo;
-    private PersonalAccountRepo personalAccountRepo;
+    private final PersonalAccountRepo personalAccountRepo;
     private final TradeHistoryComponent tradeHistoryComponent;
 
     public List<AutoPaymentDto> getAutoPayments(String type) {
