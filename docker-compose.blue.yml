@@ -1,7 +1,7 @@
 services:
 
-  client:
-    build-blue:
+  client-blue:
+    build:
       context: ./client
       dockerfile: Dockerfile
     container_name: client-blue
