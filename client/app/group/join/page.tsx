@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import { publicApi } from "@/lib/api"
-import { LOCALHOST } from "@/lib/constants"
 
 interface GroupInfo {
   name: string;
@@ -40,7 +39,7 @@ export default function JoinGroupPage() {
       }
 
       try {
-        const response = await publicApi.get<GroupInfo>(LOCALHOST + `api/v1/gathering/${groupId}/accept-page`) as unknown as GroupInfo
+        const response = await publicApi.get<GroupInfo>(`api/v1/gathering/${groupId}/accept-page`) as unknown as GroupInfo
         setGroupInfo(response)
       } catch (error) {
         console.error('Error fetching group info:', error)
@@ -57,7 +56,7 @@ export default function JoinGroupPage() {
     setIsLoading(true)
 
     try {
-      const response = await publicApi.post<JoinResponse>(LOCALHOST + `api/v1/gathering/${groupId}/join`) as unknown as JoinResponse
+      const response = await publicApi.post<JoinResponse>(`api/v1/gathering/${groupId}/join`) as unknown as JoinResponse
       console.log(response)
       
       if (response.isSave) {

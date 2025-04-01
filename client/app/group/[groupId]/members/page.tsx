@@ -19,7 +19,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { publicApi } from "@/lib/api"
-import { LOCALHOST } from "@/lib/constants"
 
 interface Member {
   name: string;
@@ -71,7 +70,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   const fetchGroupMembers = async () => {
     try {
       setIsLoading(true)
-      const response = await publicApi.get<GroupMembersResponse>(LOCALHOST + `api/v1/gathering/${groupId}/member-manage`) as unknown as GroupMembersResponse
+      const response = await publicApi.get<GroupMembersResponse>(`api/v1/gathering/${groupId}/member-manage`) as unknown as GroupMembersResponse
       console.log(response)
       setMembers(response.memberList)
       setPendingMembers(response.inviteList)
@@ -233,7 +232,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   const handleAccept = async (member: InviteMember) => {
     try {
       // API 호출로 처리
-      await publicApi.post(LOCALHOST + `api/v1/gathering/${groupId}/members/${member.id}/accept`)
+      await publicApi.post(`api/v1/gathering/${groupId}/members/${member.id}/accept`)
       
       // 신청 인원 목록에서 제거
       setPendingMembers((prev) => prev.filter((m) => m.id !== member.id))
@@ -268,7 +267,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   const handleReject = async (member: InviteMember) => {
     try {
       // API 호출로 처리
-      await publicApi.post(LOCALHOST + `api/v1/gathering/${groupId}/members/${member.id}/reject`)
+      await publicApi.post(`api/v1/gathering/${groupId}/members/${member.id}/reject`)
       
       // 신청 인원 목록에서 제거
       setPendingMembers((prev) => prev.filter((m) => m.id !== member.id))

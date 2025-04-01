@@ -11,7 +11,6 @@ import { Header } from "@/components/Header";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { publicApi } from "@/lib/api";
-import { LOCALHOST } from "@/lib/constants";
 type DateData = {
   date: number;
 };
@@ -53,7 +52,7 @@ export default function HomePage() {
     const fetchData = async () => {
       try {
         const response = (await publicApi.get<HomeData>(
-          LOCALHOST + "api/v1/main"
+          "api/v1/main"
         )) as unknown as HomeData;
         console.log(response);
 
@@ -84,7 +83,7 @@ export default function HomePage() {
       const day = date.getDate();
 
       const response = (await publicApi.get<ScheduleData[]>(
-        LOCALHOST + `api/v1/main/schedule/${year}/${month}/${day}`
+        `api/v1/main/schedule/${year}/${month}/${day}`
       )) as unknown as ScheduleData[];
       console.log(response);
       setTodaySchedules(response);
@@ -105,7 +104,7 @@ export default function HomePage() {
       const month = date.getMonth() + 1;
 
       const response = (await publicApi.get<DateData[]>(
-        LOCALHOST + `api/v1/main/schedule/${year}/${month}`
+        `api/v1/main/schedule/${year}/${month}`
       )) as unknown as DateData[];
       console.log(response);
       setDateList(response);
