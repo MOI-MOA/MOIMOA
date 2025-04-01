@@ -11,143 +11,29 @@ import { Header } from "@/components/Header";
 import { format } from "date-fns";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
-
-type UnconfirmedSchedule = {
-  scheduleTitle: string;
-  scheduleDetail: string;
-  schedulePlace: string;
-  scheduleTime: string;
-  perBudget: number;
-  totalBudget: number;
-  penaltyApplyDate: string;
-  smNumber: number;
-  smIdList: Array<{
-    userId: number;
-    userName: string;
-  }>;
+import { publicApi } from "@/lib/api";
+import { LOCALHOST } from "@/lib/constants";
+type DateData = {
+  date: number;
 };
 
-type MonthlySchedule = {
-  date: string;
-  events: Array<{
-    groupId: number;
-    groupName: string;
-    scheduleId: number;
-    scheduleTitle: string;
-    scheduleDetail: string;
-    schedulePlace: string;
-    scheduleStartTime: string;
-    perBudget: number;
-    totalBudget: number;
-    penaltyApplyDate: string;
-    scheduleStatus: number;
-    attendeeCount: number;
-  }>;
-};
-
-type UpcomingSchedule = {
-  groupId: number;
-  groupName: string;
+type ScheduleData = {
+  gatheringId: number;
+  gatheringName: string;
   scheduleId: number;
   scheduleTitle: string;
-  scheduleDetail: string;
   schedulePlace: string;
   scheduleStartTime: string;
   perBudget: number;
-  totalBudget: number;
-  penaltyApplyDate: string;
-  scheduleStatus: number;
   attendeeCount: number;
 };
 
-const DEFAULT_UNCONFIRMED_SCHEDULES: UnconfirmedSchedule[] = [
-  {
-    scheduleTitle: "미팅",
-    scheduleDetail: "팀 미팅",
-    schedulePlace: "회의실",
-    scheduleTime: "2025-03-10T15:00:00",
-    perBudget: 20000,
-    totalBudget: 100000,
-    penaltyApplyDate: "2025-03-12T00:00:00",
-    smNumber: 3,
-    smIdList: [
-      { userId: 1, userName: "홍길동" },
-      { userId: 2, userName: "김철수" },
-    ],
-  },
-];
-
-const DEFAULT_MONTHLY_SCHEDULES: MonthlySchedule[] = [
-  {
-    date: "2025-03-01",
-    events: [
-      {
-        groupId: 1,
-        groupName: "첫모임",
-        scheduleId: 2,
-        scheduleTitle: "영어 스터디",
-        scheduleDetail: "매주 영어 스터디 진행",
-        schedulePlace: "스터디 카페",
-        scheduleStartTime: "2025-03-15T14:00:00",
-        perBudget: 15000,
-        totalBudget: 75000,
-        penaltyApplyDate: "2025-03-16",
-        scheduleStatus: 1,
-        attendeeCount: 5,
-      },
-    ],
-  },
-  {
-    date: "2025-03-15",
-    events: [
-      {
-        groupId: 2,
-        groupName: "영어모임",
-        scheduleId: 2,
-        scheduleTitle: "영어 스터디",
-        scheduleDetail: "매주 영어 스터디 진행",
-        schedulePlace: "스터디 카페",
-        scheduleStartTime: "2025-03-15T14:00:00",
-        perBudget: 15000,
-        totalBudget: 75000,
-        penaltyApplyDate: "2025-03-16",
-        scheduleStatus: 1,
-        attendeeCount: 5,
-      },
-    ],
-  },
-];
-
-const DEFAULT_UPCOMING_SCHEDULES: UpcomingSchedule[] = [
-  {
-    groupId: 3,
-    groupName: "개발 모임",
-    scheduleId: 5,
-    scheduleTitle: "코딩 챌린지",
-    scheduleDetail: "알고리즘 문제 풀이",
-    schedulePlace: "온라인",
-    scheduleStartTime: "2025-03-20T18:00:00",
-    perBudget: 10000,
-    totalBudget: 50000,
-    penaltyApplyDate: "2025-03-21",
-    scheduleStatus: 0,
-    attendeeCount: 4,
-  },
-  {
-    groupId: 3,
-    groupName: "개발 모임",
-    scheduleId: 5,
-    scheduleTitle: "코딩 챌린지",
-    scheduleDetail: "알고리즘 문제 풀이",
-    schedulePlace: "온라인",
-    scheduleStartTime: "2025-03-20T18:00:00",
-    perBudget: 10000,
-    totalBudget: 50000,
-    penaltyApplyDate: "2025-03-21",
-    scheduleStatus: 0,
-    attendeeCount: 4,
-  },
-];
+type HomeData = {
+  uncheckScheduleCount: number;
+  dateList: DateData[];
+  todayScheduleList: ScheduleData[];
+  upcomingScheduleList: ScheduleData[];
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -155,36 +41,32 @@ export default function HomePage() {
     new Date()
   );
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [unconfirmedSchedules, setUnconfirmedSchedules] = useState<
-    UnconfirmedSchedule[]
-  >(DEFAULT_UNCONFIRMED_SCHEDULES);
-  const [monthlySchedules, setMonthlySchedules] = useState<MonthlySchedule[]>(
-    DEFAULT_MONTHLY_SCHEDULES
+  const [uncheckScheduleCount, setUncheckScheduleCount] = useState(0);
+  const [dateList, setDateList] = useState<DateData[]>([]);
+  const [todaySchedules, setTodaySchedules] = useState<ScheduleData[]>([]);
+  const [upcomingSchedules, setUpcomingSchedules] = useState<ScheduleData[]>(
+    []
   );
-  const [upcomingSchedules, setUpcomingSchedules] = useState<
-    UpcomingSchedule[]
-  >(DEFAULT_UPCOMING_SCHEDULES);
   const [isLoading, setIsLoading] = useState(true);
 
   // API에서 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("/api/v1/home");
+        const response = (await publicApi.get<HomeData>(
+          LOCALHOST + "api/v1/main"
+        )) as unknown as HomeData;
+        console.log(response);
 
-        setUnconfirmedSchedules(
-          data.unconfirmedSchedules || DEFAULT_UNCONFIRMED_SCHEDULES
-        );
-        setMonthlySchedules(data.monthlySchedules || DEFAULT_MONTHLY_SCHEDULES);
-        setUpcomingSchedules(
-          data.upcomingSchedules || DEFAULT_UPCOMING_SCHEDULES
-        );
+        setUncheckScheduleCount(response.uncheckScheduleCount);
+        setDateList(response.dateList);
+        setTodaySchedules(response.todayScheduleList);
+        setUpcomingSchedules(response.upcomingScheduleList);
       } catch (error) {
         console.error("일정을 가져오는데 실패했습니다:", error);
         toast({
           title: "데이터 로딩 실패",
-          description:
-            "일정 정보를 가져오는데 실패했습니다. 기본 데이터를 표시합니다.",
+          description: "일정 정보를 가져오는데 실패했습니다.",
           variant: "destructive",
         });
       } finally {
@@ -194,25 +76,85 @@ export default function HomePage() {
 
     fetchData();
   }, []);
-  // 월별 일정 데이터 포맷 변환
+
+  // 선택된 날짜의 일정 가져오기
+  const fetchSelectedDateSchedules = async (date: Date) => {
+    try {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+
+      const response = (await publicApi.get<ScheduleData[]>(
+        LOCALHOST + `api/v1/main/schedule/${year}/${month}/${day}`
+      )) as unknown as ScheduleData[];
+      console.log(response);
+      setTodaySchedules(response);
+    } catch (error) {
+      console.error("선택된 날짜의 일정을 가져오는데 실패했습니다:", error);
+      toast({
+        title: "데이터 로딩 실패",
+        description: "선택된 날짜의 일정 정보를 가져오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 월별 일정 날짜 목록 가져오기
+  const fetchMonthlyScheduleDates = async (date: Date) => {
+    try {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+
+      const response = (await publicApi.get<DateData[]>(
+        LOCALHOST + `api/v1/main/schedule/${year}/${month}`
+      )) as unknown as DateData[];
+      console.log(response);
+      setDateList(response);
+    } catch (error) {
+      console.error("월별 일정 날짜를 가져오는데 실패했습니다:", error);
+      toast({
+        title: "데이터 로딩 실패",
+        description: "월별 일정 날짜 정보를 가져오는데 실패했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 달력 데이터 포맷 변환
   const scheduleData = useMemo(() => {
     const formattedData: Record<string, any[]> = {};
 
-    monthlySchedules.forEach((schedule) => {
-      formattedData[schedule.date] = schedule.events.map((event) => ({
-        id: event.scheduleId,
-        groupId: event.groupId,
-        title: event.scheduleTitle,
-        time: format(new Date(event.scheduleStartTime), "HH:mm"),
-        location: event.schedulePlace,
-        group: event.groupName,
-        participants: event.attendeeCount,
-      }));
+    dateList.forEach((dateData) => {
+      const dateStr = format(
+        new Date(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth(),
+          dateData.date
+        ),
+        "yyyy-MM-dd"
+      );
+      formattedData[dateStr] = todaySchedules
+        .filter((schedule) => {
+          const scheduleDate = format(
+            new Date(schedule.scheduleStartTime),
+            "yyyy-MM-dd"
+          );
+          return scheduleDate === dateStr;
+        })
+        .map((schedule) => ({
+          id: schedule.scheduleId,
+          groupId: schedule.gatheringId,
+          title: schedule.scheduleTitle,
+          time: format(new Date(schedule.scheduleStartTime), "HH:mm"),
+          location: schedule.schedulePlace,
+          group: schedule.gatheringName,
+          participants: schedule.attendeeCount,
+        }));
     });
 
     return formattedData;
-  }, [monthlySchedules]);
-    console.log(scheduleData)
+  }, [dateList, todaySchedules, currentMonth]);
+
   // 선택된 날짜의 일정
   const selectedDateSchedules = useMemo(() => {
     if (!selectedDate) return [];
@@ -220,19 +162,33 @@ export default function HomePage() {
     return scheduleData[dateStr] || [];
   }, [selectedDate, scheduleData]);
 
+  // 날짜 선택 핸들러
+  const handleDateSelect = async (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      await fetchSelectedDateSchedules(date);
+    }
+  };
+
+  // 월 변경 핸들러
+  const handleMonthChange = async (date: Date) => {
+    setCurrentMonth(date);
+    await fetchMonthlyScheduleDates(date);
+  };
+
   return (
     <>
       <Header />
       <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
         {/* 미확인 일정 알림 */}
-        {unconfirmedSchedules.length > 0 && (
+        {uncheckScheduleCount > 0 && (
           <Button
             variant="outline"
             className="w-full border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700"
             onClick={() => router.push("/uncheck-schedule")}
           >
             <Bell className="h-4 w-4 mr-2" />
-            미확인 일정 {unconfirmedSchedules.length}개
+            미확인 일정 {uncheckScheduleCount}개
             <ChevronRight className="h-4 w-4 ml-auto" />
           </Button>
         )}
@@ -244,11 +200,11 @@ export default function HomePage() {
             <CardContent className="p-3">
               <Calendar
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={handleDateSelect}
                 className="rounded-md border"
                 schedules={scheduleData}
                 month={currentMonth}
-                onMonthChange={setCurrentMonth}
+                onMonthChange={handleMonthChange}
                 fromMonth={new Date(2023, 0)}
                 toMonth={new Date(2030, 11)}
               />
@@ -326,7 +282,7 @@ export default function HomePage() {
                   className="hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() =>
                     router.push(
-                      `/group/${schedule.groupId}/schedule/${schedule.scheduleId}`
+                      `/group/${schedule.gatheringId}/schedule/${schedule.scheduleId}`
                     )
                   }
                 >
@@ -337,7 +293,7 @@ export default function HomePage() {
                           {schedule.scheduleTitle}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {schedule.groupName}
+                          {schedule.gatheringName}
                         </div>
                         <div className="flex items-center text-sm text-gray-600 space-x-4">
                           <div className="flex items-center">
