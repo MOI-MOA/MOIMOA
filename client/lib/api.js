@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+const baseUrl = process.env.VITE_API_URL;
 
 // 토큰이 필요한 인스턴스
 const authInstance = axios.create({

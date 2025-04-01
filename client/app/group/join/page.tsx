@@ -7,6 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
+import { publicApi } from "@/lib/api"
+import { LOCALHOST } from "@/lib/constants"
+
+interface GroupInfo {
+  name: string;
+  introduction: string;
+  memberCount: number;
+}
+
+interface JoinResponse {
+  isSave: boolean;
+}
 
 export default function JoinGroupPage() {
   const router = useRouter()
@@ -15,12 +27,7 @@ export default function JoinGroupPage() {
   const groupId = searchParams.get("groupId")
 
   const [isLoading, setIsLoading] = useState(true)
-  const [groupInfo, setGroupInfo] = useState<{
-    id: string
-    name: string
-    description: string
-    members: number
-  } | null>(null)
+  const [groupInfo, setGroupInfo] = useState<GroupInfo | null>(null)
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -33,17 +40,10 @@ export default function JoinGroupPage() {
       }
 
       try {
-        // 실제로는 API 호출로 초대 코드 검증 및 그룹 정보 가져오기
-        await new Promise((resolve) => setTimeout(resolve, 1500)) // 임시 지연
-
-        // 임시 그룹 정보 (실제로는 API 응답으로 받아야 함)
-        setGroupInfo({
-          id: groupId,
-          name: "회사 동료",
-          description: "월간 회식 및 경비",
-          members: 8,
-        })
+        const response = await publicApi.get<GroupInfo>(LOCALHOST + `api/v1/gathering/${groupId}/accept-page`) as unknown as GroupInfo
+        setGroupInfo(response)
       } catch (error) {
+        console.error('Error fetching group info:', error)
         setError("유효하지 않은 초대 링크이거나 만료되었습니다.")
       } finally {
         setIsLoading(false)
@@ -57,23 +57,28 @@ export default function JoinGroupPage() {
     setIsLoading(true)
 
     try {
-      // 실제로는 API 호출로 모임 참가 처리
-      await new Promise((resolve) => setTimeout(resolve, 1500)) // 임시 지연
-
-      toast({
-        title: "모임 참가 신청 완료",
-        description: "모임 참가 신청이 완료되었습니다. 총무의 승인을 기다려주세요.",
-        duration: 3000,
-      })
-
-      router.push("/group")
+      const response = await publicApi.post<JoinResponse>(LOCALHOST + `api/v1/gathering/${groupId}/join`) as unknown as JoinResponse
+      console.log(response)
+      
+      if (response.isSave) {
+        toast({
+          title: "모임 참가 신청 완료",
+          description: "모임 참가 신청이 완료되었습니다. 총무의 승인을 기다려주세요.",
+          duration: 3000,
+        })
+        router.push("/group")
+      } else {
+        throw new Error("참가 신청에 실패했습니다.")
+      }
     } catch (error) {
+      console.error("모임 참가 신청 실패:", error)
       toast({
         title: "모임 참가 실패",
         description: "모임 참가 중 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive",
         duration: 3000,
       })
+    } finally {
       setIsLoading(false)
     }
   }
@@ -104,8 +109,8 @@ export default function JoinGroupPage() {
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h3 className="font-semibold text-lg">{groupInfo.name}</h3>
-                  <p className="text-gray-600">{groupInfo.description}</p>
-                  <p className="text-sm text-gray-500 mt-2">참여 인원: {groupInfo.members}명</p>
+                  <p className="text-gray-600">{groupInfo.introduction}</p>
+                  <p className="text-sm text-gray-500 mt-2">참여 인원: {groupInfo.memberCount}명</p>
                 </div>
                 <p className="text-sm text-gray-500">
                   이 모임에 참가하시겠습니까? 참가 신청 후 총무의 승인이 필요합니다.
