@@ -1,6 +1,7 @@
 package com.b110.jjeonchongmu.domain.schedule.service;
 
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleMemberDTO;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ScheduleMemberService {
 
     private final ScheduleMemberRepo scheduleMemberRepo;
@@ -80,4 +80,30 @@ public class ScheduleMemberService {
         
         scheduleMemberRepo.delete(scheduleMember);
     }
+
+    // 일정을 만들때 부총무 세팅
+    public void setSubManager(Long gatheringId, Long scheduleId, Long subManagerId, Long perBudget){
+
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
+
+        System.out.println("부총무 아이디 : " + subManagerId);
+        User subManager = userRepo.findByUserId(subManagerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SubManger not found"));
+        GatheringMember gatheringMember= gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId,subManagerId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"GatheringMember Not Found"));
+
+        ScheduleMember scheduleMember = ScheduleMember.builder()
+                .schedule(schedule)
+                .scheduleMember(subManager)
+                .build();
+        gatheringMember.decreaseGatheringMemberAccountBalance(perBudget);
+
+
+        scheduleMemberRepo.save(scheduleMember);
+    }
+
+
+
+
 }

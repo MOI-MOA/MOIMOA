@@ -72,8 +72,7 @@ public class ScheduleAccountService {
             TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
 
         try {
-            System.out.println("=".repeat(100));
-            System.out.println("여기 들어와?????");
+
             transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
             ScheduleAccount fromAccount = scheduleAccountRepo.findByAccount(
                             transferTransactionHistoryDTO.getToAccountId())
@@ -190,8 +189,9 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
     scheduleAccountRepo.deleteById(scheduleAccountId);
     return isExist;
 }
+
 //    계좌 생성
-    public boolean createAccount(Long userId,Long scheduleId,MakeAccountDTO requestDTO){
+    public boolean createAccount(Long userId,Long scheduleId,MakeAccountDTO requestDTO,Long perBudget){
 
         try{
             User user = userRepo.findByUserId(userId)
@@ -199,14 +199,14 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
             Schedule schedule = scheduleRepo.findById(scheduleId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
 
-            //            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule);
-            //나중에 지우고 위에 주석처리
-            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule);
+
+            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule,perBudget);
+            // 부총무 한명의 인당예산만큼 잔액 추가
 
 
             // 일정 계좌 생성후 일정에 계좌 Build
             scheduleAccountRepo.save(scheduleAccount);
-            schedule = Schedule.builder().scheduleAccount(scheduleAccount).build();
+            schedule.updateScheduleAccount(scheduleAccount);
             scheduleRepo.save(schedule);
 
             return true;

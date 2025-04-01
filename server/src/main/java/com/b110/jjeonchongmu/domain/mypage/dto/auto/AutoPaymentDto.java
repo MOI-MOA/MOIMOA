@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AutoPaymentDto {
     private Long id; // 자동이체 id
-    private int amount; // 가격
+    private Long amount; // 가격
     private int day;
     private boolean status; // 활성여부
 
@@ -23,7 +23,7 @@ public class AutoPaymentDto {
     private Long deposit; // 보증금
     private String groupName; // 모임이름
 
-    private int myBalance; // 잔액
+    private Long myBalance; // 잔액
 
     public AutoPaymentDto(Long userId, GatheringMember gatheringMember) {
         Gathering gathering = gatheringMember.getGathering();

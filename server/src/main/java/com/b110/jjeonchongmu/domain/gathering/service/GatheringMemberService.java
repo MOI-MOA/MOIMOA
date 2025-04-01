@@ -318,8 +318,8 @@ public class GatheringMemberService {
 				.gathering(gathering)
 				.gatheringMemberUser(user)
 				.gatheringAttendCount(0)
-				.gatheringMemberAccountBalance(0)
-				.gatheringMemberAccountDeposit(0)
+				.gatheringMemberAccountBalance(0L)
+				.gatheringMemberAccountDeposit(0L)
 				.gatheringPaymentStatus(false)
 				.build();
 
