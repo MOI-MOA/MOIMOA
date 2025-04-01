@@ -11,18 +11,18 @@ const authInstance = axios.create({
   },
 });
 
-// authInstance.interceptors.request.use(
-//   (config) => {
-//     const accessToken = localStorage.getItem("accessToken");
-//     if (accessToken) {
-//       config.headers.Authorization = `Bearer ${accessToken}`;
-//     }
-//     return config;
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
+authInstance.interceptors.request.use(
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 authInstance.interceptors.response.use(
   (response) => {
