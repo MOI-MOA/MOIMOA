@@ -33,7 +33,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountType dtype;
 
-    public Account(User user, String accountPw, Long accoutBalance) {
+    public Account(User user, String accountPw, Long accountBalance) {
         this.user = user;
         this.accountPw = accountPw;
         this.accountBalance = accountBalance;
@@ -46,5 +46,7 @@ public class Account {
     public void increaseBalance(Long amount) {
         this.accountBalance += amount;
     }
+
+    public void updateDtype(AccountType accountType){this.dtype = accountType;}
 }
 
