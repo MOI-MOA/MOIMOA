@@ -15,6 +15,4 @@ public interface ScheduleAccountRepo extends JpaRepository<ScheduleAccount, Long
 	@Query("SELECT a FROM Account a WHERE a.accountId = :accountId AND TYPE(a) = ScheduleAccount ")
 	Optional<ScheduleAccount> findByAccount(Long accountId);
 
-	// 계좌번호로 계좌 조회
-    Optional<ScheduleAccount> findByAccountNo(String toAccountNo);
 }
