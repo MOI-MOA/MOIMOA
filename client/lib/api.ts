@@ -14,21 +14,39 @@ const authInstance = axios.create({
 authInstance.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
+    console.log("API Request:", {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      token: accessToken ? "Token exists" : "No token",
+    });
+
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
   (error) => {
+    console.error("Request Error:", error);
     return Promise.reject(error);
   }
 );
 
 authInstance.interceptors.response.use(
   (response) => {
+    console.log("API Response:", {
+      status: response.status,
+      url: response.config.url,
+      headers: response.headers,
+    });
     return response.data;
   },
   async (error) => {
+    console.error("Response Error:", {
+      status: error.response?.status,
+      url: error.config?.url,
+      headers: error.config?.headers,
+    });
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
