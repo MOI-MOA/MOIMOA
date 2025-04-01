@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
+import { useEffect } from "react";
+import { getAccessToken } from "@/lib/auth";
 
 interface HeaderProps {
   title?: string;
@@ -12,7 +14,15 @@ interface HeaderProps {
 
 export function Header({ title, showBackButton = false }: HeaderProps) {
   const router = useRouter();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, checkAuth } = useAuth();
+
+  useEffect(() => {
+    // 페이지 로드 시 토큰 확인
+    const token = getAccessToken();
+    if (token) {
+      checkAuth();
+    }
+  }, [checkAuth]);
 
   return (
     <header className="flex justify-between items-center p-4 bg-white border-b">

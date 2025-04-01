@@ -38,30 +38,52 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
+
+  // 보호된 경로 목록
+  const protectedPaths = ["/group", "/dashboard", "/profile", "/settings", "/"];
+
+  // 현재 경로가 보호된 경로인지 확인
+  const isProtectedPath = (path: string) => {
+    return protectedPaths.some((protectedPath) =>
+      path.startsWith(protectedPath)
+    );
+  };
 
   const checkAuth = useCallback(() => {
     const token = getAccessToken();
-    setIsAuthenticated(!!token);
 
-    // 공개 경로 (로그인, 회원가입)
-    const publicPaths = ["/login", "/signup"];
-    const isPublicPath = publicPaths.includes(pathname);
-
-    // 이미 인증된 사용자가 로그인/회원가입 페이지에 접근하려면 메인 페이지로 리다이렉트
-    if (token && isPublicPath) {
-      router.push("/");
+    if (token) {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
     }
-  }, [pathname, router]);
+  }, []);
 
+  // 초기 로드 시 인증 상태 체크
   useEffect(() => {
     checkAuth();
     setLoading(false);
   }, [checkAuth]);
+
+  // 라우트 보호
+  useEffect(() => {
+    const token = getAccessToken();
+
+    if (isProtectedPath(pathname) && !token) {
+      router.push("/login");
+    } else if (
+      (pathname === "/login" || pathname === "/forgot-password") &&
+      token
+    ) {
+      router.push("/");
+    }
+  }, [pathname, router]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -73,7 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify({ email, password }),
       });
-
       if (response.ok) {
         const data = await response.json();
 
@@ -81,12 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAccessToken(data.accessToken);
         setRefreshToken(data.refreshToken);
 
-        // 사용자 정보 저장
-        localStorage.setItem("user_data", JSON.stringify(data.user));
-
-        // 사용자 정보 설정
-        setUser(data.user);
-        setIsAuthenticated(true);
+        // 인증 상태 체크
+        checkAuth();
 
         // 홈 페이지로 리다이렉트
         router.push("/");
@@ -107,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 사용자 데이터 제거
     localStorage.removeItem("user_data");
 
-    // 상태 업데이트
+    // 상태 직접 업데이트
     setUser(null);
     setIsAuthenticated(false);
 

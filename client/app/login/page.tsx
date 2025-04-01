@@ -132,19 +132,21 @@ export default function LoginPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex-col space-y-2">
+            <CardFooter>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "로그인 중..." : "로그인"}
               </Button>
-              <Button
-                variant="link"
-                className="w-full"
-                onClick={() => router.push("/signup")}
-              >
-                계정이 없으신가요? 회원가입
-              </Button>
             </CardFooter>
           </form>
+          <div className="px-6 pb-4">
+            <Button
+              variant="link"
+              className="w-full"
+              onClick={() => router.push("/signup")}
+            >
+              계정이 없으신가요? 회원가입
+            </Button>
+          </div>
         </Card>
       </main>
     </div>
