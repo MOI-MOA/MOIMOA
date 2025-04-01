@@ -16,7 +16,9 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
     /**
      * 모임 ID로 모든 회원 정보 조회
      */
-    List<GatheringMember> findByGatheringGatheringId(Long gatheringId);
+    // List<GatheringMember> findByGatheringGatheringId(Long gatheringId);
+    @Query("SELECT gm FROM GatheringMember gm WHERE gm.gathering.gatheringId = :gatheringId")
+    List<GatheringMember> findByGatheringGatheringId(@Param("gatheringId") Long gatheringId);
 
 
     /**
