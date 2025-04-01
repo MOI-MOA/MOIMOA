@@ -50,7 +50,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await publicApi.get<HomeData>(LOCALHOST + "api/v1/main") as unknown as HomeData;
+        const response = await publicApi.get<HomeData>("api/v1/main") as unknown as HomeData;
         console.log(response);
         
         
