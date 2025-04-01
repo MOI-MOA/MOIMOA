@@ -10,6 +10,7 @@ import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
@@ -29,7 +30,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+//@Transactional
 public class ScheduleAccountService {
 
     private final ScheduleAccountRepo scheduleAccountRepo;
@@ -42,31 +43,29 @@ public class ScheduleAccountService {
     private final ExternalBankApiComponent externalBankApiComponent;
     private final AccountRepo accountRepo;
 //    계좌내역저장
-    public Boolean initTransfer(TransferRequestDTO requestDto) {
+    public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 
 
-    ScheduleAccount FromScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getFromAccountId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"FromScheduleAccount not found"));
-//    ScheduleAccount ToScheduleAccount = scheduleAccountRepo.findByAccount(requestDto.getToAccountNo())
-//            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ToScheduleAccount not found"));
-        Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
-        ScheduleAccount scheduleAccount = new ScheduleAccount();
+        Account ToAccount = null;
+        if(requestDto.getToAccountType()==AccountType.PERSONAL){
+            ToAccount = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+        } else if (requestDto.getToAccountType()==AccountType.GATHERING){
+            ToAccount = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+        }
 
-        Trade trade = Trade.builder()
-                .fromAccount(FromScheduleAccount)
+
+        return TransferTransactionHistoryDTO.builder()
+                .fromAccountId(requestDto.getFromAccountId())
                 .fromAccountType(requestDto.getFromAccountType())
-                .toAccount(account)
-                .toAccountType(account.getDtype())
-                .tradeAmount(requestDto.getTransferAmount())
-                .tradeTime(LocalDateTime.now())
-                .tradeDetail(requestDto.getTradeDetail())
-                .tradeBalance(FromScheduleAccount.getAccountBalance()-requestDto.getTransferAmount())
+                .toAccountId(ToAccount.getAccountId())
+                .toAccountType(ToAccount.getDtype())
+                .amount(requestDto.getTransferAmount())
+                .detail(requestDto.getTradeDetail())
+                .status(TransactionStatus.BEFORE)
+                .createdAt(LocalDateTime.now())
+                .accountPw(requestDto.getAccountPw())
                 .build();
-
-
-        tradeRepo.save(trade);
-        return true;
     }
 
     public boolean processTransfer(
@@ -97,18 +96,28 @@ public class ScheduleAccountService {
             }
 
             // 계좌 타입에 따라 입금 계좌 조회
-            Account toAccount;
-            String successMessage;
-            toAccount = switch (transferTransactionHistoryDTO.getToAccountType()) {
-                case GATHERING -> gatheringAccountRepo.findByAccount(
-                                transferTransactionHistoryDTO.getToAccountId())
-                        .orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류 "));
-                case SCHEDULE -> gatheringAccountRepo.findByAccount(
-                                transferTransactionHistoryDTO.getToAccountId())
-                        .orElseThrow(() -> new IllegalArgumentException("일정계좌 조회 오류"));
-                case PERSONAL -> personalAccountRepo.findByAccount(
-                                transferTransactionHistoryDTO.getToAccountId())
-                        .orElseThrow(() -> new IllegalArgumentException("개인계좌 조회 오류"));
+
+            Account toAccount = null;
+            String accountNo = null;
+            GatheringAccount toGatheringAccount;
+            PersonalAccount toPersonalAccount;
+            
+            switch (transferTransactionHistoryDTO.getToAccountType()) {
+                case GATHERING -> {
+                    toGatheringAccount = gatheringAccountRepo.findByAccount(
+                                    transferTransactionHistoryDTO.getToAccountId())
+                            .orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류 "));
+                    toAccount = toGatheringAccount;
+                    accountNo = toGatheringAccount.getAccountNo();
+                }
+            
+                case PERSONAL -> {
+                    toPersonalAccount = personalAccountRepo.findByAccount(
+                                    transferTransactionHistoryDTO.getToAccountId())
+                            .orElseThrow(() -> new IllegalArgumentException("모임계좌 조회 오류 "));
+                    toAccount = toPersonalAccount;
+                    accountNo = toPersonalAccount.getAccountNo();
+                }
             };
 
             fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 일정계좌 금액 차감
@@ -117,13 +126,11 @@ public class ScheduleAccountService {
 
             scheduleAccountRepo.save(fromAccount);
 
-            AccountType toAccountType;
             if (toAccount instanceof PersonalAccount) {
                 personalAccountRepo.save((PersonalAccount) toAccount);
-                toAccountType = AccountType.PERSONAL;
-            } else {
+
+            } else if  (toAccount instanceof  GatheringAccount){
                 gatheringAccountRepo.save((GatheringAccount) toAccount);
-                toAccountType = AccountType.GATHERING;
             }
 
             Trade trade = new Trade(
@@ -131,20 +138,22 @@ public class ScheduleAccountService {
                     fromGatheringAccount,
                     AccountType.GATHERING,
                     toAccount,
-                    toAccountType,
+                    transferTransactionHistoryDTO.getToAccountType(),
                     transferTransactionHistoryDTO.getAmount(),
                     LocalDateTime.now(),
                     transferTransactionHistoryDTO.getDetail(),
                     fromAccount.getAccountBalance(),
                     toAccount.getAccountBalance()
             );
-
             tradeRepo.save(trade);
+            // 거래내역 DB에 저장
+
+            transferTransactionHistoryDTO.getToAccountId();
 
             BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
                     toAccount.getUser().getUserKey(),
-                    toAccount.getAccountNo(),
-                    fromAccount.getAccountNo(),
+                    accountNo,
+                    fromAccount.getSchedule().getGathering().getGatheringAccount().getAccountNo(),
                     transferTransactionHistoryDTO.getAmount()
             );
 
@@ -189,8 +198,11 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User not found"));
             Schedule schedule = scheduleRepo.findById(scheduleId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
-            String scheduleAccountNo = schedule.getGathering().getGatheringAccount().getAccountNo();
-            ScheduleAccount scheduleAccount = new ScheduleAccount(user,scheduleAccountNo,requestDTO.getAccountPw(),schedule);
+
+            //            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule);
+            //나중에 지우고 위에 주석처리
+            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule);
+
 
             // 일정 계좌 생성후 일정에 계좌 Build
             scheduleAccountRepo.save(scheduleAccount);
@@ -199,6 +211,7 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
 
             return true;
         } catch (Exception e) {
+            System.out.println(e);
             return false;
         }
     }

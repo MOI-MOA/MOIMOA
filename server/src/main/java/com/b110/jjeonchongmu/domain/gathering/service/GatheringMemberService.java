@@ -1,15 +1,17 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
-
 import com.b110.jjeonchongmu.domain.gathering.dto.InviteResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.MemberListResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.MemberManageResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import com.b110.jjeonchongmu.global.exception.CustomException;
+import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import java.util.List;
 import java.util.UUID;
@@ -39,10 +41,10 @@ public class GatheringMemberService {
 	public InviteResponseDTO createInviteLink(Long gatheringId) {
 		Long userId = jwtTokenProvider.getUserId();
 		Gathering gathering = gatheringRepo.findById(gatheringId)
-				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
+				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
 		if (!gathering.getManagerId().equals(userId)) {
-			throw new RuntimeException("총무만 초대 링크를 생성할 수 있습니다.");
+			throw new CustomException(ErrorCode.NOT_GATHERING_MANAGER);
 		}
 
 		String inviteLink = UUID.randomUUID().toString();
@@ -53,23 +55,93 @@ public class GatheringMemberService {
 	}
 
 	/**
-	 * 모임 참여 요청을 거절합니다. (총무 전용)
-	 *
-	 * @param gatheringId 모임 ID
-	 * @param userId      거절할 사용자 ID
-	 * @throws RuntimeException 모임을 찾을 수 없거나 총무가 아닌 경우
+	 * 초대 링크로 모임 참여 신청
+	 */
+	@Transactional
+	public void requestJoinWithInviteLink(String inviteLink, Long userId) {
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		// 초대 링크 검증 로직은 생략 (Redis에서 처리)
+		Long gatheringId = 1L; // Redis에서 가져온 모임 ID
+
+		Gathering gathering = gatheringRepo.findById(gatheringId)
+				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
+
+		// 이미 가입된 회원인지 확인
+		if (gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)) {
+			throw new CustomException(ErrorCode.ALREADY_GATHERING_MEMBER);
+		}
+
+		// 새로운 회원 정보 생성 (PENDING 상태)
+		GatheringMember member = GatheringMember.builder()
+				.gathering(gathering)
+				.gatheringMemberUser(user)
+				.gatheringAttendCount(0)
+				.gatheringMemberAccountBalance(0)
+				.gatheringMemberAccountDeposit(0)
+				.gatheringPaymentStatus(false)
+				.gatheringMemberStatus(GatheringMemberStatus.PENDING)
+				.build();
+
+		gatheringMemberRepo.save(member);
+	}
+
+	/**
+	 * 참여 신청 수락 (총무 전용)
+	 */
+	@Transactional
+	public void acceptGathering(Long gatheringId, Long userId) {
+		Long currentUserId = jwtTokenProvider.getUserId();
+		Gathering gathering = gatheringRepo.findById(gatheringId)
+				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
+
+		if (!gathering.getManagerId().equals(currentUserId)) {
+			throw new CustomException(ErrorCode.NOT_GATHERING_MANAGER);
+		}
+
+		GatheringMember member = gatheringMemberRepo
+				.findByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_GATHERING_MEMBER));
+
+		if (member.getGatheringMemberStatus() != GatheringMemberStatus.PENDING) {
+			throw new CustomException(ErrorCode.INVALID_MEMBER_STATUS);
+		}
+
+		// 상태를 ACTIVE로 변경
+		member.updateStatus(GatheringMemberStatus.ACTIVE);
+		gatheringMemberRepo.save(member);
+
+		// 모임의 회원 수 업데이트
+		long activeMembers = gatheringMemberRepo.countByGatheringGatheringIdAndGatheringMemberStatus(
+				gatheringId, GatheringMemberStatus.ACTIVE);
+		gathering.updateMemberCount((int) activeMembers);
+	}
+
+	/**
+	 * 참여 신청 거절 (총무 전용)
 	 */
 	@Transactional
 	public void rejectGathering(Long gatheringId, Long userId) {
 		Long currentUserId = jwtTokenProvider.getUserId();
 		Gathering gathering = gatheringRepo.findById(gatheringId)
-				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
+				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
 		if (!gathering.getManagerId().equals(currentUserId)) {
-			throw new RuntimeException("총무만 참여를 거절할 수 있습니다.");
+			throw new CustomException(ErrorCode.NOT_GATHERING_MANAGER);
 		}
 
-		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
+		GatheringMember member = gatheringMemberRepo
+				.findByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.NOT_GATHERING_MEMBER));
+
+		if (member.getGatheringMemberStatus() != GatheringMemberStatus.PENDING) {
+			throw new CustomException(ErrorCode.INVALID_MEMBER_STATUS);
+		}
+
+		// 상태를 REJECTED로 변경하고 저장
+		member.updateStatus(GatheringMemberStatus.REJECTED);
+		gatheringMemberRepo.save(member);
 	}
 
 	/**
@@ -93,46 +165,6 @@ public class GatheringMemberService {
 	}
 
 	/**
-	 * 모임 참여 요청을 수락 (총무 전용)
-	 *
-	 * @param gatheringId 모임 ID
-	 * @param userId      수락할 사용자 ID
-	 * @throws RuntimeException 모임/사용자를 찾을 수 없거나, 총무가 아니거나, 이미 가입된 회원인 경우
-	 */
-	@Transactional
-	public void acceptGathering(Long gatheringId, Long userId) {
-		Long currentUserId = jwtTokenProvider.getUserId();
-		Gathering gathering = gatheringRepo.findById(gatheringId)
-				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
-		User user = userRepo.findByUserId(userId)
-				.orElseThrow(() -> new IllegalArgumentException("회원정보를 찾을 수 없습니다."));
-		if (!gathering.getManagerId().equals(currentUserId)) {
-			throw new RuntimeException("총무만 참여를 수락할 수 있습니다.");
-		}
-
-		// 사용자가 존재하는지 확인
-		userRepo.findById(userId)
-				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-		if (gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId,
-				userId)) {
-			throw new RuntimeException("이미 가입된 회원입니다.");
-		}
-
-		// 새로운 회원 정보 생성
-		GatheringMember member = GatheringMember.builder()
-				.gathering(gathering)
-				.gatheringMemberId(user.getUserId())
-				.gatheringAttendCount(0)
-				.gatheringMemberAccountBalance(0)
-				.gatheringMemberAccountDeposit(0)
-				.gatheringPaymentStatus(false)
-				.build();
-
-		gatheringMemberRepo.save(member);
-	}
-
-	/**
 	 * 모임 회원 관리 정보를 조회 (총무 전용) 회원 목록, 납부 현황 등의 상세 정보를 포함
 	 *
 	 * @param gatheringId 모임 ID
@@ -140,7 +172,8 @@ public class GatheringMemberService {
 	 * @throws RuntimeException 모임을 찾을 수 없거나 총무가 아닌 경우
 	 */
 	public MemberManageResponseDTO getMemberManage(Long gatheringId) {
-		Long currentUserId = jwtTokenProvider.getUserId();
+//		Long currentUserId = jwtTokenProvider.getUserId();
+		Long currentUserId = 1L;
 		Gathering gathering = gatheringRepo.findById(gatheringId)
 				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
 
@@ -250,5 +283,45 @@ public class GatheringMemberService {
 		}
 
 		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
+	}
+
+	/**
+	 * 모임 멤버 추가
+	 *
+	 * @param gatheringId 모임 ID
+	 * @param userId      추가할 사용자 ID
+	 * @throws RuntimeException 모임을 찾을 수 없거나, 사용자를 찾을 수 없거나, 이미 가입된 회원인 경우
+	 */
+	@Transactional
+	public void addMember(Long gatheringId, Long userId) {
+		// 모임 조회
+		Gathering gathering = gatheringRepo.findById(gatheringId)
+				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
+
+		// 사용자 조회
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+		// 이미 가입된 회원인지 확인
+		if (gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)) {
+			throw new RuntimeException("이미 가입된 회원입니다.");
+		}
+
+		// 새로운 회원 정보 생성
+		GatheringMember member = GatheringMember.builder()
+				.gathering(gathering)
+				.gatheringMemberUser(user)
+				.gatheringAttendCount(0)
+				.gatheringMemberAccountBalance(0)
+				.gatheringMemberAccountDeposit(0)
+				.gatheringPaymentStatus(false)
+				.build();
+
+		// 회원 저장
+		gatheringMemberRepo.save(member);
+
+		// 모임의 회원 수 업데이트
+		long memberCount = gatheringMemberRepo.countByGatheringGatheringId(gatheringId);
+		gathering.updateMemberCount((int) memberCount);
 	}
 }
