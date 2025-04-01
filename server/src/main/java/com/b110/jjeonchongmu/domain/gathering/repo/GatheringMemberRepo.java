@@ -18,7 +18,6 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
      */
     List<GatheringMember> findByGatheringGatheringId(Long gatheringId);
 
-
     /**
      * 모임 ID와 사용자 ID로 회원 정보 삭제
      */

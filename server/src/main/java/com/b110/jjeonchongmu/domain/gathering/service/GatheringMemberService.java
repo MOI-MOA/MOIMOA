@@ -6,12 +6,14 @@ import com.b110.jjeonchongmu.domain.gathering.dto.MemberListResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.MemberManageResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -119,10 +121,10 @@ public class GatheringMemberService {
 			throw new RuntimeException("이미 가입된 회원입니다.");
 		}
 
-		// 새로운 회원 정보 생성
+		// 새로운 멤버 객체  생성
 		GatheringMember member = GatheringMember.builder()
 				.gathering(gathering)
-				.gatheringMemberId(user.getUserId())
+				.gatheringMemberUser(user)
 				.gatheringAttendCount(0)
 				.gatheringMemberAccountBalance(0)
 				.gatheringMemberAccountDeposit(0)
@@ -142,46 +144,76 @@ public class GatheringMemberService {
 	public MemberManageResponseDTO getMemberManage(Long gatheringId) {
 //		Long currentUserId = jwtTokenProvider.getUserId();
 		Long currentUserId = 1L;
-		Gathering gathering = gatheringRepo.findById(gatheringId)
-				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
-
-
-		if (!gathering.getManagerId().equals(currentUserId)) {
+		// gatheringMember찾기
+		GatheringMember gatheringMember =
+				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, currentUserId)
+						.orElseThrow(() -> new RuntimeException("gatheringId와 userId로 gahteringMember를 찾을 수 없습니다"));
+		// 프론트 실수로 총무가 아닌 사람이 관리 들어왔을때
+		if (!gatheringMember.getGathering().getManagerId().equals(currentUserId)) {
 			throw new RuntimeException("총무만 회원 관리를 조회할 수 있습니다.");
 		}
+		List<GatheringMember> members = gatheringMember.getGathering().getGatheringMembers();
 
-		List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
-		User manager = userRepo.findById(gathering.getManagerId())
-				.orElseThrow(() -> new RuntimeException("총무 정보를 찾을 수 없습니다."));
+		User manager = gatheringMember.getGathering().getManager();
+
+		// 초대된 회원 목록
+		List<MemberManageResponseDTO.InviteMemberDTO> inviteMemberDTO = members.stream()
+				// 총무는 빼고 보여줌
+				.filter(member -> {
+					System.out.println(member.toString());
+					if (Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
+							&& member.getGatheringMemberStatus() == GatheringMemberStatus.PENDING) {
+						return true;
+					}
+					return false;
+				})
+
+				.map(member -> {
+					User user = member.getGatheringMemberUser();
+					return MemberManageResponseDTO.InviteMemberDTO.builder()
+							.id(user.getUserId())
+							.name(user.getName())
+							.email(user.getEmail())
+							.createdAt(user.getCreatedAt())
+							.build();
+				})
+				.collect(Collectors.toList());
 
 		// 총무 정보 DTO 생성
 		MemberManageResponseDTO.ManagerDTO managerDTO = MemberManageResponseDTO.ManagerDTO.builder()
 				.name(manager.getName())
 				.email(manager.getEmail())
 				.createdAt(manager.getCreatedAt())
+				.balance(gatheringMember.getGatheringMemberAccountBalance())
 				.gatheringPaymentStatus(true)
 				.build();
 
 		// 회원 목록 DTO 생성
 		List<MemberManageResponseDTO.MemberDTO> memberDTOs = members.stream()
+				// 총무는 빼고 보여줌
+				.filter(member -> {
+					System.out.println(member.toString());
+					if (Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
+							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
+						return true;
+					}
+					return false;
+				})
+
 				.map(member -> {
-					User user = userRepo.findById(member.getGatheringMemberUser().getUserId())
-							.orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+					User user = member.getGatheringMemberUser();
 					return MemberManageResponseDTO.MemberDTO.builder()
 							.name(user.getName())
 							.email(user.getEmail())
 							.createdAt(user.getCreatedAt())
+							.balance(member.getGatheringMemberAccountBalance())
 							.gatheringPaymentStatus(member.isGatheringPaymentStatus())
 							.build();
 				})
 				.collect(Collectors.toList());
 
 		return MemberManageResponseDTO.builder()
-				.memberCount(members.size())
-				.paymentCount(
-						(int) members.stream().filter(GatheringMember::isGatheringPaymentStatus).count())
-				.inviteCount(0)
-				.inviteList(List.of())
+				.inviteList(inviteMemberDTO)
 				.manager(managerDTO)
 				.memberList(memberDTOs)
 				.build();
@@ -251,5 +283,45 @@ public class GatheringMemberService {
 		}
 
 		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
+	}
+
+	/**
+	 * 모임 멤버 추가
+	 *
+	 * @param gatheringId 모임 ID
+	 * @param userId      추가할 사용자 ID
+	 * @throws RuntimeException 모임을 찾을 수 없거나, 사용자를 찾을 수 없거나, 이미 가입된 회원인 경우
+	 */
+	@Transactional
+	public void addMember(Long gatheringId, Long userId) {
+		// 모임 조회
+		Gathering gathering = gatheringRepo.findById(gatheringId)
+				.orElseThrow(() -> new RuntimeException("모임을 찾을 수 없습니다."));
+
+		// 사용자 조회
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+		// 이미 가입된 회원인지 확인
+		if (gatheringMemberRepo.existsByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId)) {
+			throw new RuntimeException("이미 가입된 회원입니다.");
+		}
+
+		// 새로운 회원 정보 생성
+		GatheringMember member = GatheringMember.builder()
+				.gathering(gathering)
+				.gatheringMemberUser(user)
+				.gatheringAttendCount(0)
+				.gatheringMemberAccountBalance(0)
+				.gatheringMemberAccountDeposit(0)
+				.gatheringPaymentStatus(false)
+				.build();
+
+		// 회원 저장
+		gatheringMemberRepo.save(member);
+
+		// 모임의 회원 수 업데이트
+		long memberCount = gatheringMemberRepo.countByGatheringGatheringId(gatheringId);
+		gathering.updateMemberCount((int) memberCount);
 	}
 }
