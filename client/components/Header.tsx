@@ -1,16 +1,28 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/app/context/AuthContext";
+import { useEffect } from "react";
+import { getAccessToken } from "@/lib/auth";
 
 interface HeaderProps {
-  title?: string
-  showBackButton?: boolean
+  title?: string;
+  showBackButton?: boolean;
 }
 
 export function Header({ title, showBackButton = false }: HeaderProps) {
-  const router = useRouter()
+  const router = useRouter();
+  const { isAuthenticated, logout, checkAuth } = useAuth();
+
+  useEffect(() => {
+    // 페이지 로드 시 토큰 확인
+    const token = getAccessToken();
+    if (token) {
+      checkAuth();
+    }
+  }, [checkAuth]);
 
   return (
     <header className="flex justify-between items-center p-4 bg-white border-b">
@@ -39,15 +51,24 @@ export function Header({ title, showBackButton = false }: HeaderProps) {
         )}
         {title && <h1 className="text-xl font-semibold ml-2">{title}</h1>}
       </div>
-      <div className="flex space-x-2">
-        <Button variant="ghost" size="sm" onClick={() => router.push("/signup")}>
-          회원가입
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => router.push("/login")}>
-          로그인
-        </Button>
+      <div className="absolute left-1/2 transform -translate-x-1/2">
+        <h1
+          className="text-2xl font-bold text-blue-500 cursor-pointer hover:text-blue-600 transition-colors"
+          onClick={() => router.push("/")}
+        >
+          Toss
+        </h1>
       </div>
+      {isAuthenticated && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={logout}
+          className="ml-auto"
+        >
+          <LogOut className="h-5 w-5" />
+        </Button>
+      )}
     </header>
-  )
+  );
 }
-
