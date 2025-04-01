@@ -33,6 +33,7 @@ export default function SendMoneyPage() {
   const [accountName, setAccountName] = useState("")
   const [isAccountCheckDialogOpen, setIsAccountCheckDialogOpen] = useState(false)
 
+
   useEffect(() => {
     const account = searchParams.get('account')
     const cost = searchParams.get('cost')
@@ -44,6 +45,7 @@ export default function SendMoneyPage() {
       setAmount(cost)
     }
   }, [searchParams])
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +60,7 @@ export default function SendMoneyPage() {
         setIsAccountCheckDialogOpen(true)
       }
     } catch (error: any) {
+      console.error("API Error:", error);
       if (error.response?.status === 404) {
         toast({
           title: "계좌 확인 실패",
