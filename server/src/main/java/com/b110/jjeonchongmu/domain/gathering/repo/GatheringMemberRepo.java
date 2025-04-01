@@ -2,6 +2,7 @@ package com.b110.jjeonchongmu.domain.gathering.repo;
 
 import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +18,6 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
      * 모임 ID로 모든 회원 정보 조회
      */
     List<GatheringMember> findByGatheringGatheringId(Long gatheringId);
-
 
     /**
      * 모임 ID와 사용자 ID로 회원 정보 삭제
@@ -48,4 +48,17 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
 
     @Query("SELECT COUNT(gm) > 0 FROM GatheringMember gm WHERE gm.gatheringMemberUser.userId = :userId AND gm.gathering.gatheringId = :gatheringId")
     boolean existsByUserIdAndGatheringId(@Param("userId") Long userId, @Param("gatheringId") Long gatheringId);
+
+    @Query("" +
+            "SELECT gm " +
+            "FROM GatheringMember gm " +
+            "WHERE gm.gatheringMemberUser.userId = :userId " +
+            "AND gm.gathering.gatheringId = :gatheringId")
+    Optional<GatheringMember> getGatheringMemberByGatheringIdAndUserId(@Param("gatheringId") Long gatheringId, @Param("userId") Long userId);
+
+    Optional<GatheringMember> findByGatheringGatheringIdAndGatheringMemberUser_UserId(Long gatheringId, Long userId);
+
+    long countByGatheringGatheringIdAndGatheringMemberStatus(Long gatheringId, GatheringMemberStatus status);
+
+    List<GatheringMember> findByGatheringGatheringIdAndGatheringMemberStatus(Long gatheringId, GatheringMemberStatus status);
 }

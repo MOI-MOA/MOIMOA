@@ -25,6 +25,7 @@ package com.b110.jjeonchongmu.domain.gathering.api;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.service.GatheringService;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeDTO;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import com.b110.jjeonchongmu.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ import com.b110.jjeonchongmu.domain.gathering.service.*;
 public class GatheringController {
     private final GatheringService gatheringService;
     private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 모임 생성
@@ -107,7 +109,9 @@ public class GatheringController {
      */
     @GetMapping("/{gatheringId}/detail")
     public ResponseEntity<GatheringDetailResponseDTO> getGatheringDetail(@PathVariable Long gatheringId) {
-        GatheringDetailResponseDTO response = gatheringService.getGatheringDetail(gatheringId);
+//        Long userId = jwtTokenProvider.getUserId();
+        Long userId = 1L;
+        GatheringDetailResponseDTO response = gatheringService.getGatheringDetail(userId, gatheringId);
         return ResponseEntity.status(201).body(response);
     }
 

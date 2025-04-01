@@ -30,13 +30,11 @@ public class ScehduleAccountController {
      */
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
-        if(scheduleAccountService.initTransfer(requestDto)){
+        TransferTransactionHistoryDTO response = scheduleAccountService.initTransfer(requestDto);
+        scheduleAccountService.processTransfer(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body("계좌 송금 성공");
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("계좌 송금 성공");
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("계좌 송금 실패");
     }
-
     /**
      * 계좌 비밀번호 확인
      */
