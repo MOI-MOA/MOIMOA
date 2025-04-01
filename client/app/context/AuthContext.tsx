@@ -78,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isProtectedPath(pathname) && !token) {
       router.push("/login");
     } else if (
-      (pathname === "/login" || pathname === "/forgot-password") &&
+      (pathname === "/login" ||
+        pathname === "/signup" ||
+        pathname === "/forgot-password") &&
       token
     ) {
       router.push("/");
