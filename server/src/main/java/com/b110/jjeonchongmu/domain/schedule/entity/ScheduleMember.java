@@ -32,4 +32,10 @@ public class ScheduleMember {
     @Column(name = "schedule_is_check")
     private Boolean scheduleIsCheck;
 
+    @Column(name = "is_penalty_apply")
+    private boolean isPenaltyApply;
+
+    public void updateIsPenaltyApplyToTrue(){
+        this.isPenaltyApply = true;
+    }
 }
