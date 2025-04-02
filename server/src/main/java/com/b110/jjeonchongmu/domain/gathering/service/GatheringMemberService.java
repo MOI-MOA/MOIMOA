@@ -163,7 +163,7 @@ public class GatheringMemberService {
 				// 총무는 빼고 보여줌
 				.filter(member -> {
 					System.out.println(member.toString());
-					if (Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.PENDING) {
 						return true;
 					}
@@ -195,7 +195,7 @@ public class GatheringMemberService {
 				// 총무는 빼고 보여줌
 				.filter(member -> {
 					System.out.println(member.toString());
-					if (Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
 						return true;
 					}
@@ -242,14 +242,15 @@ public class GatheringMemberService {
 				.email(manager.getEmail())
 				.createdAt(manager.getCreatedAt())
 				.build();
-
+		int memberCount = 1;
 		// 회원 목록 DTO 생성
 		List<MemberListResponseDTO.MemberDTO> memberDTOs = members.stream()
 				.filter(member -> {
-					if (Objects.equals(member.getGatheringMemberUser().getUserId(), userId)) {
-						return false;
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), userId)
+							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
+						return true;
 					}
-					return true;
+					return false;
 				})
 				.map(member -> {
 					User user = userRepo.findById(member.getGatheringMemberUser().getUserId())
@@ -263,7 +264,7 @@ public class GatheringMemberService {
 				.collect(Collectors.toList());
 
 		return MemberListResponseDTO.builder()
-				.memberCount(members.size())
+				.memberCount(memberDTOs.size() + 1)
 				.manager(managerDTO)
 				.members(memberDTOs)
 				.build();
