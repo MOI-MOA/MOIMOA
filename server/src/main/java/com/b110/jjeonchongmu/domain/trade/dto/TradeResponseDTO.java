@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,16 +16,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 public class TradeResponseDTO {
+    private String name;
     private String accountNo;
     private Long accountBalance;
+    private Long totalDeposit;
+    private Long totalWithdrawal;
     private List<TradeDetailDTO> tradeList;
 
-    // 엔티티 데이터를 DTO로 변환하는 정적 메서드
-    public static TradeResponseDTO fromEntity(AccountDTO account, List<Trade> trades) {
-        return new TradeResponseDTO(
-                account.getAccountNo(),
-                account.getAccountBalance(),
-                trades.stream().map(TradeDetailDTO::new).collect(Collectors.toList())
-        );
-    }
 }

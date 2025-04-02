@@ -1,6 +1,12 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.*;
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
+import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
 import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
@@ -10,7 +16,6 @@ import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
-import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
@@ -18,15 +23,13 @@ import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +59,6 @@ public class ScheduleAccountService {
 
 
         return TransferTransactionHistoryDTO.builder()
-                .fromAccountId(requestDto.getFromAccountId())
                 .fromAccountType(requestDto.getFromAccountType())
                 .toAccountId(ToAccount.getAccountId())
                 .toAccountType(ToAccount.getDtype())

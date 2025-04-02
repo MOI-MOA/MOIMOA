@@ -8,6 +8,7 @@ import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
 import com.b110.jjeonchongmu.domain.account.service.PersonalAccountService;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class PersonalAccountController {
 
 	private final PersonalAccountService personalAccountService;
 	private final SimpMessagingTemplate simpMessagingTemplate;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	/**
 	 * 계좌 송금
@@ -46,22 +48,23 @@ public class PersonalAccountController {
 	@PostMapping("/transfer")
 	public ResponseEntity<Object> transfer(
 			@RequestBody TransferRequestDTO requestDto) {
+		Long userId = jwtTokenProvider.getUserId();
 		TransferTransactionHistoryDTO response = personalAccountService.initTransfer(requestDto);
 
 		CompletableFuture.runAsync(() -> {
 			try {
 				// 성공하면 계좌 잔액을 함께 보내기??
-				boolean isCompleted = personalAccountService.processTransfer(response);
+				boolean isCompleted = personalAccountService.processTransfer(response, userId);
 
 				simpMessagingTemplate.convertAndSend(
-						"/queue/transfer-results" + requestDto.getFromAccountId(),
+						"/queue/transfer-results" + userId,
 						isCompleted
 				);
 			} catch (Exception e) {
 
 				TransferResponseDTO result = new TransferResponseDTO();
 				simpMessagingTemplate.convertAndSend(
-						"/queue/transfer-results" + requestDto.getFromAccountId(),
+						"/queue/transfer-results" + userId,
 						"송금중 오류가 발생"
 				);
 			}

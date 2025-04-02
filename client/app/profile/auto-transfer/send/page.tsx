@@ -69,8 +69,9 @@ export default function SendMoneyPage() {
     if (cost) {
       setAmount(cost);
     }
+  }, [searchParams]);
 
-    // WebSocket 연결 설정
+  useEffect(() => {
     const socket = new SockJS("http://localhost:8080/ws");
     const client = Stomp.over(socket);
 
@@ -82,7 +83,9 @@ export default function SendMoneyPage() {
         if (result === "true") {
           toast({
             title: "송금 완료",
-            description: `${accountNumber}로 ${amount}원이 성공적으로 송금되었습니다.`,
+            description: `${accountNumber}로 ${Number(
+              amount
+            ).toLocaleString()}원이 성공적으로 송금되었습니다.`,
           });
           router.back();
         } else if (result === "송금중 오류가 발생") {
@@ -103,7 +106,7 @@ export default function SendMoneyPage() {
         client.disconnect();
       }
     };
-  }, [accountNumber, amount, router]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
