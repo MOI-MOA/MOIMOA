@@ -1,6 +1,5 @@
 package com.b110.jjeonchongmu.domain.mypage.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.entity.AutoPayment;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
 import com.b110.jjeonchongmu.domain.account.repo.AutoPaymentRepo;
@@ -12,7 +11,6 @@ import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.GatheringProjection;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
-import com.b110.jjeonchongmu.domain.mypage.dto.myaccount.MyAccountResponseDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.GroupExpenseData;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData;
@@ -23,8 +21,6 @@ import com.b110.jjeonchongmu.domain.mypage.repo.MypageRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
-import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryDTO;
-import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.TradeHistoryComponent;
@@ -126,13 +122,11 @@ public class MypageService {
 
 		List<AutoPayment> autoPayments = autoPaymentRepo.findByUserId(user.getUserId());
 
-		List<GatheringProjection> gatheringProjections = customMyPageRepository.getAutoPaymentDtos(
-				user.getUserId());
+		List<GatheringProjection> gatheringProjections = customMyPageRepository.getAutoPaymentDtos(user.getUserId());
 		List<AutoPaymentDto> autoPaymentDtos = autoPayments.stream().flatMap(
 				autoPayment -> {
 					return gatheringProjections.stream()
-							.filter(projection -> projection.getGatheringId()
-									.equals(autoPayment.getGatheringAccount().getGathering().getGatheringId()))
+							.filter(projection -> projection.getGatheringId().equals(autoPayment.getGatheringAccount().getGathering().getGatheringId()))
 							.map(matchedProjection -> new AutoPaymentDto(
 									autoPayment.getAutoPaymentId(),
 									matchedProjection.getBasicFee(),
@@ -160,25 +154,16 @@ public class MypageService {
 
 		AutoPayment autoPayment = autoPaymentRepo.findById(autoPaymentId)
 				.orElseThrow(() -> new RuntimeException("autoPayment를 autoPaymentId로 찾을 수 없습니다"));
-
 		if (!autoPayment.getPersonalAccount().getUser().getUserId().equals(user.getUserId())) {
 			throw new RuntimeException("유저가 자동이체의 주인이 아닙니다.");
 		}
 
 		long amount = requestDto.getAmount();
 		int day = requestDto.getDay();
-		boolean status = false;
-		if (requestDto.getStatus().equals("active")) {
-			status = true;
-		} else if (requestDto.getStatus().equals("inactive")) {
-			status = false;
-		} else {
-			throw new RuntimeException("자동이체의 활성화 여부가 active 또는 inactive로 오지 않았습니다");
-		}
-
 		autoPayment.updateAutoPaymentAmount(amount);
 		autoPayment.updateAutoPaymentDate(day);
-		autoPayment.updateIsActive(status);
+		autoPayment.updateIsActive(requestDto.isStatus());
+		autoPaymentRepo.save(autoPayment);
 	}
 
 //    public MyAccountResponseDto getMyAccount(Long userId) {
