@@ -66,8 +66,8 @@ public class ScheduleController {
     @PatchMapping("/{scheduleId}")
     public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDTO scheduleUpdateDTO, @PathVariable Long scheduleId) {
 
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L ;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L ;
 
         scheduleService.updateSchedule(userId,scheduleId,scheduleUpdateDTO);
         return ResponseEntity.status(204).body("일정이 수정되었습니다.");
