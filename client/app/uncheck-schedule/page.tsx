@@ -9,7 +9,6 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
-import { LOCALHOST } from "@/lib/constants"
 import { publicApi } from "@/lib/api"
 
 type ScheduleData = {
@@ -33,7 +32,6 @@ export default function UncheckSchedulePage() {
     const fetchSchedules = async () => {
       try {
         const response = await publicApi.get<ScheduleData[]>(
-          LOCALHOST +
           "api/v1/main/schedule/uncheck"
         ) as unknown as ScheduleData[];
         console.log(response);
