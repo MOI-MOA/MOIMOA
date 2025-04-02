@@ -26,6 +26,7 @@ import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.TradeHistoryComponent;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -47,6 +48,7 @@ public class MypageService {
     private final AutoPaymentRepo autoPaymentRepo;
     private final PersonalAccountRepo personalAccountRepo;
     private final TradeHistoryComponent tradeHistoryComponent;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public List<AutoPaymentDto> getAutoPayments(String type) {
         return null;
@@ -110,8 +112,7 @@ public class MypageService {
     }
 
     private Long getCurrentUserId() {
-        // SecurityContext에서 현재 사용자 ID를 가져오는 로직 구현
-        throw new UnsupportedOperationException("Not implemented yet");
+        return jwtTokenProvider.getUserId();
     }
 
     public AutoPaymentResponse getAutoPaymentResponseByUserId(Long id) {
