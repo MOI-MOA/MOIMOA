@@ -51,15 +51,13 @@ public class MypageController {
 
     @GetMapping("/profile/mypage")
     public ResponseEntity<MyPageResponse> getMyPage() {
-//        Long id = jwtTokenProvider.getUserId();
-        Long id = 1L; // 임시로 id = 1
+        Long id = jwtTokenProvider.getUserId();
         return ResponseEntity.ok(myPageService.getMyPage(id));
     }
 
     @GetMapping("/profile/mypage/statistics")
     public ResponseEntity<StatisticsResponse> getStatistics() {
-//        Long id = jwtTokenProvider.getUserId();
-        Long id = 1L; // 임시로 id = 1
+        Long id = jwtTokenProvider.getUserId();
         return ResponseEntity.ok(myPageService.getStatistics(id));
     }
 
@@ -68,8 +66,7 @@ public class MypageController {
             @PathVariable Long autoTransferId,
             @RequestBody UpdateAutoPaymentRequestDto requestDto
     ) {
-//        Long id = jwtTokenProvider.getUserId();
-        Long id = 1L; // 임시로 id = 1
+        Long id = jwtTokenProvider.getUserId();
         try {
             myPageService.updateAutoTransfer(id, autoTransferId, requestDto);
         } catch (Exception e) {
@@ -81,8 +78,7 @@ public class MypageController {
 
     @GetMapping("/profile/mypage/myaccount")
     public ResponseEntity<MyAccountResponseDto> myAccount() {
-//        Long id = jwtTokenProvider.getUserId();
-        Long id = 1L; // 임시로 id = 1
+        Long id = jwtTokenProvider.getUserId();
 
         MyAccountResponseDto response;
         try {
