@@ -1,8 +1,10 @@
 package com.b110.jjeonchongmu.domain.trade.api;
 
+import com.b110.jjeonchongmu.domain.trade.dto.TradeDetailDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeResponseDTO;
 import com.b110.jjeonchongmu.domain.trade.service.TradeService;
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class TradeController {
 
 	private final TradeService tradeService;
+	private final JwtTokenProvider jwtTokenProvider;
 
-	@GetMapping
+	@PostMapping("/account-history")
 	public ResponseEntity<TradeResponseDTO> getTradeHistory(
 			@RequestBody TradeHistoryRequestDTO request) {
-		TradeResponseDTO response = tradeService.getTradeHistory(request);
+//		Long userId = jwtTokenProvider.getUserId();
+		Long userId = 1L;
+		TradeResponseDTO response = tradeService.getTradeHistory(userId, request);
 		return ResponseEntity.ok(response);
 	}
 

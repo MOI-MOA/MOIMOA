@@ -1,22 +1,28 @@
 package com.b110.jjeonchongmu.domain.account.api;
 
-import com.b110.jjeonchongmu.domain.account.dto.*;
+import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.GatheringTransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferResponseDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
 import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
-import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
-import com.b110.jjeonchongmu.domain.user.entity.User;
-import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 계좌 관련 API 컨트롤러
@@ -48,10 +54,7 @@ public class GatheringAccountController {
             @RequestBody GatheringTransferRequestDTO transferRequestDto) {
 
         Long userId = jwtTokenProvider.getUserId();
-
-
         TransferRequestDTO requestDto = gatheringAccountService.getTransferRequestDto(userId, transferRequestDto);
-
         TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);
 
         CompletableFuture.runAsync(() -> {
@@ -60,14 +63,14 @@ public class GatheringAccountController {
                 boolean isCompleted = gatheringAccountService.processTransfer(response);
 
                 simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results" + requestDto.getFromAccountId(),
+                        "/queue/transfer-results" + userId,
                         isCompleted
                 );
             } catch (Exception e) {
 
                 TransferResponseDTO result = new TransferResponseDTO();
                 simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results" + requestDto.getFromAccountId(),
+                        "/queue/transfer-results" + userId,
                         "송금중 오류가 발생"
                 );
             }

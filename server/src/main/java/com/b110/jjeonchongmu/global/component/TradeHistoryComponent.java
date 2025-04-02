@@ -15,13 +15,13 @@ public class TradeHistoryComponent {
 
 	private final TradeRepo tradeRepo;
 
-	public List<TradeHistoryDTO> getTradeHistory(TradeHistoryRequestDTO tradeHistoryRequestDTO) {
-		List<Trade> trades = tradeRepo.findByAccountId(tradeHistoryRequestDTO.getAccountId(),
-				tradeHistoryRequestDTO.getAccountType());
-		return trades.stream().map(trade -> TradeHistoryDTO.from(trade, tradeHistoryRequestDTO.getAccountId()))
-				.collect(
-						Collectors.toList());
-	}
+//	public List<TradeHistoryDTO> getTradeHistory(TradeHistoryRequestDTO tradeHistoryRequestDTO) {
+//		List<Trade> trades = tradeRepo.findByAccountId(tradeHistoryRequestDTO.getAccountId(),
+//				tradeHistoryRequestDTO.getAccountType());
+//		return trades.stream().map(trade -> TradeHistoryDTO.from(trade, tradeHistoryRequestDTO.getAccountId()))
+//				.collect(
+//						Collectors.toList());
+//	}
 
 
 }

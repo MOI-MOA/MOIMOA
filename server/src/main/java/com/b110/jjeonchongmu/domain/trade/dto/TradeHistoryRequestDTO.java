@@ -4,10 +4,12 @@ import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @Getter
 public class TradeHistoryRequestDTO {
 	private AccountType accountType;
-	private long accountId;
-
+	private Long gatheringId;
+	private Integer limit;
 }

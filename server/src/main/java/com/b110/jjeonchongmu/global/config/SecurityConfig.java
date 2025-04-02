@@ -51,7 +51,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 // 인증 없이 접근 가능한 경로 (로그인, 회원가입)
-                                .requestMatchers("/api/v1/login", "/api/v1/signup", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                // 테스트 엔드포인트 추가
+                                .requestMatchers("/api/v1/login", "/api/v1/signup", "/swagger-ui/**", "/v3/api-docs/**", "/test/health").permitAll()
 
                                 // 요청은 일단 전부 허용 ().
                                 .anyRequest().permitAll())

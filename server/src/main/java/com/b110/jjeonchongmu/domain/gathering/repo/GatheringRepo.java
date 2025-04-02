@@ -66,4 +66,7 @@ public interface GatheringRepo extends JpaRepository<Gathering, Long> {
 			@Param("userId") Long userId,
 			@Param("gatheringId") Long gatheringId
 	);
+
+	@Query("select g from Gathering g join GatheringMember gm where gm.gatheringMemberUser.userId = :userId")
+	List<Gathering> findByUserId(Long userId);
 }
