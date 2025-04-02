@@ -179,23 +179,23 @@ public class MypageService {
 		autoPayment.updateIsActive(status);
 	}
 
-	public MyAccountResponseDto getMyAccount(Long userId) {
-		User user;
-		try {
-			user = userRepo.getUserByUserId(userId);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		AccountType accountType = AccountType.PERSONAL;
-		Long accountId = user.getPersonalAccount().getAccountId();
-		List<TradeHistoryDTO> tradeList;
-		try {
-			tradeList = tradeHistoryComponent.getTradeHistory(new TradeHistoryRequestDTO(
-					accountType, accountId
-			));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		return new MyAccountResponseDto(user, tradeList);
-	}
+//    public MyAccountResponseDto getMyAccount(Long userId) {
+//        User user;
+//        try {
+//            user = userRepo.getUserByUserId(userId);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        AccountType accountType = AccountType.PERSONAL;
+//        Long accountId = user.getPersonalAccount().getAccountId();
+//        List<TradeHistoryDTO> tradeList;
+//        try {
+//            tradeList = tradeHistoryComponent.getTradeHistory(new TradeHistoryRequestDTO(
+//                accountType, accountId
+//            ));
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        return new MyAccountResponseDto(user, tradeList);
+//    }
 }
