@@ -1,10 +1,11 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.*;
-import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.GatheringTransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
@@ -19,7 +20,6 @@ import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
-import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
@@ -27,12 +27,14 @@ import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 public class GatheringAccountService {
@@ -45,6 +47,7 @@ public class GatheringAccountService {
 	private final UserRepo userRepo;
 	private final GatheringRepo gatheringRepo;
 	private final PasswordEncoder passwordEncoder;
+	private static final Logger log = LoggerFactory.getLogger(GatheringAccountService.class);
 
 	@Transactional
 	public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
@@ -73,19 +76,31 @@ public class GatheringAccountService {
 		gatheringAccountRepo.deleteById(gatheringAccountId);
 	}
 
-	//    계좌 DB 저장.
+	//    계좌 생성 및 저장.
 	@Transactional
 	public GatheringAccount addGroupAccount(MakeExternalAccountDTO makeExternalAccountDTO, Long userId){
-		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("계좌 DB 저장 - 회원 조회 실패"));
-		BankAccountResponseDTO responseDTO = externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
-		// 계좌 저장로직
-		GatheringAccount gatheringAccount = new GatheringAccount(
-				user,
-				responseDTO.getRec().getAccountNo(),
-				passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw())
-				)	);
-		gatheringAccountRepo.save(gatheringAccount);
-		return gatheringAccount;
+		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("계좌 생성 저장 - 회원 조회 실패"));
+		log.info("gatheringAccountService : 계좌 생성 시작 - userId: {}, userKey: {}", userId, makeExternalAccountDTO.getUserKey());
+		
+		try {
+
+			//계좌 생성.
+			BankAccountResponseDTO responseDTO = externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
+			log.info("계좌 생성 성공 - accountNo: {}", responseDTO.getRec().getAccountNo());
+			
+			// 계좌 저장로직
+			GatheringAccount gatheringAccount = new GatheringAccount(
+					user,
+					responseDTO.getRec().getAccountNo(),
+					passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw())
+					)	);
+			gatheringAccountRepo.save(gatheringAccount);
+			log.info("계좌 DB 저장 완료 - accountId: {}", gatheringAccount.getAccountId());
+			return gatheringAccount;
+		} catch (Exception e) {
+			log.error("계좌 생성 실패 - userId: {}, error: {}", userId, e.getMessage());
+			throw e;
+		}
 	}
 
 	@Transactional
@@ -119,7 +134,7 @@ public class GatheringAccountService {
 
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
 			GatheringAccount fromAccount = gatheringAccountRepo.findByAccount(
-							transferTransactionHistoryDTO.getToAccountId())
+							transferTransactionHistoryDTO.getFromAccountId())
 					.orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
 			// 잔액 검증
