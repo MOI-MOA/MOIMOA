@@ -1,17 +1,21 @@
 package com.b110.jjeonchongmu.domain.mypage.api;
 
-import com.b110.jjeonchongmu.domain.mypage.dto.*;
+import com.b110.jjeonchongmu.domain.mypage.dto.MyPageResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentResponseDto;
-import com.b110.jjeonchongmu.domain.mypage.dto.myaccount.MyAccountResponseDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.StatisticsResponse;
 import com.b110.jjeonchongmu.domain.mypage.service.MypageService;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 /**
