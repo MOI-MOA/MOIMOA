@@ -58,7 +58,6 @@ public class PersonalAccountService {
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
-				.fromAccountId(requestDto.getFromAccountId())
 				.fromAccountType(requestDto.getFromAccountType())
 				.toAccountId(account.getAccountId())
 				.toAccountType(account.getDtype())
@@ -72,12 +71,11 @@ public class PersonalAccountService {
 
 	@Transactional
 	public boolean processTransfer(
-			TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
-
+			TransferTransactionHistoryDTO transferTransactionHistoryDTO, Long userId) {
 		try {
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
-			PersonalAccount fromAccount = personalAccountRepo.findByAccount(
-							transferTransactionHistoryDTO.getFromAccountId())
+			PersonalAccount fromAccount = personalAccountRepo.findByUserId(
+							userId)
 					.orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
 			String originAccountPw = fromAccount.getAccountPw();
