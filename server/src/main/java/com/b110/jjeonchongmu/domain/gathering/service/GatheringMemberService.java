@@ -209,7 +209,7 @@ public class GatheringMemberService {
 							.email(user.getEmail())
 							.createdAt(user.getCreatedAt())
 							.balance(member.getGatheringMemberAccountBalance())
-							.gatheringPaymentStatus(member.isGatheringPaymentStatus())
+							.gatheringPaymentStatus(member.getGatheringPaymentStatus())
 							.build();
 				})
 				.collect(Collectors.toList());

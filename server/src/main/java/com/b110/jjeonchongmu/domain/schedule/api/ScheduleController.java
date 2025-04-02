@@ -36,22 +36,22 @@ public class ScheduleController {
     @GetMapping("/{gatheringId}")
     public ResponseEntity<List<ScheduleDTO>> getScheduleList(@PathVariable Long gatheringId ) {
 
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         return ResponseEntity.status(200).body(scheduleService.getScheduleList(userId,gatheringId));
     }
     // 일정 상세조회
     @GetMapping("/{scheduleId}/detail")
     public ResponseEntity<ScheduleDetailDTO> getScheduleDetail(@PathVariable Long scheduleId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         return ResponseEntity.status(200).body(scheduleService.getScheduleDetail(userId,scheduleId));
     }
     // 일정 생성(총무만)
     @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 5L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 5L;
         Long scheduleId = scheduleService.createSchedule(userId,gatheringId,scheduleCreateDTO);
 
             MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
@@ -61,13 +61,14 @@ public class ScheduleController {
         System.out.println("일정 번호" + scheduleId);
         scheduleMemberService.setSubManager(gatheringId,scheduleId,scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
+
     }
     // 일정 수정(총무만)
     @PatchMapping("/{scheduleId}")
     public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDTO scheduleUpdateDTO, @PathVariable Long scheduleId) {
 
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L ;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L ;
 
         scheduleService.updateSchedule(userId,scheduleId,scheduleUpdateDTO);
         return ResponseEntity.status(204).body("일정이 수정되었습니다.");
@@ -76,32 +77,34 @@ public class ScheduleController {
     @DeleteMapping("/{scheduleId}")
     public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleId) {
 
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L ;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 5L;
+
+        // 일정멤버와 일정계좌 일정을 전부다 삭제
         scheduleService.deleteSchedule(userId,scheduleId);
+
         return ResponseEntity.status(204).body("일정이 삭제되었습니다.");
     }
     // 일정 멤버(참여자) 목록 조회
     @GetMapping({"/{scheduleId}/member"})
     public ResponseEntity<List<ScheduleMemberDTO>> getScheduleMember(@PathVariable Long scheduleId){
-//        Long userId = jwtTokenProvider.getUserId();
-
-        Long userId = 1L ;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         return ResponseEntity.status(200).body(scheduleMemberService.getScheduleMember(userId,scheduleId));
     }
     // 일정 참석
     @PostMapping("/{scheduleId}/attend")
     public ResponseEntity<String> attendSchedule(@PathVariable Long scheduleId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L ;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 4L;
         scheduleMemberService.attendSchedule(userId,scheduleId);
         return ResponseEntity.status(201).body("일정 참석이 완료되었습니다.");
     }
     // 일정 참석 취소
     @DeleteMapping("/{scheduleId}/cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L ;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 4L;
         scheduleMemberService.cancelAttendance(userId,scheduleId);
         return ResponseEntity.status(204).body("일정 참석이 취소되었습니다.");
     }

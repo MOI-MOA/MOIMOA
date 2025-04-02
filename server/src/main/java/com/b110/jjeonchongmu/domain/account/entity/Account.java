@@ -46,5 +46,7 @@ public class Account {
     public void increaseBalance(Long amount) {
         this.accountBalance += amount;
     }
+
+    public void updateDtype(AccountType accountType){this.dtype = accountType;}
 }
 

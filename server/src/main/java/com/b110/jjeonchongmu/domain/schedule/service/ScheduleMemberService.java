@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,12 @@ public class ScheduleMemberService {
     private final GatheringMemberRepo gatheringMemberRepo;
     // 일정 멤버(참여자) 목록 조회
     public List<ScheduleMemberDTO> getScheduleMember(Long userId, Long scheduleId){
-        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, scheduleId);
+
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Schedule Not Found"));
+        Long gatheringId = schedule.getGathering().getGatheringId();
+
+        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
@@ -65,20 +71,46 @@ public class ScheduleMemberService {
                 .scheduleMember(user)
                 .build();
 
+        schedule.updateScheduleAttendees(scheduleMember);
         scheduleMemberRepo.save(scheduleMember);
+
+        GatheringMember gatheringMember = gatheringMemberRepo.findGatheringMemberByScheduleIdAndUserId(scheduleId,userId);
+
+        // 개인돈이 인당예산보다 작으면 오류 발생
+        if(gatheringMember.getGatheringMemberAccountBalance()< schedule.getPerBudget()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "개인돈  부족");
+        }
+
+        // 개인돈에서 인당예산 만큼 차감
+        gatheringMember.decreaseGatheringMemberAccountBalance(schedule.getPerBudget());
+
+        // 일정계좌 잔액 인당예산 만큼 증가
+        schedule.getScheduleAccount().increaseBalance(schedule.getPerBudget());
+
     }
     // 일정 참석 취소
     @Transactional
     public void cancelAttendance(Long userId, Long scheduleId) {
-        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, scheduleId);
+        boolean isMember = scheduleMemberRepo.existsByUserIdAndScheduleId(userId, scheduleId);
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
 
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
+
+        GatheringMember gatheringMember = gatheringMemberRepo.findGatheringMemberByScheduleIdAndUserId(scheduleId,userId);
+
         ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserId(scheduleId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule member not found"));
-        
-        scheduleMemberRepo.delete(scheduleMember);
+
+        if(LocalDateTime.now().isBefore(schedule.getPenaltyApplyDate())){
+            gatheringMember.increaseGatheringMemberAccountBalance(schedule.getPerBudget());
+            schedule.getScheduleAccount().decreaseBalance(schedule.getPerBudget());
+            scheduleMemberRepo.delete(scheduleMember);
+        } else {
+            scheduleMember.updateIsPenaltyApplyToTrue();
+        }
     }
 
     // 일정을 만들때 부총무 세팅
@@ -102,8 +134,4 @@ public class ScheduleMemberService {
 
         scheduleMemberRepo.save(scheduleMember);
     }
-
-
-
-
 }

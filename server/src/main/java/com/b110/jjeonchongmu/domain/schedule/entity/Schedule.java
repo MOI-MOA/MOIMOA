@@ -83,6 +83,9 @@ public class Schedule {
     // 일정 계좌 수정
     public void updateScheduleAccount(ScheduleAccount scheduleAccount) { this.scheduleAccount = scheduleAccount; }
 
+    public void updateScheduleAttendees(ScheduleMember scheduleMember){
+        this.attendees.add(scheduleMember);
+    }
     // 모든 필드 한번에 수정
     public void updateSchedule(String title, String detail, String place, 
                              LocalDateTime startTime, Long perBudget, 

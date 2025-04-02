@@ -33,7 +33,7 @@ public class GatheringMember {
     private Long gatheringMemberAccountDeposit;
 
     @Column(name = "gathering_payment_status")
-    private boolean gatheringPaymentStatus;
+    private Boolean gatheringPaymentStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gathering_member_status")
@@ -43,7 +43,7 @@ public class GatheringMember {
     public GatheringMember(Gathering gathering, User gatheringMemberUser, Integer gatheringAttendCount,
 
                           Long gatheringMemberAccountBalance, Long gatheringMemberAccountDeposit,
-                          boolean gatheringPaymentStatus, GatheringMemberStatus gatheringMemberStatus) {
+                          Boolean gatheringPaymentStatus, GatheringMemberStatus gatheringMemberStatus) {
         this.gathering = gathering;
         this.gatheringMemberUser = gatheringMemberUser;
         this.gatheringAttendCount = gatheringAttendCount;
@@ -64,5 +64,5 @@ public class GatheringMember {
         this.gatheringMemberAccountBalance += amount;
     }
 
-
+    
 }
