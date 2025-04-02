@@ -178,7 +178,6 @@ public class ScheduleService {
 
         if (AmountToBeGuaranteed * penaltyApplyCount <= remainingAmount) {
 
-
             penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(AmountToBeGuaranteed));
 
             // 페이백 대상자들에게 페이백 비용 나눠주기
@@ -211,6 +210,11 @@ public class ScheduleService {
                 remainingAmount--;
             }
         }
+
+        // 일정계좌에 남은 금액을 0으로 만듬 (사실 필요없는데 일단 넣어놈)
+        scheduleAccount.decreaseBalance(scheduleAccount.getAccountBalance());
+        ///////////////////////////////////////////////////////
+
         System.out.println("일정 계좌 돈 이동 완료 ");
             scheduleAccountRepo.deleteById(scheduleAccountId);
         System.out.println("일정 계좌 삭제완료 ");

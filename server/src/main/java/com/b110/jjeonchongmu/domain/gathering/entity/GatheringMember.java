@@ -64,5 +64,7 @@ public class GatheringMember {
         this.gatheringMemberAccountBalance += amount;
     }
 
-    
+    public void decreaseGatheringMemberAccountDeposit(Long amount) { this.gatheringMemberAccountDeposit -= amount; }
+    public void increaseGatheringMemberAccountDeposit(Long amount) { this.gatheringMemberAccountDeposit += amount; }
+
 }
