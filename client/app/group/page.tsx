@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { toast } from "@/components/ui/use-toast";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +49,7 @@ export default function GroupsPage() {
   const fetchGroups = async () => {
     try {
       setIsLoading(true);
-      const response = await publicApi.get<ApiResponse>("api/v1/gathering") as unknown as ApiResponse;
+      const response = await authApi.get<ApiResponse>("api/v1/gathering") as unknown as ApiResponse;
       console.log(response);
       setGroups(response.gatherings);
     } catch (error) {
@@ -91,7 +91,7 @@ export default function GroupsPage() {
 
     try {
       // API 호출로 초대 코드 검증 및 모임 참가 처리
-      await publicApi.post("api/v1/gathering/join", {
+      await authApi.post("api/v1/gathering/join", {
         inviteCode: inviteCode,
       });
 

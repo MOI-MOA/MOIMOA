@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Header } from "@/components/Header"
-import { publicApi } from "@/lib/api"
+import { publicApi, authApi } from "@/lib/api"
 import { toast } from "@/components/ui/use-toast"
 
 interface Member {
@@ -32,7 +32,7 @@ export default function GroupMemberListPage({ params }: { params: Promise<{ grou
   const fetchGroupMembers = async () => {
     try {
       setIsLoading(true)
-      const response = await publicApi.get<GroupMemberResponse>(`api/v1/gathering/${groupId}/members`) as unknown as GroupMemberResponse
+      const response = await authApi.get<GroupMemberResponse>(`api/v1/gathering/${groupId}/members`) as unknown as GroupMemberResponse
       console.log(response)
       setGroupData(response)
     } catch (error) {

@@ -9,7 +9,8 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
-import { publicApi } from "@/lib/api"
+import { publicApi, authApi } from "@/lib/api"
+import { Button } from "@/components/ui/button"
 
 type ScheduleData = {
   gatheringId: number;
@@ -31,7 +32,7 @@ export default function UncheckSchedulePage() {
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
-        const response = await publicApi.get<ScheduleData[]>(
+        const response = await authApi.get<ScheduleData[]>(
           "api/v1/main/schedule/uncheck"
         ) as unknown as ScheduleData[];
         console.log(response);
@@ -50,6 +51,50 @@ export default function UncheckSchedulePage() {
 
     fetchSchedules();
   }, []);
+
+  // 참석 처리 함수
+  const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
+    e.stopPropagation() // 카드 클릭 이벤트 전파 방지
+    try {
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend`)
+      
+      // 성공 시 해당 일정을 목록에서 제거
+      setSchedules(prev => prev.filter(schedule => schedule.scheduleId !== scheduleId))
+      
+      toast({
+        title: "참석 완료",
+        description: "일정 참석이 완료되었습니다.",
+      })
+    } catch (error) {
+      toast({
+        title: "참석 실패",
+        description: "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // 거절 처리 함수
+  const handleCancel = async (scheduleId: number, e: React.MouseEvent) => {
+    e.stopPropagation() // 카드 클릭 이벤트 전파 방지
+    try {
+      await authApi.post(`api/v1/schedule/${scheduleId}/cancel`)
+      
+      // 성공 시 해당 일정을 목록에서 제거
+      setSchedules(prev => prev.filter(schedule => schedule.scheduleId !== scheduleId))
+      
+      toast({
+        title: "거절 완료",
+        description: "일정 거절이 완료되었습니다.",
+      })
+    } catch (error) {
+      toast({
+        title: "거절 실패",
+        description: "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <>
@@ -79,6 +124,22 @@ export default function UncheckSchedulePage() {
                   <div className="flex items-center text-sm text-gray-600">
                     <MapPin className="h-4 w-4 mr-1" />
                     {schedule.schedulePlace}
+                  </div>
+                  <div className="flex space-x-2 mt-2">
+                    <Button 
+                      variant="default"
+                      size="sm"
+                      onClick={(e) => handleAttend(schedule.scheduleId, e)}
+                    >
+                      참석
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => handleCancel(schedule.scheduleId, e)}
+                    >
+                      거절
+                    </Button>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
