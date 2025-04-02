@@ -32,14 +32,6 @@ public class MainController {
 
     private final MainService mainService;
     private final JwtTokenProvider jwtTokenProvider;
-
-    private Long userIdFromToken(String token) {
-        if (token == null || token.isEmpty()) {
-            return 1L; // 테스트용 기본 사용자 ID
-        }
-        String jwtToken = token.replace("Bearer ", "");
-        return Long.valueOf(jwtTokenProvider.getUserId(jwtToken));
-    }
 //    @GetMapping("/test")
 //    public String test() {
 //        return "API is working!";
@@ -52,15 +44,15 @@ public class MainController {
      *    - 다가오는 일정 조회
      */
     @GetMapping
-    public ResponseEntity<MainHomeResponseDTO> getMainHome(@RequestHeader(value = "Authorization", required = false) String token) {
-        System.out.println("Controller token" + token);
+    public ResponseEntity<MainHomeResponseDTO> getMainHome() {
         try {
-            Long userId = userIdFromToken(token);
+            Long userId = jwtTokenProvider.getUserId();
             MainHomeResponseDTO response = mainService.getMainHome(userId);
             System.out.println("Controller 홈 화면 조회 response: " + response);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Controller 홈 화면 조회 exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
@@ -73,7 +65,7 @@ public class MainController {
     @GetMapping("/schedule/uncheck")
     public ResponseEntity<List<ScheduleDTO>> getUncheckSchedules(@RequestHeader(value = "Authorization", required = false) String token) {
         try {
-            Long userId = userIdFromToken(token);
+            Long userId = jwtTokenProvider.getUserId();
             List<ScheduleDTO> response = mainService.getUncheckSchedules(userId);
             System.out.println("Controller 미확인 일정목록 조회 response: " + response);
             return ResponseEntity.ok(response);
@@ -90,7 +82,7 @@ public class MainController {
     @GetMapping("/schedule/personal")
     public ResponseEntity<List<ScheduleDTO>> getPersonalSchedules(@RequestHeader(value = "Authorization", required = false) String token) {
         try {
-            Long userId = userIdFromToken(token);
+            Long userId = jwtTokenProvider.getUserId();
             List<ScheduleDTO> response = mainService.getPersonalSchedules(userId);
             System.out.println("Controller 개인 일정목록 조회 response: " + response);
             return ResponseEntity.ok(response);
@@ -111,7 +103,7 @@ public class MainController {
             @PathVariable int month) {
 
         try {
-            Long userId = userIdFromToken(token);
+            Long userId = jwtTokenProvider.getUserId();
             List<DateDTO> response = mainService.getMonthSchedules(userId, year, month);
             System.out.println("Controller 해당 달 일정 조회 response: " + response);
             return ResponseEntity.ok(response);
@@ -132,7 +124,7 @@ public class MainController {
             @PathVariable int month,
             @PathVariable int date) {
         try {
-            Long userId = userIdFromToken(token);
+            Long userId = jwtTokenProvider.getUserId();
             List<ScheduleDTO> response = mainService.getDaySchedules(userId, year, month, date);
             System.out.println("Controller 특정 날짜 일정 조회 response: " + response);
             return ResponseEntity.ok(response);
@@ -149,7 +141,7 @@ public class MainController {
     @GetMapping("/schedule/today")
     public ResponseEntity<List<ScheduleDTO>> getTodaySchedules(@RequestHeader(value = "Authorization", required = false) String token) {
         try {
-            Long userId = userIdFromToken(token);
+            Long userId = jwtTokenProvider.getUserId();
             List<ScheduleDTO> response = mainService.getTodaySchedules(userId);
             System.out.println("Controller 오늘 일정 조회  response: " + response);
             return ResponseEntity.ok(response);
