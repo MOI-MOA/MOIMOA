@@ -1,146 +1,135 @@
-"use client"
+"use client";
 
-import React, { use, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
-import { CalendarIcon, Download, Search } from "lucide-react"
-import { Header } from "@/components/Header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import axios from "axios"
-import { toast } from "@/components/ui/use-toast"
+import React, { use, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { CalendarIcon, Download, Search } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { toast } from "@/components/ui/use-toast";
+import { authApi, publicApi } from "@/lib/api";
 
 // 기본 데이터 타입 정의
-interface Transaction {
-  tradeDetail: string
-  tradeTime: string
-  tradeAmount: number
-  tradeBalance: number
-  tradePartnerName: string
+interface TradeDto {
+  tradeDetail: string;
+  tradeTime: string;
+  tradeAmount: number;
+  tradeBalance: number;
+  tradePartnerName: string;
 }
 
 interface AccountData {
-  gatheringName: string
-  gatheringAccountNo: number
-  gatheringAccountBalance: number
-  tradeList: Transaction[]
-}
-
-// 기본 데이터
-const DEFAULT_ACCOUNT_DATA: AccountData = {
-  gatheringName: "배한진",
-  gatheringAccountNo: 12345678901234,
-  gatheringAccountBalance: 500000,
-  tradeList: [
-    {
-      tradeDetail: "송금받음",
-      tradeTime: "2025-03-20T10:15:30",
-      tradeAmount: 300000,
-      tradeBalance: 500000,
-      tradePartnerName: "김철수"
-    },
-    {
-      tradeDetail: "편의점 결제",
-      tradeTime: "2025-03-19T18:45:10",
-      tradeAmount: -5000,
-      tradeBalance: 200000,
-      tradePartnerName: "GS25"
-    },
-    {
-      tradeDetail: "회비 입금",
-      tradeTime: "2025-03-18T14:30:00",
-      tradeAmount: 500000,
-      tradeBalance: 205000,
-      tradePartnerName: "이영희"
-    },
-    {
-      tradeDetail: "음식점 결제",
-      tradeTime: "2025-03-17T20:10:25",
-      tradeAmount: -70000,
-      tradeBalance: 5000,
-      tradePartnerName: "BBQ 치킨"
-    }
-  ]
+  gatheringName: string;
+  gatheringAccountNo: string;
+  gatheringAccountBalance: number;
+  tradeList: TradeDto[];
 }
 
 export default function AccountHistoryPage() {
-  const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [transactionType, setTransactionType] = useState("all")
-  const [accountData, setAccountData] = useState<AccountData>(DEFAULT_ACCOUNT_DATA)
-  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [transactionType, setTransactionType] = useState("all");
+  const [accountData, setAccountData] = useState<AccountData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // 총 입금액과 총 출금액 계산
-  const calculateTotals = (transactions: Transaction[]) => {
+  const calculateTotals = (transactions: TradeDto[]) => {
     return transactions.reduce(
       (acc, transaction) => {
         if (transaction.tradeAmount > 0) {
-          acc.totalDeposit += transaction.tradeAmount
+          acc.totalDeposit += transaction.tradeAmount;
         } else {
-          acc.totalWithdrawal += Math.abs(transaction.tradeAmount)
+          acc.totalWithdrawal += Math.abs(transaction.tradeAmount);
         }
-        return acc
+        return acc;
       },
       { totalDeposit: 0, totalWithdrawal: 0 }
-    )
-  }
+    );
+  };
 
   // API 데이터 가져오기
   useEffect(() => {
     const fetchAccountData = async () => {
       try {
-        const response = await axios.get('/api/v1/account/history')
-        setAccountData(response.data)
+        const response = await authApi.get("/api/v1/profile/mypage/myaccount");
+        setAccountData(response.data);
       } catch (error) {
-        console.error('계좌 내역을 불러오는데 실패했습니다:', error)
+        console.error("계좌 내역을 불러오는데 실패했습니다:", error);
         toast({
           title: "데이터 로드 실패",
-          description: "기본 데이터를 표시합니다.",
+          description: "계좌 내역을 불러오는데 실패했습니다.",
           variant: "destructive",
-        })
-        // 에러 시 기본 데이터 사용
-        setAccountData(DEFAULT_ACCOUNT_DATA)
+        });
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchAccountData()
-  }, [])
+    fetchAccountData();
+  }, []);
 
   // 필터링된 거래 내역
-  const filteredTransactions = accountData.tradeList.filter((transaction) => {
-    // 검색어 필터링
-    const matchesSearch =
-      searchTerm === "" ||
-      transaction.tradeDetail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.tradePartnerName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTransactions =
+    accountData?.tradeList.filter((transaction) => {
+      // 검색어 필터링
+      const matchesSearch =
+        searchTerm === "" ||
+        transaction.tradeDetail
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        transaction.tradePartnerName
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-    // 거래 유형 필터링
-    const matchesType =
-      transactionType === "all" ||
-      (transactionType === "deposit" && transaction.tradeAmount > 0) ||
-      (transactionType === "withdrawal" && transaction.tradeAmount < 0)
+      // 거래 유형 필터링
+      const matchesType =
+        transactionType === "all" ||
+        (transactionType === "deposit" && transaction.tradeAmount > 0) ||
+        (transactionType === "withdrawal" && transaction.tradeAmount < 0);
 
-    return matchesSearch && matchesType
-  })
+      return matchesSearch && matchesType;
+    }) || [];
 
   // 필터링된 거래 내역의 총액 계산
-  const { totalDeposit, totalWithdrawal } = calculateTotals(filteredTransactions)
+  const { totalDeposit, totalWithdrawal } =
+    calculateTotals(filteredTransactions);
 
   // 날짜/시간 포맷 함수
   const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString)
-    return format(date, "yyyy년 MM월 dd일 HH:mm", { locale: ko })
-  }
+    const date = new Date(dateTimeString);
+    return format(date, "yyyy년 MM월 dd일 HH:mm", { locale: ko });
+  };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">로딩 중...</div>
+    return (
+      <div className="flex items-center justify-center h-screen">
+        로딩 중...
+      </div>
+    );
+  }
+
+  if (!accountData) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        데이터를 불러올 수 없습니다.
+      </div>
+    );
   }
 
   return (
@@ -150,19 +139,29 @@ export default function AccountHistoryPage() {
         {/* 계좌 정보 */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{accountData.gatheringName}님의 계좌</CardTitle>
+            <CardTitle className="text-lg">
+              {accountData.gatheringName}님의 계좌
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-2">{accountData.gatheringAccountNo}</p>
-            <div className="text-2xl font-bold">{accountData.gatheringAccountBalance.toLocaleString()}원</div>
+            <p className="text-sm text-gray-500 mb-2">
+              {accountData.gatheringAccountNo}
+            </p>
+            <div className="text-2xl font-bold">
+              {accountData.gatheringAccountBalance.toLocaleString()}원
+            </div>
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <p className="text-sm text-gray-500">총 입금액</p>
-                <p className="text-lg font-semibold text-green-600">+{totalDeposit.toLocaleString()}원</p>
+                <p className="text-lg font-semibold text-green-600">
+                  +{totalDeposit.toLocaleString()}원
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">총 출금액</p>
-                <p className="text-lg font-semibold text-red-600">-{totalWithdrawal.toLocaleString()}원</p>
+                <p className="text-lg font-semibold text-red-600">
+                  -{totalWithdrawal.toLocaleString()}원
+                </p>
               </div>
             </div>
           </CardContent>
@@ -172,10 +171,14 @@ export default function AccountHistoryPage() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">거래 내역</h2>
-            <Button variant="outline" size="sm" onClick={() => {
-              setSearchTerm("")
-              setTransactionType("all")
-            }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setTransactionType("all");
+              }}
+            >
               필터 초기화
             </Button>
           </div>
@@ -212,7 +215,9 @@ export default function AccountHistoryPage() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-medium">{transaction.tradeDetail}</div>
+                      <div className="font-medium">
+                        {transaction.tradeDetail}
+                      </div>
                       <div className="text-sm text-gray-500">
                         {formatDateTime(transaction.tradeTime)}
                       </div>
@@ -221,7 +226,13 @@ export default function AccountHistoryPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`font-semibold ${transaction.tradeAmount > 0 ? "text-green-600" : "text-red-600"}`}>
+                      <div
+                        className={`font-semibold ${
+                          transaction.tradeAmount > 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
                         {transaction.tradeAmount > 0 ? "+" : ""}
                         {transaction.tradeAmount.toLocaleString()}원
                       </div>
@@ -234,7 +245,9 @@ export default function AccountHistoryPage() {
               </Card>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-500">거래 내역이 없습니다.</div>
+            <div className="text-center py-8 text-gray-500">
+              거래 내역이 없습니다.
+            </div>
           )}
         </div>
 
@@ -245,6 +258,5 @@ export default function AccountHistoryPage() {
         </Button>
       </main>
     </>
-  )
+  );
 }
-

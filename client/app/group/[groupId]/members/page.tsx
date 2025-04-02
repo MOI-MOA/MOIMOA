@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, use } from "react"
+import { useState, use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Shield, AlertCircle, Check, X, UserPlus, Link, Copy, Share2, Crown } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
@@ -18,27 +18,40 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { publicApi } from "@/lib/api"
 
 interface Member {
-  id: number;
   name: string;
-  role?: string;
-  avatar: string;
+  email: string;
+  createdAt: string;
   balance: number;
-  deposit: number;
-  monthlyFee: {
-    amount: number;
-    status: string;
-  };
-  isManager?: boolean;
+  gatheringPaymentStatus: boolean;
+}
+
+interface InviteMember extends Member {
+  id: number;
+}
+
+interface Manager extends Member {
+  // manager는 Member와 동일한 구조를 가짐
+}
+
+interface GroupMembersResponse {
+  inviteList: InviteMember[];
+  manager: Manager;
+  memberList: Member[];
 }
 
 export default function GroupMembersPage({ params }: { params: Promise<{ groupId: string }> }) {
   const router = useRouter()
   const {groupId} = use(params)
 
-  // 현재 사용자가 총무인지 여부 (실제로는 API에서 확인해야 함)
-  const [isManager, setIsManager] = useState(true)
+  // 현재 사용자가 총무인지 여부
+  const [isManager, setIsManager] = useState(false)
+  const [members, setMembers] = useState<Member[]>([])
+  const [pendingMembers, setPendingMembers] = useState<InviteMember[]>([])
+  const [manager, setManager] = useState<Manager | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   // 초대 링크 관련 상태
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
@@ -53,80 +66,34 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   const [pinCode, setPinCode] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   
-  // Mock data for members
-  const [members, setMembers] = useState([
-    {
-      id: 1,
-      name: "김철수",
-      role: "총무",
-      avatar: "/placeholder.svg?height=40&width=40",
-      balance: 300000,
-      deposit: 100000,
-      monthlyFee: {
-        amount: 30000,
-        status: "완료",
-      },
-      isManager: true,
-    },
-    {
-      id: 2,
-      name: "이영희",
-      avatar: "/placeholder.svg?height=40&width=40",
-      balance: 250000,
-      deposit: 100000,
-      monthlyFee: {
-        amount: 30000,
-        status: "완료",
-      },
-    },
-    {
-      id: 3,
-      name: "박지성",
-      avatar: "/placeholder.svg?height=40&width=40",
-      balance: 180000,
-      deposit: 100000,
-      monthlyFee: {
-        amount: 30000,
-        status: "미납",
-      },
-    },
-    {
-      id: 4,
-      name: "최민수",
-      avatar: "/placeholder.svg?height=40&width=40",
-      balance: 420000,
-      deposit: 100000,
-      monthlyFee: {
-        amount: 30000,
-        status: "완료",
-      },
-    },
-  ])
+  // API 호출 함수
+  const fetchGroupMembers = async () => {
+    try {
+      setIsLoading(true)
+      const response = await publicApi.get<GroupMembersResponse>(`api/v1/gathering/${groupId}/member-manage`) as unknown as GroupMembersResponse
+      console.log(response)
+      setMembers(response.memberList)
+      setPendingMembers(response.inviteList)
+      setManager(response.manager)
+      
+      // 현재 사용자가 총무인지 확인 (이메일로 비교)
+      const currentUserEmail = "test1@naver.com" // 실제로는 로그인된 사용자의 이메일을 사용해야 함
+      setIsManager(response.manager.email === currentUserEmail)
+    } catch (error) {
+      console.error('Error fetching group members:', error)
+      toast({
+        title: "데이터 로딩 실패",
+        description: "회원 정보를 불러오는데 실패했습니다.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-  // 신청 인원 데이터 (실제로는 API에서 가져와야 함)
-  const [pendingMembers, setPendingMembers] = useState([
-    {
-      id: 101,
-      name: "홍길동",
-      avatar: "/placeholder.svg?height=40&width=40",
-      email: "hong@example.com",
-      requestDate: "2024-03-20",
-    },
-    {
-      id: 102,
-      name: "김영수",
-      avatar: "/placeholder.svg?height=40&width=40",
-      email: "kim@example.com",
-      requestDate: "2024-03-22",
-    },
-    {
-      id: 103,
-      name: "이지은",
-      avatar: "/placeholder.svg?height=40&width=40",
-      email: "lee@example.com",
-      requestDate: "2024-03-25",
-    },
-  ])
+  useEffect(() => {
+    fetchGroupMembers()
+  }, [groupId])
 
   // 초대 링크 생성 함수
   const generateInviteLink = () => {
@@ -171,7 +138,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
 
   // 회원 클릭 함수
   const handleMemberClick = (member: Member) => {
-    if (isManager && !member.isManager) {
+    if (isManager && !member.gatheringPaymentStatus) {
       setSelectedMember(member)
     }
   }
@@ -227,11 +194,11 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
       // 총무 권한 변경
       setMembers((prev) =>
         prev.map((member) => {
-          if (member.isManager) {
-            return { ...member, isManager: false, role: "회원" }
+          if (member.email === manager?.email) {
+            return { ...member, gatheringPaymentStatus: false }
           }
-          if (member.id === selectedMember.id) {
-            return { ...member, isManager: true, role: "총무" }
+          if (member.email === selectedMember.email) {
+            return { ...member, gatheringPaymentStatus: true }
           }
           return member
         }),
@@ -262,50 +229,59 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   }
 
   // 신청 수락 함수
-  const handleAccept = (memberId: number) => {
-    // 실제로는 API 호출로 처리해야 함
-    const memberToAccept = pendingMembers.find((m) => m.id === memberId)
-
-    if (memberToAccept) {
+  const handleAccept = async (member: InviteMember) => {
+    try {
+      // API 호출로 처리
+      await publicApi.post(`api/v1/gathering/${groupId}/members/${member.id}/accept`)
+      
       // 신청 인원 목록에서 제거
-      setPendingMembers((prev) => prev.filter((m) => m.id !== memberId))
+      setPendingMembers((prev) => prev.filter((m) => m.id !== member.id))
 
       // 회원 목록에 추가
       setMembers((prev) => [
         ...prev,
         {
-          id: memberToAccept.id,
-          name: memberToAccept.name,
-          avatar: memberToAccept.avatar,
+          name: member.name,
+          email: member.email,
+          createdAt: member.createdAt,
           balance: 0,
-          deposit: 100000,
-          monthlyFee: {
-            amount: 30000,
-            status: "미납",
-          },
+          gatheringPaymentStatus: false,
         },
       ])
 
       toast({
         title: "회원 신청 수락",
-        description: `${memberToAccept.name}님의 회원 신청이 수락되었습니다.`,
+        description: `${member.name}님의 회원 신청이 수락되었습니다.`,
         duration: 3000,
+      })
+    } catch (error) {
+      toast({
+        title: "회원 신청 수락 실패",
+        description: "회원 신청 수락 중 오류가 발생했습니다.",
+        variant: "destructive",
       })
     }
   }
-  // 신청 거절 함수
-  const handleReject = (memberId: number) => {
-    // 실제로는 API 호출로 처리해야 함
-    const memberToReject = pendingMembers.find((m) => m.id === memberId)
 
-    if (memberToReject) {
+  // 신청 거절 함수
+  const handleReject = async (member: InviteMember) => {
+    try {
+      // API 호출로 처리
+      await publicApi.post(`api/v1/gathering/${groupId}/members/${member.id}/reject`)
+      
       // 신청 인원 목록에서 제거
-      setPendingMembers((prev) => prev.filter((m) => m.id !== memberId))
+      setPendingMembers((prev) => prev.filter((m) => m.id !== member.id))
 
       toast({
         title: "회원 신청 거절",
-        description: `${memberToReject.name}님의 회원 신청이 거절되었습니다.`,
+        description: `${member.name}님의 회원 신청이 거절되었습니다.`,
         duration: 3000,
+      })
+    } catch (error) {
+      toast({
+        title: "회원 신청 거절 실패",
+        description: "회원 신청 거절 중 오류가 발생했습니다.",
+        variant: "destructive",
       })
     }
   }
@@ -320,7 +296,11 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600">이번 달 회비 납부 현황</div>
               <div className="text-sm font-medium">
-                {members.filter((m) => m.monthlyFee.status === "완료").length}/{members.length}명 완료
+                {isLoading ? (
+                  <span className="text-gray-400">로딩 중...</span>
+                ) : (
+                  `${members.filter((m) => m.gatheringPaymentStatus).length}/${members.length}명 완료`
+                )}
               </div>
             </div>
           </CardContent>
@@ -351,7 +331,6 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                   <div className="flex items-start justify-between">
                     <div className="flex items-center">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={member.avatar} />
                         <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
                       </Avatar>
                       <div className="ml-3">
@@ -359,7 +338,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                           <span className="font-medium">{member.name}</span>
                         </div>
                         <div className="text-sm text-gray-500 mt-1">{member.email}</div>
-                        <div className="text-xs text-gray-400 mt-1">신청일: {member.requestDate}</div>
+                        <div className="text-xs text-gray-400 mt-1">신청일: {new Date(member.createdAt).toLocaleDateString()}</div>
                       </div>
                     </div>
                     <div className="flex space-x-2">
@@ -367,7 +346,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                         size="sm"
                         variant="outline"
                         className="text-green-600 border-green-200 hover:bg-green-50"
-                        onClick={() => handleAccept(member.id)}
+                        onClick={() => handleAccept(member)}
                       >
                         <Check className="h-4 w-4 mr-1" />
                         수락
@@ -376,7 +355,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                         size="sm"
                         variant="outline"
                         className="text-red-600 border-red-200 hover:bg-red-50"
-                        onClick={() => handleReject(member.id)}
+                        onClick={() => handleReject(member)}
                       >
                         <X className="h-4 w-4 mr-1" />
                         거절
@@ -392,59 +371,76 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
         {/* Members List */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">회원 목록</h2>
-          {members.map((member) => (
+          
+          {/* 총무 정보 */}
+          {manager && (
+            <Card className="hover:shadow-md transition-shadow border-blue-100">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center">
+                    <Avatar className="h-10 w-10 bg-blue-100">
+                      <AvatarFallback className="text-blue-600">{manager.name.slice(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="ml-3">
+                      <div className="flex items-center">
+                        <span className="font-medium">{manager.name}</span>
+                        <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800 border-0">
+                          <Crown className="h-3 w-3 mr-1" />
+                          총무
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">잔액: {manager.balance.toLocaleString()}원</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="mt-1">
+                      <Badge
+                        variant={manager.gatheringPaymentStatus ? "outline" : "destructive"}
+                        className={
+                          manager.gatheringPaymentStatus ? "text-green-600" : "bg-red-100 text-red-800 border-0"
+                        }
+                      >
+                        {!manager.gatheringPaymentStatus && <AlertCircle className="h-3 w-3 mr-1" />}
+                        {manager.gatheringPaymentStatus ? "완료" : "미납"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 일반 회원 목록 */}
+          {members.map((member, index) => (
             <Card
-              key={member.id}
-              className={`hover:shadow-md transition-shadow ${isManager && !member.isManager ? "cursor-pointer" : ""}`}
-              onClick={() => handleMemberClick(member)}
+              key={index}
+              className="hover:shadow-md transition-shadow"
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={member.avatar} />
                       <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div className="ml-3">
                       <div className="flex items-center">
                         <span className="font-medium">{member.name}</span>
-                        {member.isManager && (
-                          <Badge variant="secondary" className="ml-2">
-                            <Shield className="h-3 w-3 mr-1" />
-                            총무
-                          </Badge>
-                        )}
                       </div>
                       <div className="text-sm text-gray-500 mt-1">잔액: {member.balance.toLocaleString()}원</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-gray-600">보증금: {member.deposit.toLocaleString()}원</div>
                     <div className="mt-1">
                       <Badge
-                        variant={member.monthlyFee.status === "완료" ? "outline" : "destructive"}
+                        variant={member.gatheringPaymentStatus ? "outline" : "destructive"}
                         className={
-                          member.monthlyFee.status === "완료" ? "text-green-600" : "bg-red-100 text-red-800 border-0"
+                          member.gatheringPaymentStatus ? "text-green-600" : "bg-red-100 text-red-800 border-0"
                         }
                       >
-                        {member.monthlyFee.status === "미납" && <AlertCircle className="h-3 w-3 mr-1" />}
-                        {member.monthlyFee.status}
+                        {!member.gatheringPaymentStatus && <AlertCircle className="h-3 w-3 mr-1" />}
+                        {member.gatheringPaymentStatus ? "완료" : "미납"}
                       </Badge>
                     </div>
-                    {isManager && !member.isManager && selectedMember?.id === member.id && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2 text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setIsTransferDialogOpen(true)
-                        }}
-                      >
-                        <Crown className="h-4 w-4 mr-1" />
-                        총무 위임
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>

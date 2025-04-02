@@ -1,13 +1,19 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { BarChart3, User, CreditCard, ArrowRight, Banknote} from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Header } from "@/components/Header"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation";
+import {
+  BarChart3,
+  User,
+  CreditCard,
+  ArrowRight,
+  Banknote,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Header } from "@/components/Header";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
-  const router = useRouter()
+  const router = useRouter();
 
   // 사용자 정보 (실제로는 API에서 가져와야 함)
   const userInfo = {
@@ -15,8 +21,8 @@ export default function ProfilePage() {
     email: "user@example.com",
     avatar: "/placeholder.svg?height=80&width=80",
     joinedGroups: 4,
-    totalBalance: 850000
-  }
+    totalBalance: 850000,
+  };
 
   const menuItems = [
     {
@@ -43,7 +49,7 @@ export default function ProfilePage() {
       icon: <Banknote className="h-6 w-6 text-yellow-500" />,
       path: "/profile/account-history",
     },
-  ]
+  ];
 
   return (
     <>
@@ -66,8 +72,10 @@ export default function ProfilePage() {
                     <p className="font-semibold">{userInfo.joinedGroups}개</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">모임 총 잔액</p>
-                    <p className="font-semibold">{userInfo.totalBalance.toLocaleString()}원</p>
+                    <p className="text-xs text-gray-500">계좌 총 잔액</p>
+                    <p className="font-semibold">
+                      {userInfo.totalBalance.toLocaleString()}원
+                    </p>
                   </div>
                 </div>
               </div>
@@ -89,7 +97,9 @@ export default function ProfilePage() {
                     {item.icon}
                     <div className="ml-4">
                       <h3 className="font-medium">{item.title}</h3>
-                      <p className="text-sm text-gray-500">{item.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
                   <ArrowRight className="h-5 w-5 text-gray-400" />
@@ -100,6 +110,5 @@ export default function ProfilePage() {
         </div>
       </main>
     </>
-  )
+  );
 }
-
