@@ -1,7 +1,7 @@
 services:
 
-  client:
-    build-blue:
+  client-blue:
+    build:
       context: ./client
       dockerfile: Dockerfile
     container_name: client-blue
@@ -27,7 +27,12 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=production
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      # 추가 환경 변수가 필요하다면 여기에 추가
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://my-db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
     depends_on:
       my-db:
         condition: service_healthy
@@ -38,12 +43,17 @@ services:
     restart: always
 
   my-db:
-    image: mysql
+    image: mysql:8.0
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      # - MYSQL_ROOT_HOST=%
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./mysql_data:/var/lib/mysql
+      # - ./mysql_data:/var/lib/mysql
+      - mysql_data_volume:/var/lib/mysql
     ports:
       - 3307:3306
     networks:
@@ -80,6 +90,8 @@ services:
   #   networks:
   #     - app-network
 
+volumes:
+  mysql_data_volume:
 
 networks:
   app-network:
