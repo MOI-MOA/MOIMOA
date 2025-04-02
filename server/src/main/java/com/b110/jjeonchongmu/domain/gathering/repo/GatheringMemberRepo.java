@@ -3,6 +3,7 @@ package com.b110.jjeonchongmu.domain.gathering.repo;
 import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
+import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long> {
-    
+
     /**
      * 모임 ID로 모든 회원 정보 조회
      */
@@ -61,4 +62,29 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
     long countByGatheringGatheringIdAndGatheringMemberStatus(Long gatheringId, GatheringMemberStatus status);
 
     List<GatheringMember> findByGatheringGatheringIdAndGatheringMemberStatus(Long gatheringId, GatheringMemberStatus status);
+
+    @Query("SELECT gm FROM GatheringMember gm " +
+            "JOIN gm.gathering g " +
+            "JOIN g.schedules s " +
+            "JOIN s.attendees sm " +
+            "WHERE s.id = :scheduleId " +
+            "AND sm.isPenaltyApply = TRUE")
+    List<GatheringMember> findGatheringMembersByScheduleIdAndPenaltyApplied(@Param("scheduleId") Long scheduleId);
+
+
+    @Query("SELECT gm FROM GatheringMember gm " +
+            "JOIN gm.gathering g " +
+            "JOIN g.schedules s " +
+            "JOIN s.attendees sm " +
+            "WHERE s.id = :scheduleId " +
+            "AND sm.isPenaltyApply = FALSE")
+    List<GatheringMember> findGatheringMembersByScheduleIdAndPenaltyNotApplied(@Param("scheduleId") Long scheduleId);
+
+    @Query("SELECT gm FROM GatheringMember gm " +
+            "JOIN gm.gathering g " +
+            "JOIN g.schedules s " +
+            "WHERE s.id = :scheduleId AND gm.gatheringMemberUser.userId = :userId")
+    GatheringMember findGatheringMemberByScheduleIdAndUserId(
+            @Param("scheduleId") Long scheduleId,
+            @Param("userId") Long userId);
 }
