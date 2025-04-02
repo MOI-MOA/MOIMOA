@@ -3,6 +3,7 @@ package com.b110.jjeonchongmu.domain.account.entity;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class PersonalAccount extends Account {
     private String accountNo;
 
     @OneToMany(mappedBy = "personalAccount" , fetch = FetchType.LAZY)
-    private List<AutoPayment> autoPayments;
+    private List<AutoPayment> autoPayments = new ArrayList<>();
 
     public PersonalAccount(User user, String accountNo, String accountPw) {
         super(user, accountPw,0L);

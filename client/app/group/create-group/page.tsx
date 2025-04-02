@@ -18,6 +18,7 @@ interface GatheringData {
   basicFee: number;
   accountNumber?: string;
   bankName?: string;
+  paybackPercent: number;
 }
 
 interface ApiResponse {
@@ -37,6 +38,7 @@ export default function CreateGroupPage() {
     accountNumber: "",
     bankName: "싸피 은행",
     pinNumber: "",
+    paybackPercent: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
@@ -92,32 +94,28 @@ export default function CreateGroupPage() {
     setIsCreatingAccount(true);
     try {
       const response = await authApi.post("/api/v1/gathering", {
-        gatheringTitle: formData.gatheringTitle,
+        gatheringName: formData.gatheringTitle,
         gatheringIntroduction: formData.gatheringIntroduction,
         memberCount: parseInt(formData.memberCount),
         basicFee: parseInt(formData.basicFee),
-        bankName: formData.bankName,
-        pinNumber: formData.pinNumber,
+        gatheringAccountPW: formData.pinNumber,
+        paybackPercent: parseFloat(formData.paybackPercent),
       });
 
-      if (response.data.httpStatus === 200) {
+      if (response?.gatheringId) {
         toast({
           title: "모임 생성 성공",
-          description: response.data.message,
+          description: "모임이 성공적으로 생성되었습니다.",
         });
         router.push("/group");
       } else {
-        toast({
-          title: "모임 생성 실패",
-          description: response.data.message,
-          variant: "destructive",
-        });
+        throw new Error("모임 생성에 실패했습니다.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("모임 생성 실패:", error);
       toast({
-        title: "오류 발생",
-        description: "모임 생성 중 오류가 발생했습니다.",
+        title: "모임 생성 실패",
+        description: error.message || "모임 생성 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     } finally {
@@ -142,10 +140,24 @@ export default function CreateGroupPage() {
         }
         break;
       case 2:
-        if (!formData.basicFee) {
+        if (!formData.basicFee || !formData.paybackPercent) {
           toast({
             title: "필수 입력",
-            description: "기본 회비를 입력해주세요.",
+            description: "기본 회비와 페이백 퍼센트를 입력해주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
+        // 페이백 퍼센트 유효성 검사
+        const paybackPercent = parseFloat(formData.paybackPercent);
+        if (
+          isNaN(paybackPercent) ||
+          paybackPercent < 0 ||
+          paybackPercent > 100
+        ) {
+          toast({
+            title: "페이백 퍼센트 오류",
+            description: "페이백 퍼센트는 0에서 100 사이의 숫자여야 합니다.",
             variant: "destructive",
           });
           return;
@@ -174,42 +186,31 @@ export default function CreateGroupPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await authApi.post("/api/v1/gathering", {
-        gatheringTitle: formData.gatheringTitle,
-        gatheringIntroduction: formData.gatheringIntroduction,
-        memberCount: parseInt(formData.memberCount),
-        basicFee: parseInt(formData.basicFee),
-        bankName: formData.bankName,
-        pinNumber: formData.pinNumber,
-      });
+  // 페이백 퍼센트 입력 핸들러 추가
+  const handlePaybackInput = (num: string) => {
+    const currentValue = formData.paybackPercent;
+    const newValue = currentValue + num;
 
-      if (response.data.httpStatus === 200) {
-        toast({
-          title: "모임 생성 성공",
-          description: response.data.message,
-        });
-        router.push("/group");
-      } else {
-        toast({
-          title: "모임 생성 실패",
-          description: response.data.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("모임 생성 실패:", error);
-      toast({
-        title: "오류 발생",
-        description: "모임 생성 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (newValue.length <= 3 && parseInt(newValue) <= 100) {
+      setFormData((prev) => ({
+        ...prev,
+        paybackPercent: newValue,
+      }));
     }
+  };
+
+  const handlePaybackDelete = () => {
+    setFormData((prev) => ({
+      ...prev,
+      paybackPercent: prev.paybackPercent.slice(0, -1),
+    }));
+  };
+
+  const handlePaybackClear = () => {
+    setFormData((prev) => ({
+      ...prev,
+      paybackPercent: "",
+    }));
   };
 
   const renderStep = () => {
@@ -268,6 +269,39 @@ export default function CreateGroupPage() {
                 required
               />
             </div>
+            <div>
+              <Label htmlFor="paybackPercent">페이백 퍼센트</Label>
+              <Input
+                id="paybackPercent"
+                name="paybackPercent"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                value={formData.paybackPercent}
+                onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  // 숫자 키와 특수 키(Backspace, Delete, Arrow keys)만 허용
+                  if (
+                    !/[\d\b]/.test(e.key) &&
+                    ![
+                      "Backspace",
+                      "Delete",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Tab",
+                    ].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
+                placeholder="페이백 퍼센트를 입력하세요 (0-100)"
+                required
+              />
+              <p className="text-sm text-gray-500">
+                0에서 100 사이의 숫자를 입력해주세요
+              </p>
+            </div>
           </>
         );
       case 3:
@@ -308,34 +342,11 @@ export default function CreateGroupPage() {
                       name="pinNumber"
                       type="password"
                       value={formData.pinNumber}
-                      readOnly
-                      className="text-center text-2xl tracking-widest placeholder:text-base"
+                      onChange={handleInputChange}
+                      maxLength={6}
                       placeholder="비밀번호 입력"
+                      required
                     />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                      <Button
-                        key={num}
-                        type="button"
-                        onClick={() => handlePinInput(num.toString())}
-                        className="text-2xl py-6"
-                      >
-                        {num}
-                      </Button>
-                    ))}
-                    <Button onClick={handlePinClear} className="text-lg py-6">
-                      Clear
-                    </Button>
-                    <Button
-                      onClick={() => handlePinInput("0")}
-                      className="text-2xl py-6"
-                    >
-                      0
-                    </Button>
-                    <Button onClick={handlePinDelete} className="text-lg py-6">
-                      Delete
-                    </Button>
                   </div>
                   <Button
                     type="button"

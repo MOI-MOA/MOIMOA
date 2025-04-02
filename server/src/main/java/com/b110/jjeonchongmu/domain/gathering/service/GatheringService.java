@@ -1,12 +1,18 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
 import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
-import com.b110.jjeonchongmu.domain.account.dto.MakeGatheringAccountDTO;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
 import com.b110.jjeonchongmu.domain.account.service.AutoPaymentService;
 import com.b110.jjeonchongmu.domain.gathering.dto.*;
+import com.b110.jjeonchongmu.domain.gathering.dto.AddGatheringDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailAccountDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailManagerDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailResponseDTO;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailSchedules;
+import com.b110.jjeonchongmu.domain.gathering.dto.GatheringListResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
@@ -30,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import org.springframework.web.client.HttpClientErrorException;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -218,7 +223,7 @@ public class GatheringService {
 
 		User user = userRepo.getUserByUserId(userId);
 		List<Schedule> schedules = gathering.getSchedules();
-
+		System.out.println("userId + gatheringId" + userId + ", " + gatheringId);
 		GatheringMember gatheringMember =
 				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(
 						gathering.getGatheringId(), user.getUserId())

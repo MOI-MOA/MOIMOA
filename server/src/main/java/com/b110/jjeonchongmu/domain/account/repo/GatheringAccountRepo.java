@@ -1,6 +1,5 @@
 package com.b110.jjeonchongmu.domain.account.repo;
 
-import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +12,6 @@ public interface GatheringAccountRepo extends JpaRepository<GatheringAccount, Lo
 	@Query("SELECT a FROM Account a WHERE a.accountId = :accountId AND TYPE(a) = GatheringAccount")
 	Optional<GatheringAccount> findByAccount(Long accountId);
 
-    GatheringAccount findAccountByAccountNo(String toAccountNo);
+	GatheringAccount findAccountByAccountNo(String toAccountNo);
 
 }

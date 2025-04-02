@@ -45,7 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   // 보호된 경로 목록
-  const protectedPaths = ["/group", "/dashboard", "/profile", "/settings", "/"];
+  const protectedPaths = [
+    // "/group", "/dashboard", "/profile", "/settings"
+    "/asdafsadfgagwerrg",
+  ];
 
   // 현재 경로가 보호된 경로인지 확인
   const isProtectedPath = (path: string) => {
@@ -78,7 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isProtectedPath(pathname) && !token) {
       router.push("/login");
     } else if (
-      (pathname === "/login" || pathname === "/forgot-password") &&
+      (pathname === "/login" ||
+        pathname === "/signup" ||
+        pathname === "/forgot-password") &&
       token
     ) {
       router.push("/");
