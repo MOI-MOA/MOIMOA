@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import axios from "axios"
 import { toast } from "@/components/ui/use-toast"
-import { publicApi } from "@/lib/api"
+import { publicApi, authApi } from "@/lib/api"
 
 // 기본 데이터 타입 정의
 interface Transaction {
@@ -52,7 +52,7 @@ export default function AccountHistoryPage() {
         limit: currentLimit
       }
 
-      const response = await publicApi.post<AccountData>(
+      const response = await authApi.post<AccountData>(
         "api/v1/trade/account-history",
         requestData
       ) as unknown as AccountData

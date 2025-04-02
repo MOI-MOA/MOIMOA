@@ -109,7 +109,7 @@ export default function SendMoneyPage() {
     e.preventDefault();
 
     try {
-      const response: AccountCheckResponse = await publicApi.get(
+      const response: AccountCheckResponse = await authApi.get(
         `/api/v1/personal-account/${accountNumber}/${amount}/check`
       );
 

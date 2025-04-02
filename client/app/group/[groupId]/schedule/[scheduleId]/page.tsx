@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import axios, { AxiosInstance } from "axios";
 import { toast } from "@/components/ui/use-toast";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 
 interface Attendee {
   userId: number;
@@ -53,7 +53,7 @@ export default function ScheduleDetailPage() {
   useEffect(() => {
     const fetchScheduleData = async () => {
       try {
-        const data = await publicApi.get<ScheduleData>(
+        const data = await authApi.get<ScheduleData>(
           `/api/v1/schedule/${scheduleId}/detail`
         );
         console.log("API 응답:", data);
