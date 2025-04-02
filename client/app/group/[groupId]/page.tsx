@@ -115,7 +115,7 @@ export default function GroupDetailPage({
   // 모임 탈퇴 처리 함수
   const handleLeaveGroup = async () => {
     try {
-      await publicApi.post(`api/v1/gathering/${groupId}/leave`);
+      await publicApi.delete(`api/v1/gathering/${groupId}/leave`);
 
       toast({
         title: "모임 탈퇴 완료",
