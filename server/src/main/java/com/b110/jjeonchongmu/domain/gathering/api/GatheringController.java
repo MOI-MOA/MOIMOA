@@ -109,8 +109,8 @@ public class GatheringController {
      */
     @GetMapping("/{gatheringId}/detail")
     public ResponseEntity<GatheringDetailResponseDTO> getGatheringDetail(@PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         GatheringDetailResponseDTO response = gatheringService.getGatheringDetail(userId, gatheringId);
         return ResponseEntity.status(201).body(response);
     }

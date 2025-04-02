@@ -61,14 +61,13 @@ public class ScheduleController {
         System.out.println("일정 번호" + scheduleId);
         scheduleMemberService.setSubManager(gatheringId,scheduleId,scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
-
     }
     // 일정 수정(총무만)
     @PatchMapping("/{scheduleId}")
     public ResponseEntity<String> updateSchedule(@RequestBody ScheduleUpdateDTO scheduleUpdateDTO, @PathVariable Long scheduleId) {
 
-        Long userId = jwtTokenProvider.getUserId();
-//        Long userId = 1L ;
+//        Long userId = jwtTokenProvider.getUserId();
+        Long userId = 1L ;
 
         scheduleService.updateSchedule(userId,scheduleId,scheduleUpdateDTO);
         return ResponseEntity.status(204).body("일정이 수정되었습니다.");
@@ -98,7 +97,7 @@ public class ScheduleController {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 4L;
         scheduleMemberService.attendSchedule(userId,scheduleId);
-        return ResponseEntity.status(201).body("일정 참석이 완료되었습니다.");
+        return ResponseEntity.status(200).body("일정 참석이 완료되었습니다.");
     }
     // 일정 참석 취소
     @DeleteMapping("/{scheduleId}/cancel")
@@ -106,6 +105,6 @@ public class ScheduleController {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 4L;
         scheduleMemberService.cancelAttendance(userId,scheduleId);
-        return ResponseEntity.status(204).body("일정 참석이 취소되었습니다.");
+        return ResponseEntity.status(200).body("일정 참석이 취소되었습니다.");
     }
 }

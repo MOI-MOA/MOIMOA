@@ -96,6 +96,7 @@ public interface MainRepo extends JpaRepository<Schedule, Long> {
             "JOIN schedule_member sm ON s.schedule_id = sm.schedule_id " +
             "WHERE sm.user_id = :userId " +
             "AND s.schedule_start_time >= CURRENT_TIMESTAMP " +
+            "AND sm.schedule_is_check = true" +
             "GROUP BY s.schedule_id, g.gathering_id " +
             "ORDER BY s.schedule_start_time " +
             "LIMIT 10", nativeQuery = true)
