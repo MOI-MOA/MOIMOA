@@ -39,8 +39,8 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
-  access-token-validity: 86400000
-  refresh-token-validity: 86400000
+  access-token-validity: 2592000000
+  refresh-token-validity: 2592000000
 
 external:
   bank:
