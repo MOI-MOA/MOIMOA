@@ -77,15 +77,21 @@ public class ScheduleMemberService {
         GatheringMember gatheringMember = gatheringMemberRepo.findGatheringMemberByScheduleIdAndUserId(scheduleId,userId);
 
         // 개인돈이 인당예산보다 작으면 오류 발생
-        if(gatheringMember.getGatheringMemberAccountBalance()< schedule.getPerBudget()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "개인돈  부족");
-        }
+        if(gatheringMember.getGatheringMemberAccountBalance() < schedule.getPerBudget()){
+            Long gatheringMemberBalance = gatheringMember.getGatheringMemberAccountBalance(); // 잔액
+            Long remainingAmount = schedule.getPerBudget() - gatheringMemberBalance;
+            gatheringMember.decreaseGatheringMemberAccountBalance(gatheringMemberBalance);
 
+            if(remainingAmount>gatheringMember.getGatheringMemberAccountDeposit()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"보증금 까지 했는데 돈부족해");
+            }
+            gatheringMember.decreaseGatheringMemberAccountDeposit(remainingAmount);
+        } else {
         // 개인돈에서 인당예산 만큼 차감
         gatheringMember.decreaseGatheringMemberAccountBalance(schedule.getPerBudget());
-
         // 일정계좌 잔액 인당예산 만큼 증가
         schedule.getScheduleAccount().increaseBalance(schedule.getPerBudget());
+        }
 
     }
     // 일정 참석 취소
@@ -103,11 +109,24 @@ public class ScheduleMemberService {
 
         ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserId(scheduleId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule member not found"));
+        Gathering gathering = schedule.getGathering();
+
 
         if(LocalDateTime.now().isBefore(schedule.getPenaltyApplyDate())){
-            gatheringMember.increaseGatheringMemberAccountBalance(schedule.getPerBudget());
-            schedule.getScheduleAccount().decreaseBalance(schedule.getPerBudget());
-            scheduleMemberRepo.delete(scheduleMember);
+            Long gatheringMemberDeposit = gatheringMember.getGatheringMemberAccountDeposit();
+            Long haveTotransferDeposit = gathering.getGatheringDeposit() - gatheringMemberDeposit;
+            // 개인 보증금이 모임의 정해진 보증금 금액보다 적으면 개인 보증금부터 채워
+            if(gatheringMemberDeposit < gathering.getGatheringDeposit()){
+                gatheringMember.increaseGatheringMemberAccountDeposit(haveTotransferDeposit);
+                Long remainingAmount = schedule.getPerBudget() - haveTotransferDeposit;
+                gatheringMember.increaseGatheringMemberAccountDeposit(remainingAmount);
+            } else {
+                gatheringMember.increaseGatheringMemberAccountBalance(schedule.getPerBudget());
+            }
+
+                schedule.getScheduleAccount().decreaseBalance(schedule.getPerBudget());
+                scheduleMemberRepo.delete(scheduleMember);
+
         } else {
             scheduleMember.updateIsPenaltyApplyToTrue();
         }
