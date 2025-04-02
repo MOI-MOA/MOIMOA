@@ -17,6 +17,8 @@ import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import com.b110.jjeonchongmu.global.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +31,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
+	private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
 	private final UserRepo userRepo;
 	private final PasswordEncoder passwordEncoder;
@@ -48,14 +51,11 @@ public class UserService {
 			throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
 		}
 
-
+		log.info("은행 유저 생성 시작 - email: {}", request.getEmail());
 		//은행 유저 생성.
 		MakeUserResponseDTO makeUserResponseDTO = externalBankApiComponent.createBankAppUser(
 				request.getEmail());
-
-//		private final String userKey;
-//		private final String externalAccountType;
-//		private final Long accountPw;
+		log.info("은행 유저 생성 완료 - userKey: {}", makeUserResponseDTO.getUserKey());
 
 		User user = User.builder()
 				.email(request.getEmail())
@@ -66,9 +66,13 @@ public class UserService {
 				.build();
 
 		userRepo.save(user);
+		log.info("사용자 DB 저장 완료 - userId: {}", user.getUserId());
+
 		MakeExternalAccountDTO makeExternalAccountDTO = new MakeExternalAccountDTO(
 				makeUserResponseDTO.getUserKey(), externalAccountType, request.getPersonalAccountPW());
+		log.info("개인 계좌 생성 시작 - userKey: {}", makeUserResponseDTO.getUserKey());
 		personalAccountService.addPersonalAccount(makeExternalAccountDTO, user.getUserId());
+		log.info("개인 계좌 생성 완료");
 	}
 
 	/**
@@ -142,8 +146,11 @@ public class UserService {
 
 	// 현재 사용자 정보 조회
 	public User getCurrentUser() {
-		String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-		return userRepo.findById(Long.valueOf(userId))
+//		String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+		Long userId = jwtTokenProvider.getUserId();
+
+		System.out.println("UserService 현재 사용자 정보 조회 userId ==  " + userId);
+		return userRepo.findById(userId)
 				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 

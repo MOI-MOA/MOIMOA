@@ -55,8 +55,8 @@ public class GatheringMemberController {
     @PostMapping("/{gatheringId}/members/{memberId}/accept")
     public ResponseEntity<String> acceptGathering(
             @PathVariable Long gatheringId, @PathVariable Long memberId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         gatheringMemberService.acceptGathering(gatheringId, memberId, userId);
         return ResponseEntity.status(201).body("모임 참여 수락");
     }
@@ -67,8 +67,8 @@ public class GatheringMemberController {
     @PostMapping("/{gatheringId}/members/{memberId}/reject")
     public ResponseEntity<String> rejectGathering(
             @PathVariable Long gatheringId, @PathVariable Long memberId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         gatheringMemberService.rejectGathering(gatheringId, memberId, userId);
         return ResponseEntity.status(201).body("모임 참여 수락");
     }
@@ -82,8 +82,8 @@ public class GatheringMemberController {
     @GetMapping("/{gatheringId}/accept-page")
     public ResponseEntity<GatheringAcceptPageResponseDTO> groupJoinPage(
             @PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         GatheringAcceptPageResponseDTO response = gatheringMemberService.gatheringAccpetPage(gatheringId);
         System.out.println(response.getMemberCount());
         return ResponseEntity.status(201).body(response);
@@ -96,8 +96,8 @@ public class GatheringMemberController {
     @PostMapping("/{gatheringId}/join")
     public ResponseEntity<GatheringJoinResponseDTO> groupJoinButton(
             @PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         GatheringJoinResponseDTO response = gatheringMemberService.requestGatheringJoin(userId, gatheringId);
         return ResponseEntity.status(201).body(response);
 
@@ -118,8 +118,8 @@ public class GatheringMemberController {
      */
     @GetMapping("/{gatheringId}/members")
     public ResponseEntity<MemberListResponseDTO> getMembers(@PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         MemberListResponseDTO response = gatheringMemberService.getMembers(gatheringId, userId);
         return ResponseEntity.status(200).body(response);
     }
@@ -129,8 +129,8 @@ public class GatheringMemberController {
      */
     @DeleteMapping("/{gatheringId}/leave")
     public ResponseEntity<String> leaveGathering(@PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         gatheringMemberService.leaveGathering(gatheringId, userId);
         return ResponseEntity.status(204).body("모임탈퇴성공");
     }

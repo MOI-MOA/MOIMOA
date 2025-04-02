@@ -136,7 +136,7 @@ public class MypageService {
             throw new RuntimeException("유저가 자동이체의 주인이 아닙니다.");
         }
 
-        int amount = requestDto.getAmount();
+        long amount = requestDto.getAmount();
         int day = requestDto.getDay();
         boolean status = false;
         if (requestDto.getStatus().equals("active")) {
