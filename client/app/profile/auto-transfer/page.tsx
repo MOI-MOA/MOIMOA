@@ -146,6 +146,25 @@ export default function AutoTransferPage() {
     account: string;
     status: string;
   }) => {
+    console.log("수정하려는 자동이체 데이터:", transfer);
+
+    if (!transfer) {
+      console.log("transfer 객체가 null입니다.");
+      toast({
+        title: "오류",
+        description: "수정할 수 없는 자동이체입니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!transfer.id) console.log("id가 없습니다.");
+    if (!transfer.groupName) console.log("groupName이 없습니다.");
+    if (!transfer.amount) console.log("amount가 없습니다.");
+    if (!transfer.day) console.log("day가 없습니다.");
+    if (!transfer.account) console.log("account가 없습니다.");
+    if (!transfer.status) console.log("status가 없습니다.");
+
     const params = new URLSearchParams({
       id: transfer.id.toString(),
       groupName: transfer.groupName,
@@ -222,7 +241,8 @@ export default function AutoTransferPage() {
                     <div>
                       <p className="text-sm text-gray-500">내 계좌 잔액</p>
                       <p className="text-xl font-bold text-purple-600">
-                        {accountBalance.toLocaleString()}원
+                        {accountBalance ? accountBalance.toLocaleString() : "0"}
+                        원
                       </p>
                     </div>
                     <Button
@@ -308,7 +328,7 @@ export default function AutoTransferPage() {
                         </span>
                       </div>
                       <div className="text-lg font-semibold mb-2">
-                        {transfer.amount.toLocaleString()}원
+                        {(transfer.amount ?? 0).toLocaleString()}원
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
@@ -327,7 +347,7 @@ export default function AutoTransferPage() {
                                   : ""
                               }`}
                             >
-                              {transfer.myBalance.toLocaleString()}원
+                              {transfer.myBalance?.toLocaleString() ?? "0"}원
                             </p>
                             {transfer.myBalance < transfer.deposit && (
                               <AlertTriangle className="h-4 w-4 ml-1 text-red-500" />
