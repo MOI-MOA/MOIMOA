@@ -196,8 +196,9 @@ public class GatheringService {
 	/**
 	 * 전체 모임 목록 조회
 	 */
-	public GatheringListResponseDTO getAllGatherings() {
-		List<Gathering> gatherings = gatheringRepo.findAll();
+	public GatheringListResponseDTO getAllGatherings(Long userId) {
+		User user = userRepo.getUserByUserId(userId);
+		List<Gathering> gatherings = user.getGatherings();
 		return convertToGatheringListResponse(gatherings);
 	}
 
