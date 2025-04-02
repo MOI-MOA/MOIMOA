@@ -1,5 +1,5 @@
 "use client"
-
+// 모두가 보는페이지지
 import { useState, use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Shield, Mail } from "lucide-react"

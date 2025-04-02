@@ -50,6 +50,7 @@ export default function GroupsPage() {
     try {
       setIsLoading(true);
       const response = await publicApi.get<ApiResponse>("api/v1/gathering") as unknown as ApiResponse;
+      console.log(response);
       setGroups(response.gatherings);
     } catch (error) {
       console.error("그룹 목록을 가져오는데 실패했습니다:", error);

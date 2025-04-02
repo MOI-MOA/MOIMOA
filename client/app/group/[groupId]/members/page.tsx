@@ -1,5 +1,5 @@
 "use client"
-
+// 총무가 보는 페이지지
 import { useState, use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Shield, AlertCircle, Check, X, UserPlus, Link, Copy, Share2, Crown } from "lucide-react"
