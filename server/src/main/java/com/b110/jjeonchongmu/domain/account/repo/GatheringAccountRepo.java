@@ -14,4 +14,5 @@ public interface GatheringAccountRepo extends JpaRepository<GatheringAccount, Lo
 
 	GatheringAccount findAccountByAccountNo(String toAccountNo);
 
+	Boolean existsByAccountNo(String toAccountNo);
 }

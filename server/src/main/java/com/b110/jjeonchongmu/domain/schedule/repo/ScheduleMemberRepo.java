@@ -16,4 +16,25 @@ public interface ScheduleMemberRepo extends JpaRepository<ScheduleMember, Long> 
 
     @Query("SELECT COUNT(sm) > 0 FROM ScheduleMember sm WHERE sm.scheduleMember.userId = :userId AND sm.schedule.gathering.gatheringId = :gatheringId")
     boolean existsByUserIdAndGatheringId(@Param("userId") Long userId, @Param("gatheringId") Long gatheringId);
+
+    @Query("SELECT COUNT(sm) > 0 FROM ScheduleMember sm WHERE sm.scheduleMember.userId = :userId AND sm.schedule.id = :scheduleId")
+    boolean existsByUserIdAndScheduleId(@Param("userId") Long userId, @Param("scheduleId") Long scheduleId);
+
+
+    void deleteAllByScheduleId(Long scheduleId);
+
+
+    @Query("SELECT COUNT(sm) FROM ScheduleMember sm WHERE sm.schedule.id = :scheduleId AND sm.isPenaltyApply = true")
+    Integer countByScheduleIdAndPenaltyApplied(@Param("scheduleId") Long scheduleId);
+
+    @Query("SELECT COUNT(sm) FROM ScheduleMember sm WHERE sm.schedule.id = :scheduleId AND sm.isPenaltyApply = false")
+    Integer countByScheduleIdAndPenaltyNotApplied(@Param("scheduleId") Long scheduleId);
+
+    Integer countByScheduleIdAndIsPenaltyApplyFalseOrIsPenaltyApplyIsNull(Long scheduleId);
+
+    @Query("SELECT sm FROM ScheduleMember sm WHERE sm.schedule.id = :scheduleId AND sm.isPenaltyApply = false")
+    List<ScheduleMember> findAllByScheduleIdAndPenaltyApplied(@Param("scheduleId") Long scheduleId);
+
+    @Query("SELECT sm FROM ScheduleMember sm WHERE sm.schedule.id = :scheduleId AND sm.isPenaltyApply = true")
+    List<ScheduleMember> findAllByScheduleIdAndPenaltyNotApplied(@Param("scheduleId") Long scheduleId);
 }

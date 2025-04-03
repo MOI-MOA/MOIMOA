@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class UpdateAutoPaymentRequestDto {
-    private Long id; // 자동이체 id
+//    private Long id; // 자동이체 id
     private int amount; // 가격
     private int day;
-    private String status; // 활성여부 "active" | "inactive"
+    private boolean status; // 활성여부 "active" | "inactive"
 }

@@ -86,6 +86,7 @@ public class ScheduleAccountService {
             String scheduleAccountPw = transferTransactionHistoryDTO.getAccountPw();
             System.out.println(originAccountPw + " , " + scheduleAccountPw);
             boolean isPassword = passwordEncoder.matches(scheduleAccountPw, originAccountPw);
+
             if(!isPassword) {
                 throw new IllegalAccessException("비밀번호 불일치");
             }
@@ -206,7 +207,7 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
             // 부총무 한명의 인당예산만큼 잔액 추가
 
 
-            // 일정 계좌 생성후 일정에 계좌 Build
+
             scheduleAccountRepo.save(scheduleAccount);
             schedule.updateScheduleAccount(scheduleAccount);
             scheduleRepo.save(schedule);

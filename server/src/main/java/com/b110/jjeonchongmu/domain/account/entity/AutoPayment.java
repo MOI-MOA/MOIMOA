@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AutoPayment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,24 +24,27 @@ public class AutoPayment {
     @JoinColumn(name = "gathering_account_id", nullable = false)
     private GatheringAccount gatheringAccount;
 
-    @Column(name = "auto_payment_amount", nullable = true)
-    private Integer autoPaymentAmount;
+    @Column(name = "auto_payment_amount")
+    private Long autoPaymentAmount;
 
-    // 매월 며칠인지 표시
-    // ex) 14 면 매월 14일에 자동 입금
     @Column(name = "auto_payment_date", nullable = true)
-    private Integer autoPaymentDate;
+    private Integer autoPaymentDate;  // 1-28일 사이 값
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = false;
 
-    public void updateAutoPaymentAmount(Integer autoPaymentAmount) {
-        this.autoPaymentAmount = autoPaymentAmount;
+    public void updateAutoPaymentAmount(Long amount) {
+        this.autoPaymentAmount = amount;
     }
-    public void updateAutoPaymentDate(Integer autoPaymentDate) {
-        this.autoPaymentDate = autoPaymentDate;
+
+    public void updateAutoPaymentDate(Integer date) {
+        if (date < 1 || date > 28) {
+            throw new IllegalArgumentException("자동이체 날짜는 1-28일 사이여야 합니다.");
+        }
+        this.autoPaymentDate = date;
     }
-    public void updateIsActive(Boolean isActive) {
-        this.isActive = isActive;
+
+    public void updateIsActive(Boolean active) {
+        this.isActive = active;
     }
 }

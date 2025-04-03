@@ -200,6 +200,9 @@ public class PersonalAccountService {
 
 	public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
 		Boolean isAccountNo = personalAccountRepo.existsByAccountNo(toAccountNo);
+		if(!isAccountNo) {
+			isAccountNo = gatheringAccountRepo.existsByAccountNo(toAccountNo);
+		}
 		return new AccountCheckResponseDTO(
 				toAccountNo,
 				amount,
