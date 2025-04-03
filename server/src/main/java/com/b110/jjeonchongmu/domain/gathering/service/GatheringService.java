@@ -201,7 +201,9 @@ public class GatheringService {
 		List<GatheringMember> gatheringMembers = user.getGatheringMembers();
 		List<Gathering> gatherings = new ArrayList<>();
 		for (GatheringMember gm : gatheringMembers) {
-			gatherings.add(gm.getGathering());
+			if (gm.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
+				gatherings.add(gm.getGathering());
+			}
 		}
 		return convertToGatheringListResponse(gatherings);
 	}
@@ -234,6 +236,8 @@ public class GatheringService {
 						gathering.getGatheringId(), user.getUserId())
 						.orElseThrow(() -> new RuntimeException("NOTFOUND: gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
 
+		Long managerUserId = gathering.getManagerId();
+		User managerUser = userRepo.getUserByUserId(managerUserId);
 
 		return GatheringDetailResponseDTO.builder()
 				.id(gathering.getGatheringId())
@@ -242,7 +246,7 @@ public class GatheringService {
 				.totalMembers(gathering.getGatheringMembers().size())
 				.monthlyFee(gathering.getBasicFee())
 				.isManager(Objects.equals(gathering.getManagerId(), userId))
-				.manager(new GatheringDetailManagerDTO(user))
+				.manager(new GatheringDetailManagerDTO(managerUser))
 				.accounts(new GatheringDetailAccountDTO(gathering, gatheringMember))
 				.schedules(schedules.stream()
 						.map(schedule -> GatheringDetailSchedules.builder()
