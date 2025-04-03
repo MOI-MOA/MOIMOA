@@ -108,6 +108,19 @@ public class ScheduleController {
         scheduleMemberService.attendSchedule(userId,scheduleId);
         return ResponseEntity.status(200).body("일정 참석이 완료되었습니다.");
     }
+
+    // 일정 참석 거절
+    @PatchMapping("/{scheduleId}/attend-reject")
+    public ResponseEntity<String> attendRejectSchedule(@PathVariable Long scheduleId){
+        Long userId = jwtTokenProvider.getUserId();
+
+        scheduleMemberService.attendRejectSchedule(userId,scheduleId);
+
+        return ResponseEntity.status(200).body("일정 참여 거절 완료");
+    }
+
+
+
     // 일정 참석 취소
     @DeleteMapping("/{scheduleId}/cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
@@ -116,4 +129,6 @@ public class ScheduleController {
         scheduleMemberService.cancelAttendance(userId,scheduleId);
         return ResponseEntity.status(200).body("일정 참석이 취소되었습니다.");
     }
+
+
 }
