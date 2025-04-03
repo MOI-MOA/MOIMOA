@@ -67,12 +67,8 @@ public class ScheduleController {
             return ResponseEntity.status(405).build();
         }
 
-        MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
 
-        scheduleAccountService.createAccount(userId, scheduleId, makeAccountDTO, scheduleCreateDTO.getPerBudget());
 
-        System.out.println("일정 번호" + scheduleId);
-        scheduleMemberService.setSubManager(gatheringId,scheduleId,scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
     }
     // 일정 수정(총무만)

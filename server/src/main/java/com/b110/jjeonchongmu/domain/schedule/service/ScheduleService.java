@@ -1,7 +1,9 @@
 package com.b110.jjeonchongmu.domain.schedule.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
@@ -41,8 +43,11 @@ public class ScheduleService {
     private final ScheduleMemberRepo scheduleMemberRepo;
     private final GatheringMemberRepo gatheringMemberRepo;
     private final ScheduleAccountRepo scheduleAccountRepo;
+    private final ScheduleAccountService scheduleAccountService;
+    private final ScheduleMemberService scheduleMemberService;
 
     // 모임 일정목록 조회
+    @Transactional
     public List<ScheduleDTO> getScheduleList(Long userId, Long gatheringId) {
         boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
         if (!isMember) {
@@ -55,6 +60,7 @@ public class ScheduleService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     // 일정 상세조회
     public ScheduleDetailDTO getScheduleDetail(Long userId, Long scheduleId) {
 
@@ -70,6 +76,7 @@ public class ScheduleService {
         return ScheduleDetailDTO.from(schedule);
     }
 
+    @Transactional
     // 일정 생성
     public Long createSchedule(Long userId, Long gatheringId, ScheduleCreateDTO scheduleCreateDTO) {
         scheduleCreateDTO.updateSubManagerId(userId);
@@ -114,9 +121,16 @@ public class ScheduleService {
 
         scheduleRepo.save(savedSchedule);
 
+        MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
+
+        scheduleAccountService.createAccount(userId, savedSchedule.getId(), makeAccountDTO, scheduleCreateDTO.getPerBudget());
+
+        scheduleMemberService.setSubManager(gatheringId,savedSchedule.getId(),scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
+
         return savedSchedule.getId();
     }
 
+    @Transactional
     // 일정 수정(부총무만)
     public void updateSchedule(Long userId, Long scheduleId, ScheduleUpdateDTO scheduleUpdateDTO) {
         boolean isSubManager = scheduleRepo.checkExistsByUserIdAndScheduleId(userId, scheduleId);
