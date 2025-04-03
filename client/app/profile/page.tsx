@@ -11,18 +11,66 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Header } from "@/components/Header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEffect, useState } from "react";
+import { authApi } from "@/lib/api";
+import { toast } from "@/components/ui/use-toast";
+
+interface UserInfo {
+  id: number;
+  name: string;
+  email: string;
+  profileImage: string;
+  joinedGroups: number;
+  totalBalance: number;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    id: 0,
+    name: "",
+    email: "",
+    profileImage: "/placeholder.svg?height=80&width=80",
+    joinedGroups: 0,
+    totalBalance: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 사용자 정보 (실제로는 API에서 가져와야 함)
-  const userInfo = {
-    name: "배한진",
-    email: "user@example.com",
-    avatar: "/placeholder.svg?height=80&width=80",
-    joinedGroups: 4,
-    totalBalance: 850000,
-  };
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await authApi.get("/api/v1/profile");
+        if (response) {
+          setUserInfo({
+            id: 0,
+            name: response.name,
+            email: response.email,
+            profileImage: "/placeholder.svg?height=80&width=80",
+            joinedGroups: response.joinedGroups,
+            totalBalance: response.accountBalance,
+          });
+        } else {
+          console.error("Invalid API response structure:", response);
+          toast({
+            title: "오류",
+            description: "잘못된 응답 형식입니다.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("사용자 정보 조회 실패:", error);
+        toast({
+          title: "오류",
+          description: "사용자 정보를 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const menuItems = [
     {
@@ -51,6 +99,19 @@ export default function ProfilePage() {
     },
   ];
 
+  if (isLoading || !userInfo) {
+    return (
+      <>
+        <Header title="내 정보" />
+        <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <Header title="내 정보" />
@@ -60,21 +121,28 @@ export default function ProfilePage() {
           <CardContent className="p-6">
             <div className="flex items-center">
               <Avatar className="h-20 w-20 border-4 border-white">
-                <AvatarImage src={userInfo.avatar} />
-                <AvatarFallback>{userInfo.name.slice(0, 2)}</AvatarFallback>
+                <AvatarImage
+                  src={
+                    userInfo?.profileImage ||
+                    "/placeholder.svg?height=80&width=80"
+                  }
+                />
+                <AvatarFallback>
+                  {userInfo?.name?.slice(0, 2) || "??"}
+                </AvatarFallback>
               </Avatar>
               <div className="ml-4">
-                <h2 className="text-xl font-bold">{userInfo.name}</h2>
-                <p className="text-sm text-gray-500">{userInfo.email}</p>
+                <h2 className="text-xl font-bold">
+                  {userInfo?.name || "사용자"}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {userInfo?.email || "이메일 없음"}
+                </p>
                 <div className="mt-2 flex space-x-4">
                   <div>
                     <p className="text-xs text-gray-500">참여 모임</p>
-                    <p className="font-semibold">{userInfo.joinedGroups}개</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">계좌 총 잔액</p>
                     <p className="font-semibold">
-                      {userInfo.totalBalance.toLocaleString()}원
+                      {userInfo?.joinedGroups || 0}개
                     </p>
                   </div>
                 </div>
