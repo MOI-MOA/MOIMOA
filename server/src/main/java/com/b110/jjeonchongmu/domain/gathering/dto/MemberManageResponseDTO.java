@@ -17,6 +17,7 @@ public class MemberManageResponseDTO {
     private ManagerDTO manager;
     private List<MemberDTO> memberList;
     private Boolean isManager;
+    private Long myDeposit;
 
     @Getter
     @NoArgsConstructor
