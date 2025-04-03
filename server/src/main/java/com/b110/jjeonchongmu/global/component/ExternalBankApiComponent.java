@@ -124,24 +124,38 @@ public class ExternalBankApiComponent {
 	}
 
 	public BankAccountResponseDTO externalMakeAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
+		log.info("외부 은행 API - 계좌 생성 요청 시작 - userKey: {}, accountType: {}", 
+			makeExternalAccountDTO.getUserKey(), makeExternalAccountDTO.getExternalAccountType());
+		
 		Map<String, Object> requestBody = createHeaderAndBody("createDemandDepositAccount",
 				"createDemandDepositAccount", makeExternalAccountDTO.getUserKey());
 		requestBody.put("accountTypeUniqueNo", makeExternalAccountDTO.getExternalAccountType());
+		
+		log.info("외부 은행 API - 요청 본문: {}", requestBody);
+		
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+		
 		try {
 			String demandDepositUrl = "demandDeposit/createDemandDepositAccount";
+			log.info("외부 은행 API 호출 - URL: {}", apiUrl + demandDepositUrl);
+			
 			ResponseEntity<BankAccountResponseDTO> response =
 					restTemplate.exchange(apiUrl + demandDepositUrl, HttpMethod.POST, entity,
 							BankAccountResponseDTO.class);
+			
+			log.info("외부 은행 API - 계좌 생성 성공 - accountNo: {}", response.getBody().getRec().getAccountNo());
 			return response.getBody();
 		} catch (Exception e) {
+			log.error("외부 은행 API - 계좌 생성 실패 - userKey: {}, error: {}, stackTrace: {}", 
+				makeExternalAccountDTO.getUserKey(), e.getMessage(), e.getStackTrace());
 			throw new RuntimeException("외부 은행 계좌 생성 중 오류 발생", e);
 		}
 	}
 
 	public MakeUserResponseDTO createBankAppUser(String email) {
+		log.info("외부 은행 API - 회원 생성 요청 시작 - email: {}", email);
 		Map<String, Object> requestBody = new HashMap<>();
 		requestBody.put("apiKey", apiKey);
 		requestBody.put("userId", email);
@@ -150,11 +164,14 @@ public class ExternalBankApiComponent {
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
 		try {
 			String makeUserUrl = "member/";
+			log.info("외부 은행 API 호출 - URL: {}", userUrl + makeUserUrl);
 			ResponseEntity<MakeUserResponseDTO> response =
 					restTemplate.exchange(userUrl + makeUserUrl, HttpMethod.POST, entity,
 							MakeUserResponseDTO.class);
+			log.info("외부 은행 API - 회원 생성 성공 - userKey: {}", response.getBody().getUserKey());
 			return response.getBody();
 		} catch (Exception e) {
+			log.error("외부 은행 API - 회원 생성 실패 - email: {}, error: {}", email, e.getMessage());
 			throw new RuntimeException("회원 생성 중 오류 발생", e);
 		}
 	}

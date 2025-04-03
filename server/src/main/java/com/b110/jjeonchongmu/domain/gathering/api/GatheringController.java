@@ -89,7 +89,8 @@ public class GatheringController {
      */
     @GetMapping()
     public ResponseEntity<GatheringListResponseDTO> getAllGatherings() {
-        GatheringListResponseDTO response = gatheringService.getAllGatherings();
+        Long userId = jwtTokenProvider.getUserId();
+        GatheringListResponseDTO response = gatheringService.getAllGatherings(userId);
         return ResponseEntity.status(201).body(response);
     }
 
@@ -97,9 +98,8 @@ public class GatheringController {
      * 내 모임 조회
      */
     @GetMapping("/my")
-    public ResponseEntity<GatheringListResponseDTO> getMyGatherings(HttpServletRequest request) {
-        String token = jwtUtil.resolveToken(request);
-        Long userId = jwtUtil.getUserId(token);
+    public ResponseEntity<GatheringListResponseDTO> getMyGatherings() {
+        Long userId = jwtTokenProvider.getUserId();
         GatheringListResponseDTO response = gatheringService.getMyGatherings(userId);
         return ResponseEntity.status(201).body(response);
     }
@@ -109,8 +109,8 @@ public class GatheringController {
      */
     @GetMapping("/{gatheringId}/detail")
     public ResponseEntity<GatheringDetailResponseDTO> getGatheringDetail(@PathVariable Long gatheringId) {
-//        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = jwtTokenProvider.getUserId();
+//        Long userId = 1L;
         GatheringDetailResponseDTO response = gatheringService.getGatheringDetail(userId, gatheringId);
         return ResponseEntity.status(201).body(response);
     }

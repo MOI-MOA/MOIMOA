@@ -4,6 +4,8 @@ import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
+import com.b110.jjeonchongmu.domain.account.service.AutoPaymentService;
+import com.b110.jjeonchongmu.domain.gathering.dto.*;
 import com.b110.jjeonchongmu.domain.gathering.dto.AddGatheringDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
 import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailAccountDTO;
@@ -13,6 +15,7 @@ import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDetailSchedules;
 import com.b110.jjeonchongmu.domain.gathering.dto.GatheringListResponseDTO;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
@@ -26,14 +29,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.ArrayList;
+import org.springframework.web.client.HttpClientErrorException;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GatheringService {
+
+	private static final Logger log = LoggerFactory.getLogger(GatheringService.class);
 
 	private final GatheringRepo gatheringRepo;
 	private final GatheringMemberRepo gatheringMemberRepo;
@@ -41,6 +49,9 @@ public class GatheringService {
 	private final GatheringAccountRepo gatheringAccountRepo;
 	private final ExternalBankApiComponent externalBankApiComponent;
 	private final GatheringMemberService gatheringMemberService;
+	private final UserService userService;
+	private final GatheringAccountService gatheringAccountService;
+	private final AutoPaymentService autoPaymentService;
 
 	@Value("${external.bank.api.accountType}")
 	private String externalAccountType;
@@ -52,10 +63,6 @@ public class GatheringService {
 	 * @return
 	 * @throws CustomException 동일한 모임명이 이미 존재하는 경우
 	 */
-	private final UserService userService;
-	private final GatheringAccountService gatheringAccountService;
-
-	//계좌 생성 및 추가.
 	@Transactional
 	public GatheringDTO addGathering(AddGatheringDTO request) {
 		// 인증된 사용자 확인
@@ -64,44 +71,73 @@ public class GatheringService {
 			throw new CustomException(ErrorCode.UNAUTHORIZED);
 		}
 		
-		// 총무 설정.
+		// 총무 설정
 		User manager = currentUser;
+		
+		// userKey 유효성 검사
+		if (manager.getUserKey() == null || manager.getUserKey().isEmpty()) {
+			log.error("유효하지 않은 userKey: {}", manager.getUserId());
+			throw new CustomException(ErrorCode.INVALID_USER_CREDENTIALS);
+		}
+		
+		log.info("모임 계좌 생성 시작 - userKey: {}", manager.getUserKey());
 
-		// 현재 유저(총무)로 모임 계좌 생성. (유저키, 계좌타입, 비밀번호) + ()
+		// 현재 유저(총무)로 모임 계좌 생성
 		MakeExternalAccountDTO makeExternalAccountDTO = new MakeExternalAccountDTO(
-				currentUser.getUserKey(), externalAccountType, request.getGatheringAccountPW());
+				manager.getUserKey(), externalAccountType, request.getGatheringAccountPW());
 
-		GatheringAccount account = gatheringAccountService.addGroupAccount(makeExternalAccountDTO,
-				currentUser.getUserId());
+		try {
+			GatheringAccount account = gatheringAccountService.addGroupAccount(makeExternalAccountDTO,
+					manager.getUserId());
+			log.info("모임 계좌 생성 성공");
+			
+			// 모임 생성
+			Gathering gathering = Gathering.builder()
+					.manager(manager)
+					.gatheringAccount(account)
+					.gatheringName(request.getGatheringName())
+					.gatheringIntroduction(request.getGatheringIntroduction())
+					.memberCount(0)
+					.penaltyRate(request.getPenaltyRate())
+					.depositDate(request.getDepositDate())
+					.basicFee((long) request.getBasicFee())
+					.gatheringDeposit((long) request.getGatheringDeposit())
+					.build();
 
-		// 모임 생성
-		Gathering gathering = Gathering.builder()
-				.manager(manager)
-				.gatheringAccount(account)
-				.gatheringName(request.getGatheringName())
-				.gatheringIntroduction(request.getGatheringIntroduction())
-				.memberCount(0) // 기본값 0 설정.
-				.penaltyRate(request.getPenaltyRate())
-				.depositDate(request.getDepositDate())
-				.basicFee((long) request.getBasicFee())
-				.gatheringDeposit((long) request.getGatheringDeposit())
-				.build();
-		//모임 저장.
-		gatheringRepo.save(gathering);
-		 gatheringMemberService.addMember(gathering.getGatheringId(),manager.getUserId());
+			// 모임 저장
+			gatheringRepo.save(gathering);
 
-		return GatheringDTO.builder()
-				.gatheringId(gathering.getGatheringId())
-				.managerId(gathering.getManagerId())
-				.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
-				.gatheringName(gathering.getGatheringName())
-				.gatheringIntroduction(gathering.getGatheringIntroduction())
-				.memberCount(gathering.getMemberCount())
-				.penaltyRate(gathering.getPenaltyRate())
-				.depositDate(gathering.getDepositDate())
-				.basicFee(gathering.getBasicFee())
-				.gatheringDeposit(gathering.getGatheringDeposit())
-				.build();
+			// 총무를 모임 멤버로 등록
+			gatheringMemberService.addMember(gathering.getGatheringId(), manager.getUserId());
+
+			// 총무의 자동이체 등록
+			GatheringMember managerMember = gatheringMemberRepo.findByGatheringGatheringIdAndGatheringMemberUser_UserId(
+					gathering.getGatheringId(), manager.getUserId())
+					.orElseThrow(() -> new CustomException(ErrorCode.NOT_GATHERING_MEMBER));
+			autoPaymentService.createAutoPaymentForGatheringMember(managerMember);
+
+			return GatheringDTO.builder()
+					.gatheringId(gathering.getGatheringId())
+					.managerId(gathering.getManagerId())
+					.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
+					.gatheringName(gathering.getGatheringName())
+					.gatheringIntroduction(gathering.getGatheringIntroduction())
+					.memberCount(gathering.getMemberCount())
+					.penaltyRate(gathering.getPenaltyRate())
+					.depositDate(gathering.getDepositDate())
+					.basicFee(gathering.getBasicFee())
+					.gatheringDeposit(gathering.getGatheringDeposit())
+					.build();
+		} catch (HttpClientErrorException e) {
+			log.error("외부 은행 API 호출 실패: {}", e.getMessage());
+			if (e.getStatusCode().is4xxClientError()) {
+				throw new CustomException(ErrorCode.INVALID_USER_CREDENTIALS);
+			}
+			throw new CustomException(ErrorCode.GATHERING_ACCOUNT_NOT_FOUND);
+		} catch (Exception e) {
+			log.error("모임 계좌 생성 실패: {}", e.getMessage());
+			throw new CustomException(ErrorCode.GATHERING_ACCOUNT_NOT_FOUND);
+		}
 	}
 
 	/**
@@ -160,8 +196,9 @@ public class GatheringService {
 	/**
 	 * 전체 모임 목록 조회
 	 */
-	public GatheringListResponseDTO getAllGatherings() {
-		List<Gathering> gatherings = gatheringRepo.findAll();
+	public GatheringListResponseDTO getAllGatherings(Long userId) {
+		User user = userRepo.getUserByUserId(userId);
+		List<Gathering> gatherings = user.getGatherings();
 		return convertToGatheringListResponse(gatherings);
 	}
 
@@ -184,22 +221,7 @@ public class GatheringService {
 				.orElseThrow(() -> new CustomException(ErrorCode.GATHERING_NOT_FOUND));
 
 		List<GatheringMember> members = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
-//<<<<<<< HEAD
-//
-//		// 멤버 정보가 비어있으면 총무만 포함
-//		if (members.isEmpty()) {
-//			GatheringMember managerMember = GatheringMember.builder()
-//					.gatheringMemberId(0L)  // 임시 ID
-//					.gathering(gathering)
-//					.gatheringMemberUser(gathering.getManager())
-//					.gatheringAttendCount(0)
-//					.gatheringMemberAccountBalance(0)
-//					.gatheringMemberAccountDeposit(0)
-//					.gatheringPaymentStatus(false)
-//					.build();
-//			members.add(managerMember);
-//		}
-//=======
+
 		User user = userRepo.getUserByUserId(userId);
 		List<Schedule> schedules = gathering.getSchedules();
 		System.out.println("userId + gatheringId" + userId + ", " + gatheringId);
@@ -207,7 +229,7 @@ public class GatheringService {
 				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(
 						gathering.getGatheringId(), user.getUserId())
 						.orElseThrow(() -> new RuntimeException("NOTFOUND: gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
-//>>>>>>> 0806ae3417d0dc392f3c11625f809499fd69d180
+
 
 		return GatheringDetailResponseDTO.builder()
 				.id(gathering.getGatheringId())
