@@ -40,10 +40,18 @@ export default function CreateGroupPage() {
     pinNumber: "",
     paybackPercent: "",
     depositDate: "",
+    gatheringDeposit: "",
+    groupName: "",
+    amount: "",
+    day: "",
+    account: "",
+    deposit: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [showPinInput, setShowPinInput] = useState(false);
+  const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
+  const [transferStatus, setTransferStatus] = useState("");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -93,6 +101,10 @@ export default function CreateGroupPage() {
     }
 
     setIsCreatingAccount(true);
+    setIsLoading(true);
+    setIsPinDialogOpen(false);
+    setTransferStatus("모임 생성 중...");
+
     try {
       const response = await authApi.post("/api/v1/gathering", {
         gatheringName: formData.gatheringTitle,
@@ -102,6 +114,7 @@ export default function CreateGroupPage() {
         gatheringAccountPW: formData.pinNumber,
         paybackPercent: parseFloat(formData.paybackPercent),
         depositDate: formData.depositDate,
+        gatheringDeposit: Number(formData.gatheringDeposit),
       });
 
       if (response?.gatheringId) {
@@ -122,6 +135,7 @@ export default function CreateGroupPage() {
       });
     } finally {
       setIsCreatingAccount(false);
+      setIsLoading(false);
     }
   };
 
@@ -251,6 +265,18 @@ export default function CreateGroupPage() {
                 value={formData.memberCount}
                 onChange={handleInputChange}
                 placeholder="참여 인원 수를 입력하세요"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="gatheringDeposit">보증금</Label>
+              <Input
+                id="gatheringDeposit"
+                name="gatheringDeposit"
+                type="number"
+                value={formData.gatheringDeposit}
+                onChange={handleInputChange}
+                placeholder="보증금을 입력하세요"
                 required
               />
             </div>
