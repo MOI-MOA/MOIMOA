@@ -49,7 +49,7 @@ export function Header({ title, showBackButton = false }: HeaderProps) {
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
         )}
-        {title && <h1 className="text-xl font-semibold ml-2">{title}</h1>}
+        {title && <h1 className="text-xl font-semibold ml-2"></h1>}
       </div>
       <div className="absolute left-1/2 transform -translate-x-1/2">
         <h1

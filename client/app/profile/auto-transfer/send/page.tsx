@@ -58,10 +58,22 @@ export default function SendMoneyPage() {
   const [accountOwner, setAccountOwner] = useState("");
   const [transferStatus, setTransferStatus] = useState<string>("");
   const [stompClient, setStompClient] = useState<any>(null);
+  const [toAccountType, setToAccountType] = useState<string>("PERSONAL");
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     const account = searchParams.get("account");
     const cost = searchParams.get("cost");
+    const type = searchParams.get("type");
+    const userIdParam = searchParams.get("userId");
+
+    console.log("Received URL parameters:", {
+      account,
+      cost,
+      type,
+      userId: userIdParam,
+      allParams: Object.fromEntries(searchParams.entries()),
+    });
 
     if (account) {
       setAccountNumber(account);
@@ -69,17 +81,32 @@ export default function SendMoneyPage() {
     if (cost) {
       setAmount(cost);
     }
+    if (type) {
+      setToAccountType(type);
+      console.log("Setting toAccountType to:", type);
+    }
+    if (userIdParam) {
+      setUserId(userIdParam);
+      console.log("Setting userId to:", userIdParam);
+    }
   }, [searchParams]);
 
   useEffect(() => {
+    if (!userId) return;
+
     const socket = new SockJS("http://localhost:8080/ws");
     const client = Stomp.over(socket);
 
     client.connect({}, () => {
       console.log("WebSocket Connected");
       // 송금 결과 구독
-      client.subscribe(`/queue/transfer-results1`, (message) => {
+      const subscriptionPath = `/queue/transfer-results/${userId}`;
+      console.log("Subscribing to:", subscriptionPath);
+
+      client.subscribe(subscriptionPath, (message) => {
         const result = message.body;
+        console.log("Received WebSocket message:", result);
+
         if (result === "true") {
           toast({
             title: "송금 완료",
@@ -106,13 +133,13 @@ export default function SendMoneyPage() {
         client.disconnect();
       }
     };
-  }, []);
+  }, [userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response: AccountCheckResponse = await authApi.get(
+      const response = await authApi.get<AccountCheckResponse>(
         `/api/v1/personal-account/${accountNumber}/${amount}/check`
       );
 
@@ -161,12 +188,14 @@ export default function SendMoneyPage() {
     setIsPinDialogOpen(false);
     setTransferStatus("송금 처리 중...");
 
+    console.log("Submitting transfer with toAccountType:", toAccountType);
+
     try {
       const response: TransferResponse = await authApi.post(
         `/api/v1/personal-account/transfer`,
         {
           fromAccountType: "PERSONAL",
-          toAccountType: "PERSONAL",
+          toAccountType: toAccountType,
           toAccountNo: accountNumber,
           tradeDetail: message || "",
           transferAmount: Number(amount),
