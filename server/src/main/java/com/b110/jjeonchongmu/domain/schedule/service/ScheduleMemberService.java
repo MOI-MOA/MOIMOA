@@ -39,12 +39,12 @@ public class ScheduleMemberService {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Schedule Not Found"));
         Long gatheringId = schedule.getGathering().getGatheringId();
 
-        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
+        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
 
-        return scheduleMemberRepo.findByScheduleId(scheduleId)
+        return scheduleMemberRepo.findByScheduleIdAndIsAttendTrue(scheduleId)
                 .stream()
                 .map(ScheduleMemberDTO::from)
                 .collect(Collectors.toList());
@@ -97,7 +97,7 @@ public class ScheduleMemberService {
     // 일정 참석 취소
     @Transactional
     public void cancelAttendance(Long userId, Long scheduleId) {
-        boolean isMember = scheduleMemberRepo.existsByUserIdAndScheduleId(userId, scheduleId);
+        boolean isMember = scheduleMemberRepo.existsByUserIdAndScheduleIdIsAttendTrue(userId, scheduleId);
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
@@ -107,7 +107,7 @@ public class ScheduleMemberService {
 
         GatheringMember gatheringMember = gatheringMemberRepo.findGatheringMemberByScheduleIdAndUserId(scheduleId,userId);
 
-        ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserId(scheduleId, userId)
+        ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendTrue(scheduleId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule member not found"));
         Gathering gathering = schedule.getGathering();
 
