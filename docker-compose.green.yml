@@ -33,6 +33,12 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://my-db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - MY_DB=${MY_DB}
+      - EXTERNAL_BANK_URI=${EXTERNAL_BANK_URI}
+      - EXTERNAL_BANK_KEY=${EXTERNAL_BANK_KEY}
+      - EXTERNAL_BANK_AT=${EXTERNAL_BANK_AT}
+      - EXTERNAL_USER_URI=${EXTERNAL_USER_URI}
     depends_on:
       my-db:
         condition: service_healthy
