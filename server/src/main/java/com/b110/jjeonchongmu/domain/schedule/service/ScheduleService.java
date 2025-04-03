@@ -1,7 +1,9 @@
 package com.b110.jjeonchongmu.domain.schedule.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
 import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
@@ -41,8 +43,11 @@ public class ScheduleService {
     private final ScheduleMemberRepo scheduleMemberRepo;
     private final GatheringMemberRepo gatheringMemberRepo;
     private final ScheduleAccountRepo scheduleAccountRepo;
+    private final ScheduleAccountService scheduleAccountService;
+    private final ScheduleMemberService scheduleMemberService;
 
     // 모임 일정목록 조회
+    @Transactional
     public List<ScheduleDTO> getScheduleList(Long userId, Long gatheringId) {
         boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
         if (!isMember) {
@@ -55,6 +60,7 @@ public class ScheduleService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     // 일정 상세조회
     public ScheduleDetailDTO getScheduleDetail(Long userId, Long scheduleId) {
 
@@ -62,7 +68,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
         Long gatheringId = schedule.getGathering().getGatheringId();
 
-        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
+        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
@@ -70,6 +76,7 @@ public class ScheduleService {
         return ScheduleDetailDTO.from(schedule);
     }
 
+    @Transactional
     // 일정 생성
     public Long createSchedule(Long userId, Long gatheringId, ScheduleCreateDTO scheduleCreateDTO) {
         scheduleCreateDTO.updateSubManagerId(userId);
@@ -114,9 +121,16 @@ public class ScheduleService {
 
         scheduleRepo.save(savedSchedule);
 
+        MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
+
+        scheduleAccountService.createAccount(userId, savedSchedule.getId(), makeAccountDTO, scheduleCreateDTO.getPerBudget());
+
+        scheduleMemberService.setSubManager(gatheringId,savedSchedule.getId(),scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
+
         return savedSchedule.getId();
     }
 
+    @Transactional
     // 일정 수정(부총무만)
     public void updateSchedule(Long userId, Long scheduleId, ScheduleUpdateDTO scheduleUpdateDTO) {
         boolean isSubManager = scheduleRepo.checkExistsByUserIdAndScheduleId(userId, scheduleId);
@@ -153,8 +167,8 @@ public class ScheduleService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ScehduleAccount Not Found"));
 
         /// 계좌 잔액 이동을위한 변수들
-        Integer penaltyApplyCount = scheduleMemberRepo.countByScheduleIdAndPenaltyApplied(scheduleId);
-        Integer attendeeCount = scheduleMemberRepo.countByScheduleIdAndPenaltyNotApplied(scheduleId);
+        Integer penaltyApplyCount = scheduleMemberRepo.countByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
+        Integer attendeeCount = scheduleMemberRepo.countByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
         Integer penaltyRate = schedule.getPenaltyRate();
         Long remainingAmount = scheduleAccount.getAccountBalance();
         Long perBudget = schedule.getPerBudget();
@@ -164,8 +178,8 @@ public class ScheduleService {
         System.out.println("인당 예산 : " + perBudget);
         System.out.println("페이백 대상자에게 보상해줘야할 금액 : " + perBudget);
 
-        List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyApplied(scheduleId);
-        List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotApplied(scheduleId);
+        List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
+        List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
         System.out.println("참여자 GatheringMember 목록 : " + attendeeMembers);
         //////
 
