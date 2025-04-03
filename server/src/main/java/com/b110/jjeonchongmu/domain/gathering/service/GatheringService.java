@@ -198,7 +198,11 @@ public class GatheringService {
 	 */
 	public GatheringListResponseDTO getAllGatherings(Long userId) {
 		User user = userRepo.getUserByUserId(userId);
-		List<Gathering> gatherings = user.getGatherings();
+		List<GatheringMember> gatheringMembers = user.getGatheringMembers();
+		List<Gathering> gatherings = new ArrayList<>();
+		for (GatheringMember gm : gatheringMembers) {
+			gatherings.add(gm.getGathering());
+		}
 		return convertToGatheringListResponse(gatherings);
 	}
 

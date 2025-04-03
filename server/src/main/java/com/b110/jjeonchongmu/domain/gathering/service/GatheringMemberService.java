@@ -157,7 +157,7 @@ public class GatheringMemberService {
 		List<GatheringMember> members = gatheringMember.getGathering().getGatheringMembers();
 
 		User manager = gatheringMember.getGathering().getManager();
-
+		boolean isManager = Objects.equals(manager.getUserId(), currentUserId);
 		// 초대된 회원 목록
 		List<MemberManageResponseDTO.InviteMemberDTO> inviteMemberDTO = members.stream()
 				// 총무는 빼고 보여줌
@@ -218,6 +218,7 @@ public class GatheringMemberService {
 				.inviteList(inviteMemberDTO)
 				.manager(managerDTO)
 				.memberList(memberDTOs)
+				.isManager(isManager)
 				.build();
 	}
 

@@ -16,6 +16,7 @@ public class MemberManageResponseDTO {
     private List<InviteMemberDTO> inviteList;
     private ManagerDTO manager;
     private List<MemberDTO> memberList;
+    private Boolean isManager;
 
     @Getter
     @NoArgsConstructor
