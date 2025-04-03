@@ -36,7 +36,7 @@ public class ScheduleMember {
     private boolean isPenaltyApply;
 
     @Column(name = "is_attend")
-    private boolean isAttend;
+    private Boolean isAttend;
 
     // 페이백 대상으로 지정
     public void updateIsPenaltyApplyToTrue(){
