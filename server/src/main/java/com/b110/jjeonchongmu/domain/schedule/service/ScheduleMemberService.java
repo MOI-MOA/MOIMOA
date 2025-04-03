@@ -91,6 +91,23 @@ public class ScheduleMemberService {
 
     }
 
+    // 일정 참여 거절
+    public void attendRejectSchedule(Long userId, Long scheduleId) {
+
+        Schedule schedule = scheduleRepo.findById(scheduleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
+        //모임멤버인지 확인하는 로직
+        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, schedule.getGathering().getGatheringId());
+        if (!isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this gathering");
+        }
+
+        ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendFalse(scheduleId,userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ScheduleMember Not Found"));
+
+        scheduleMember.updateScheduleIsCheckToTrue();
+    }
+
     // 일정 참석 취소
     @Transactional
     public void cancelAttendance(Long userId, Long scheduleId) {
@@ -145,11 +162,11 @@ public class ScheduleMemberService {
             scheduleMemberRepo.save(scheduleMember);
         }
 
-        scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendTrue(scheduleId,subManagerId)
+        scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendFalse(scheduleId,subManagerId)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"scheduleMember Not Found"))
                 .updateIsAttenedToTrue();
 
         gatheringMember.decreaseGatheringMemberAccountBalance(perBudget);
-
     }
+
 }

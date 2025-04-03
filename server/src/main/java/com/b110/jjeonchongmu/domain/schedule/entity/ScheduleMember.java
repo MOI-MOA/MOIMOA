@@ -36,7 +36,7 @@ public class ScheduleMember {
     private boolean isPenaltyApply;
 
     @Column(name = "is_attend")
-    private boolean isAttend;
+    private Boolean isAttend;
 
     // 페이백 대상으로 지정
     public void updateIsPenaltyApplyToTrue(){
@@ -48,4 +48,7 @@ public class ScheduleMember {
 
     // 일정에 미참여로 변경
     public void updateIsAttenedToFalse() { this.isAttend = false;}
+
+    // 일정 확인한걸로 바꾸는 로직
+    public void updateScheduleIsCheckToTrue(){this.scheduleIsCheck = true; }
 }
