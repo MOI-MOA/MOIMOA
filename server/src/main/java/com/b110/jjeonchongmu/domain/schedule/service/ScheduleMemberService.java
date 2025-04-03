@@ -145,7 +145,7 @@ public class ScheduleMemberService {
             scheduleMemberRepo.save(scheduleMember);
         }
 
-        scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendTrue(scheduleId,subManagerId)
+        scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendFalse(scheduleId,subManagerId)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"scheduleMember Not Found"))
                 .updateIsAttenedToTrue();
 

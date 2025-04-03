@@ -14,6 +14,8 @@ public interface ScheduleMemberRepo extends JpaRepository<ScheduleMember, Long> 
     // 일정 id 와 일정멤버 id로 scheduleMember 데이터 조회
     Optional<ScheduleMember> findByScheduleIdAndScheduleMemberUserIdAndIsAttendTrue(Long scheduleId, Long userId);
 
+    Optional<ScheduleMember> findByScheduleIdAndScheduleMemberUserIdAndIsAttendFalse(Long scheduleId, Long userId);
+
     @Query("SELECT COUNT(sm) > 0 FROM ScheduleMember sm WHERE sm.scheduleMember.userId = :userId AND sm.schedule.id = :scheduleId AND sm.isAttend = true")
     boolean existsByUserIdAndScheduleIdIsAttendTrue(@Param("userId") Long userId, @Param("scheduleId") Long scheduleId);
 
