@@ -36,7 +36,6 @@ public class JwtTokenProvider {
 
     private Key key;
 
-
     /**
      * 현재 요청의 HttpServletRequest 가져오기
      */
@@ -82,8 +81,6 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-
-
 
     /**
      * 현재 사용자의 ID 추출
@@ -132,6 +129,24 @@ public class JwtTokenProvider {
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 토큰이 Refresh Token인지 확인
+     */
+    public boolean isRefreshToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            // 토큰의 만료 시간이 refresh token validity와 같으면 refresh token으로 판단
+            return claims.getExpiration().getTime() - claims.getIssuedAt().getTime() == refreshTokenValidity;
+        } catch (Exception e) {
             return false;
         }
     }
