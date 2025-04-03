@@ -19,6 +19,8 @@ import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
@@ -29,9 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.security.auth.login.AccountNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +49,7 @@ public class PersonalAccountService {
 	private final AccountRepo accountRepo;
 	private final TradeRepo tradeRepo;
 	private final UserRepo userRepo;
+	private final GatheringMemberRepo gatheringMemberRepo;
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
@@ -158,6 +163,15 @@ public class PersonalAccountService {
 
 			externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);
+
+			// 보내는 계좌가 모임계좌면 gathering_user_id와 gathering_id로 모임멤버 객체를 가져와서 잔액을 증가시켜야함
+			if(toAccount instanceof GatheringAccount){
+				GatheringMember gatheringMember = gatheringMemberRepo.findByGatheringGatheringIdAndGatheringMemberUser_UserId(
+						((GatheringAccount) toAccount).getGathering().getGatheringId(),userId
+				)
+						.orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"GatheringMember Not Found"));
+				gatheringMember.increaseGatheringMemberAccountBalance(transferTransactionHistoryDTO.getAmount());
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();

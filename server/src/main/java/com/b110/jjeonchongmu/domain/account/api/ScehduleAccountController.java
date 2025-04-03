@@ -31,6 +31,7 @@ public class ScehduleAccountController {
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
         TransferTransactionHistoryDTO response = scheduleAccountService.initTransfer(requestDto);
+
         scheduleAccountService.processTransfer(response);
         return ResponseEntity.status(HttpStatus.CREATED).body("계좌 송금 성공");
 
