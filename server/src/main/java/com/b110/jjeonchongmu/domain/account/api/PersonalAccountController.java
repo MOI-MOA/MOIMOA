@@ -50,21 +50,20 @@ public class PersonalAccountController {
 			@RequestBody TransferRequestDTO requestDto) {
 		Long userId = jwtTokenProvider.getUserId();
 		TransferTransactionHistoryDTO response = personalAccountService.initTransfer(requestDto);
-
 		CompletableFuture.runAsync(() -> {
 			try {
 				// 성공하면 계좌 잔액을 함께 보내기??
 				boolean isCompleted = personalAccountService.processTransfer(response, userId);
 
 				simpMessagingTemplate.convertAndSend(
-						"/queue/transfer-results" + userId,
+						"/queue/transfer-results/" + userId,
 						isCompleted
 				);
 			} catch (Exception e) {
 
 				TransferResponseDTO result = new TransferResponseDTO();
 				simpMessagingTemplate.convertAndSend(
-						"/queue/transfer-results" + userId,
+						"/queue/transfer-results/" + userId,
 						"송금중 오류가 발생"
 				);
 			}

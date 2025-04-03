@@ -27,6 +27,7 @@ import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javax.security.auth.login.AccountNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,10 +50,17 @@ public class PersonalAccountService {
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 		Account account = null;
-		if(requestDto.getToAccountType()==AccountType.PERSONAL){
-			account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
-		} else if (requestDto.getToAccountType()==AccountType.GATHERING){
+
+		account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+		if (account == null) {
 			account = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+		}
+		if (account == null) {
+			try {
+				throw new AccountNotFoundException("계좌를 찾을 수 없습니다: " + requestDto.getToAccountNo());
+			} catch (AccountNotFoundException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 
@@ -80,7 +88,6 @@ public class PersonalAccountService {
 
 			String originAccountPw = fromAccount.getAccountPw();
 			String userAccountPw = transferTransactionHistoryDTO.getAccountPw();
-			System.out.println(originAccountPw + " , " + userAccountPw);
 			boolean isPassword = passwordEncoder.matches(userAccountPw, originAccountPw);
 			if(!isPassword) {
 				throw new IllegalAccessException("비밀번호 불일치");
