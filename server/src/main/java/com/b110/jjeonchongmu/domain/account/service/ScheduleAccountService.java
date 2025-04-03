@@ -49,16 +49,21 @@ public class ScheduleAccountService {
     public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 
+            System.out.println("들어와");
 
         Account ToAccount = null;
         if(requestDto.getToAccountType()==AccountType.PERSONAL){
+            System.out.println("개인계좌");
             ToAccount = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
         } else if (requestDto.getToAccountType()==AccountType.GATHERING){
+
+            System.out.println("모임계좌");
             ToAccount = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
         }
 
 
         return TransferTransactionHistoryDTO.builder()
+                .fromAccountId(requestDto.getFromAccountId())
                 .fromAccountType(requestDto.getFromAccountType())
                 .toAccountId(ToAccount.getAccountId())
                 .toAccountType(ToAccount.getDtype())
@@ -72,12 +77,14 @@ public class ScheduleAccountService {
 
     public boolean processTransfer(
             TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
+            System.out.println("입금하는 계좌 아이디" + transferTransactionHistoryDTO.getFromAccountId());
 
         try {
 
             transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
+
             ScheduleAccount fromAccount = scheduleAccountRepo.findByAccount(
-                            transferTransactionHistoryDTO.getToAccountId())
+                            transferTransactionHistoryDTO.getFromAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
             GatheringAccount fromGatheringAccount = fromAccount.getSchedule().getGathering().getGatheringAccount();
@@ -103,7 +110,9 @@ public class ScheduleAccountService {
             String accountNo = null;
             GatheringAccount toGatheringAccount;
             PersonalAccount toPersonalAccount;
-            
+
+
+
             switch (transferTransactionHistoryDTO.getToAccountType()) {
                 case GATHERING -> {
                     toGatheringAccount = gatheringAccountRepo.findByAccount(
@@ -120,7 +129,7 @@ public class ScheduleAccountService {
                     toAccount = toPersonalAccount;
                     accountNo = toPersonalAccount.getAccountNo();
                 }
-            };
+            }
 
             fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 일정계좌 금액 차감
             fromGatheringAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 모임계좌도 금액 차감
@@ -130,7 +139,6 @@ public class ScheduleAccountService {
 
             if (toAccount instanceof PersonalAccount) {
                 personalAccountRepo.save((PersonalAccount) toAccount);
-
             } else if  (toAccount instanceof  GatheringAccount){
                 gatheringAccountRepo.save((GatheringAccount) toAccount);
             }
@@ -202,8 +210,8 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
             Schedule schedule = scheduleRepo.findById(scheduleId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
 
-
-            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule,perBudget);
+            System.out.println(perBudget);
+            ScheduleAccount scheduleAccount = new ScheduleAccount(user,passwordEncoder.encode(requestDTO.getAccountPw()),schedule,perBudget);
             // 부총무 한명의 인당예산만큼 잔액 추가
 
 
