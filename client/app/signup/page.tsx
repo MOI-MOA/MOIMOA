@@ -19,7 +19,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -188,7 +188,7 @@ export default function SignUpPage() {
         return;
       }
 
-      const response = await publicApi.post("/api/v1/signup", {
+      const response = await authApi.post("/api/v1/signup", {
         name: formData.name,
         email: formData.email,
         password: formData.password,

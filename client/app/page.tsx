@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Header } from "@/components/Header";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 type DateData = {
   date: number;
 };
@@ -51,7 +51,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = (await publicApi.get<HomeData>(
+        const response = (await authApi.get<HomeData>(
           "api/v1/main"
         )) as unknown as HomeData;
         console.log(response);
@@ -82,7 +82,7 @@ export default function HomePage() {
       const month = date.getMonth() + 1;
       const day = date.getDate();
 
-      const response = (await publicApi.get<ScheduleData[]>(
+      const response = (await authApi.get<ScheduleData[]>(
         `api/v1/main/schedule/${year}/${month}/${day}`
       )) as unknown as ScheduleData[];
       console.log(response);
@@ -103,7 +103,7 @@ export default function HomePage() {
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
 
-      const response = (await publicApi.get<DateData[]>(
+      const response = (await authApi.get<DateData[]>(
         `api/v1/main/schedule/${year}/${month}`
       )) as unknown as DateData[];
       console.log(response);

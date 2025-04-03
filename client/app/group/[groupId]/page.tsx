@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
 import React, { use, useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -75,7 +75,7 @@ export default function GroupDetailPage({
   const fetchGroupDetail = async () => {
     try {
       setIsLoading(true);
-      const response = (await publicApi.get<GroupData>(
+      const response = (await authApi.get<GroupData>(
         `api/v1/gathering/${groupId}/detail`
       )) as unknown as GroupData;
       console.log(response);
@@ -115,7 +115,7 @@ export default function GroupDetailPage({
   // 모임 탈퇴 처리 함수
   const handleLeaveGroup = async () => {
     try {
-      await publicApi.post(`api/v1/gathering/${groupId}/leave`);
+      await publicApi.delete(`api/v1/gathering/${groupId}/leave`);
 
       toast({
         title: "모임 탈퇴 완료",

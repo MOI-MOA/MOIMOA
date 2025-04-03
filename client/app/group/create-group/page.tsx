@@ -39,6 +39,7 @@ export default function CreateGroupPage() {
     bankName: "싸피 은행",
     pinNumber: "",
     paybackPercent: "",
+    depositDate: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
@@ -100,6 +101,7 @@ export default function CreateGroupPage() {
         basicFee: parseInt(formData.basicFee),
         gatheringAccountPW: formData.pinNumber,
         paybackPercent: parseFloat(formData.paybackPercent),
+        depositDate: formData.depositDate,
       });
 
       if (response?.gatheringId) {
@@ -249,6 +251,20 @@ export default function CreateGroupPage() {
                 value={formData.memberCount}
                 onChange={handleInputChange}
                 placeholder="참여 인원 수를 입력하세요"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="depositDate">매월 입금일</Label>
+              <Input
+                id="depositDate"
+                name="depositDate"
+                type="number"
+                min="1"
+                max="31"
+                value={formData.depositDate}
+                onChange={handleInputChange}
+                placeholder="매월 입금일을 입력하세요 (1-31)"
                 required
               />
             </div>
