@@ -36,7 +36,7 @@ public class Account {
     public Account(User user, String accountPw, Long accountBalance) {
         this.user = user;
         this.accountPw = accountPw;
-        this.accountBalance = accountBalance;
+        this.accountBalance = 0L;
     }
 
     public void decreaseBalance(Long amount) {
@@ -46,5 +46,7 @@ public class Account {
     public void increaseBalance(Long amount) {
         this.accountBalance += amount;
     }
+
+    public void updateDtype(AccountType accountType){this.dtype = accountType;}
 }
 

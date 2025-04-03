@@ -1,6 +1,6 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
-
+import com.b110.jjeonchongmu.domain.account.service.AutoPaymentService;
 import com.b110.jjeonchongmu.domain.gathering.dto.*;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
@@ -30,6 +30,7 @@ public class GatheringMemberService {
 	private final UserRepo userRepo;                         // 사용자 레포지토리
 	private final JwtTokenProvider jwtTokenProvider;         // JWT 토큰 제공자
 	private final EntityManager em;
+	private final AutoPaymentService autoPaymentService;
 
 	/**
 	 * 모임 초대 링크 생성 (총무 전용)
@@ -143,8 +144,8 @@ public class GatheringMemberService {
 	 * @throws RuntimeException 모임을 찾을 수 없거나 총무가 아닌 경우
 	 */
 	public MemberManageResponseDTO getMemberManage(Long gatheringId) {
-//		Long currentUserId = jwtTokenProvider.getUserId();
-		Long currentUserId = 1L;
+		Long currentUserId = jwtTokenProvider.getUserId();
+//		Long currentUserId = 1L;
 		// gatheringMember찾기
 		GatheringMember gatheringMember =
 				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, currentUserId)
@@ -162,7 +163,7 @@ public class GatheringMemberService {
 				// 총무는 빼고 보여줌
 				.filter(member -> {
 					System.out.println(member.toString());
-					if (Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.PENDING) {
 						return true;
 					}
@@ -194,7 +195,7 @@ public class GatheringMemberService {
 				// 총무는 빼고 보여줌
 				.filter(member -> {
 					System.out.println(member.toString());
-					if (Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), currentUserId)
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
 						return true;
 					}
@@ -208,7 +209,7 @@ public class GatheringMemberService {
 							.email(user.getEmail())
 							.createdAt(user.getCreatedAt())
 							.balance(member.getGatheringMemberAccountBalance())
-							.gatheringPaymentStatus(member.isGatheringPaymentStatus())
+							.gatheringPaymentStatus(member.getGatheringPaymentStatus())
 							.build();
 				})
 				.collect(Collectors.toList());
@@ -241,14 +242,15 @@ public class GatheringMemberService {
 				.email(manager.getEmail())
 				.createdAt(manager.getCreatedAt())
 				.build();
-
+		int memberCount = 1;
 		// 회원 목록 DTO 생성
 		List<MemberListResponseDTO.MemberDTO> memberDTOs = members.stream()
 				.filter(member -> {
-					if (Objects.equals(member.getGatheringMemberUser().getUserId(), userId)) {
-						return false;
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), userId)
+							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
+						return true;
 					}
-					return true;
+					return false;
 				})
 				.map(member -> {
 					User user = userRepo.findById(member.getGatheringMemberUser().getUserId())
@@ -262,7 +264,7 @@ public class GatheringMemberService {
 				.collect(Collectors.toList());
 
 		return MemberListResponseDTO.builder()
-				.memberCount(members.size())
+				.memberCount(memberDTOs.size() + 1)
 				.manager(managerDTO)
 				.members(memberDTOs)
 				.build();
@@ -292,7 +294,7 @@ public class GatheringMemberService {
 	}
 
 	/**
-	 * 모임 멤버 추가
+	 * 모임 멤버 추가 (모임 생성할때 최초로 총무 추가하는 경우)
 	 *
 	 * @param gatheringId 모임 ID
 	 * @param userId      추가할 사용자 ID
@@ -321,6 +323,7 @@ public class GatheringMemberService {
 				.gatheringMemberAccountBalance(0L)
 				.gatheringMemberAccountDeposit(0L)
 				.gatheringPaymentStatus(false)
+				.gatheringMemberStatus(GatheringMemberStatus.ACTIVE)
 				.build();
 
 		// 회원 저장
@@ -364,6 +367,9 @@ public class GatheringMemberService {
 						.gatheringMemberStatus(GatheringMemberStatus.PENDING)
 						.build();
 		gatheringMemberRepo.save(gatheringMember);
+
+		// 자동이체 등록
+		autoPaymentService.createAutoPaymentForGatheringMember(gatheringMember);
 
 		return GatheringJoinResponseDTO.builder()
 				.isSave(true)

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SimpleJenkinsTest {
 
-    @GetMapping("/test/hello")
+    @GetMapping("/api/test/hello")
     public String helloWorld() {
         System.out.println("===========================");
         System.out.println("Hello World API 호출 성공!");
@@ -15,7 +15,7 @@ public class SimpleJenkinsTest {
         return "Hello World from Jenkins Pipeline!";
     }
 
-    @GetMapping("/test/health")
+    @GetMapping("/api/test/health")
     public String healthCheck() {
         System.out.println("헬스체크 API 호출됨");
         return "{\"status\":\"UP\",\"message\":\"서버가 정상 작동 중입니다\"}";

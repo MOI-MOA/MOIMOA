@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.entity;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import jakarta.persistence.DiscriminatorValue;
@@ -25,6 +26,7 @@ public class ScheduleAccount extends Account {
     public ScheduleAccount(User user, String accountPw,Schedule schedule,Long accountBalance) {
         super(user, accountPw, accountBalance);
         this.schedule = schedule;
+        updateDtype(AccountType.SCHEDULE);
     }
 
 }

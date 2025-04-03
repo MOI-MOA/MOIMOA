@@ -35,8 +35,8 @@ public class TradeController {
 	@PostMapping("/account-history")
 	public ResponseEntity<TradeResponseDTO> getTradeHistory(
 			@RequestBody TradeHistoryRequestDTO request) {
-//		Long userId = jwtTokenProvider.getUserId();
-		Long userId = 1L;
+		Long userId = jwtTokenProvider.getUserId();
+//		Long userId = 1L;
 		TradeResponseDTO response = tradeService.getTradeHistory(userId, request);
 		return ResponseEntity.ok(response);
 	}

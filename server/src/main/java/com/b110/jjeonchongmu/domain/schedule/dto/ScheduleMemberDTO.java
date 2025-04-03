@@ -12,12 +12,14 @@ public class ScheduleMemberDTO {
     private Long scheduleId;
     private Long scheduleMemberId;
     private String scheduleMemberName;
+    private boolean isPenaltyApply;
 
     public static ScheduleMemberDTO from(ScheduleMember scheduleMember){
         return ScheduleMemberDTO.builder()
                 .scheduleId(scheduleMember.getSchedule().getId())
                 .scheduleMemberId(scheduleMember.getId())
                 .scheduleMemberName(scheduleMember.getScheduleMember().getName())
+                .isPenaltyApply(scheduleMember.isPenaltyApply())
                 .build();
     }
 }
