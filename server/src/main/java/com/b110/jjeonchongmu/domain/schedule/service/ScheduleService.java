@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 
+import static com.b110.jjeonchongmu.domain.gathering.entity.QGathering.gathering;
+
 @Service
 @RequiredArgsConstructor
 //@Transactional
@@ -68,11 +70,15 @@ public class ScheduleService {
         return ScheduleDetailDTO.from(schedule);
     }
 
-    // 일정 생성(총무만)
+    // 일정 생성
     public Long createSchedule(Long userId, Long gatheringId, ScheduleCreateDTO scheduleCreateDTO) {
-        boolean isManager = (gatheringRepo.countByUserIdAndGatheringId(userId, gatheringId)) > 0;
-        if (!isManager) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
+        scheduleCreateDTO.updateSubManagerId(userId);
+        GatheringMember gatheringMember = gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, userId)
+                .orElseThrow(() -> new RuntimeException("gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
+        Long gatheringDeposit = gatheringMember.getGathering().getGatheringDeposit();
+
+        if (gatheringMember.getGatheringMemberAccountBalance() < scheduleCreateDTO.getPerBudget() + gatheringDeposit) {
+            throw new RuntimeException("일정 생성하는 사람의 잔액이 일정에서 설정된 인당 금액 + 보증금보다 적어서 생성이 불가능 합니다.");
         }
 
         Gathering gathering = gatheringRepo.findById(gatheringId)
