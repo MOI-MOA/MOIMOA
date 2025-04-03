@@ -35,7 +35,17 @@ public class ScheduleMember {
     @Column(name = "is_penalty_apply")
     private boolean isPenaltyApply;
 
+    @Column(name = "is_attend")
+    private boolean isAttend;
+
+    // 페이백 대상으로 지정
     public void updateIsPenaltyApplyToTrue(){
         this.isPenaltyApply = true;
     }
+
+    // 일정에 참여
+    public void updateIsAttenedToTrue() { this.isAttend = true;}
+
+    // 일정에 미참여로 변경
+    public void updateIsAttenedToFalse() { this.isAttend = false;}
 }

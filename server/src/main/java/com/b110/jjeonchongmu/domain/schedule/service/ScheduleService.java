@@ -62,7 +62,7 @@ public class ScheduleService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
         Long gatheringId = schedule.getGathering().getGatheringId();
 
-        boolean isMember = scheduleMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
+        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
@@ -153,8 +153,8 @@ public class ScheduleService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ScehduleAccount Not Found"));
 
         /// 계좌 잔액 이동을위한 변수들
-        Integer penaltyApplyCount = scheduleMemberRepo.countByScheduleIdAndPenaltyApplied(scheduleId);
-        Integer attendeeCount = scheduleMemberRepo.countByScheduleIdAndPenaltyNotApplied(scheduleId);
+        Integer penaltyApplyCount = scheduleMemberRepo.countByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
+        Integer attendeeCount = scheduleMemberRepo.countByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
         Integer penaltyRate = schedule.getPenaltyRate();
         Long remainingAmount = scheduleAccount.getAccountBalance();
         Long perBudget = schedule.getPerBudget();
@@ -164,8 +164,8 @@ public class ScheduleService {
         System.out.println("인당 예산 : " + perBudget);
         System.out.println("페이백 대상자에게 보상해줘야할 금액 : " + perBudget);
 
-        List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyApplied(scheduleId);
-        List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotApplied(scheduleId);
+        List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
+        List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
         System.out.println("참여자 GatheringMember 목록 : " + attendeeMembers);
         //////
 
