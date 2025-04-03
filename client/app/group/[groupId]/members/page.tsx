@@ -40,6 +40,7 @@ interface GroupMembersResponse {
   inviteList: InviteMember[];
   manager: Manager;
   memberList: Member[];
+  isManager: boolean;
 }
 
 export default function GroupMembersPage({ params }: { params: Promise<{ groupId: string }> }) {
@@ -76,9 +77,8 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
       setPendingMembers(response.inviteList)
       setManager(response.manager)
       
-      // 현재 사용자가 총무인지 확인 (이메일로 비교)
-      const currentUserEmail = "test1@naver.com" // 실제로는 로그인된 사용자의 이메일을 사용해야 함
-      setIsManager(response.manager.email === currentUserEmail)
+      // API 응답의 isManager 값을 직접 사용
+      setIsManager(response.isManager)
     } catch (error) {
       console.error('Error fetching group members:', error)
       toast({
