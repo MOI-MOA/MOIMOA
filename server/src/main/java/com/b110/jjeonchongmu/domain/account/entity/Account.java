@@ -19,12 +19,9 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accountId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @Column(name = "account_no", nullable = false)
-    private String accountNo;
 
     @Column(name = "account_balance", nullable = false)
     private Long accountBalance;
@@ -36,11 +33,10 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountType dtype;
 
-    public Account(User user, String accountNo, String accountPw) {
+    public Account(User user, String accountPw, Long accountBalance) {
         this.user = user;
-        this.accountNo = accountNo;
         this.accountPw = accountPw;
-        this.accountBalance = 0L;
+        this.accountBalance = accountBalance;
     }
 
     public void decreaseBalance(Long amount) {

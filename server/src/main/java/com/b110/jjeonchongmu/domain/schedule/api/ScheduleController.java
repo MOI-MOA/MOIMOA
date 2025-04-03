@@ -51,12 +51,15 @@ public class ScheduleController {
     @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
 //        Long userId = jwtTokenProvider.getUserId();
-        Long userId = 1L;
+        Long userId = 5L;
         Long scheduleId = scheduleService.createSchedule(userId,gatheringId,scheduleCreateDTO);
-        MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
 
-        scheduleAccountService.createAccount(userId,scheduleId,makeAccountDTO);
+            MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
 
+        scheduleAccountService.createAccount(userId,scheduleId,makeAccountDTO,scheduleCreateDTO.getPerBudget());
+
+        System.out.println("일정 번호" + scheduleId);
+        scheduleMemberService.setSubManager(gatheringId,scheduleId,scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
     }
     // 일정 수정(총무만)

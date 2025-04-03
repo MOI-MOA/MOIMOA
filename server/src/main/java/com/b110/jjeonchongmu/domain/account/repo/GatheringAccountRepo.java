@@ -11,4 +11,7 @@ public interface GatheringAccountRepo extends JpaRepository<GatheringAccount, Lo
 
 	@Query("SELECT a FROM Account a WHERE a.accountId = :accountId AND TYPE(a) = GatheringAccount")
 	Optional<GatheringAccount> findByAccount(Long accountId);
+
+	GatheringAccount findAccountByAccountNo(String toAccountNo);
+
 }

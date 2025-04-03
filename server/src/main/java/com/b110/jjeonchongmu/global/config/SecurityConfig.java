@@ -15,6 +15,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 /**
  * Spring Security 설정 클래스
@@ -39,28 +44,44 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF 보호 기능 비활성화 (JWT를 사용하므로 불필요)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // 세션 관리 설정
                 .sessionManagement(sessionManagement ->
-                        // 세션을 생성하지 않고 상태를 저장하지 않음 (JWT 사용)
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // HTTP 요청에 대한 접근 권한 설정
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                // 인증 없이 접근 가능한 경로 설정
-                                .requestMatchers("/api/v1/login", "/api/v1/signup", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                                // 그 외 모든 요청은 인증 필요
-//                                .anyRequest().authenticated())
-                                .anyRequest().permitAll())
+                                // 인증 없이 접근 가능한 경로 (로그인, 회원가입)
+                                // 테스트 엔드포인트 추가
+                                .requestMatchers("/api/v1/login", "/api/v1/signup", "/swagger-ui/**", "/v3/api-docs/**", "/test/health").permitAll()
 
-                // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 이전에 추가
+                                // 요청은 일단 전부 허용 ().
+                                .anyRequest().permitAll())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(401);
+                            response.getWriter().write("인증되지 않은 사용자입니다.");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(403);
+                            response.getWriter().write("접근 권한이 없습니다.");
+                        }))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     /**

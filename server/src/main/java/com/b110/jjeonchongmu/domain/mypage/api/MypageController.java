@@ -76,7 +76,7 @@ public class MypageController {
         return ResponseEntity.ok(new UpdateAutoPaymentResponseDto("success"));
     }
 
-//    @GetMapping("/profile/mypage/myaccount")
+//    @GetMapping("/profile/mypage/account-history")
 //    public ResponseEntity<MyAccountResponseDto> myAccount() {
 //        Long id = jwtTokenProvider.getUserId();
 //

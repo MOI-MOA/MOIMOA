@@ -1,12 +1,26 @@
 package com.b110.jjeonchongmu.domain.trade.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
+import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
+import com.b110.jjeonchongmu.domain.trade.dto.TradeDetailDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeHistoryRequestDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeRequestDTO;
 import com.b110.jjeonchongmu.domain.trade.dto.TradeResponseDTO;
+import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
+import com.b110.jjeonchongmu.domain.user.entity.User;
+import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 거래 관련 비즈니스 로직
@@ -30,16 +44,69 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class TradeService {
+public class  TradeService {
 
     private final TradeRepo tradeRepo;
-    public TradeResponseDTO getTradeHistory(TradeHistoryRequestDTO tradeHistoryRequestDTO) {
+    private final UserRepo userRepo;
+    private final GatheringRepo gatheringRepo;
 
+    public TradeResponseDTO getTradeHistory(Long userId, TradeHistoryRequestDTO tradeHistoryRequestDTO) {
+        User user = userRepo.getUserByUserId(userId);
+        List<Trade> trades = new ArrayList<>();
+        String name = "";
+        String accountNo = "";
+        Long accountBalance = 0L;
+        Long totalDeposit = 0L;
+        Long totalWithdrawal = 0L;
+        System.out.println("tradeHistoryRequestDTO.getAccountType() = " + tradeHistoryRequestDTO.getAccountType());
+        switch (tradeHistoryRequestDTO.getAccountType()) {
+            case GATHERING:
+                Gathering gathering = gatheringRepo.getGatheringByGatheringId(tradeHistoryRequestDTO.getGatheringId());
+                GatheringAccount gatheringAccount = gathering.getGatheringAccount();
+                trades = tradeRepo.getGatheringTradesByAccountIdOrderByTradeTimeDesc(
+                        gatheringAccount.getAccountId(),
+                        PageRequest.of(0, tradeHistoryRequestDTO.getLimit()));
+                System.out.println("trades.size() = " + trades.size());
+                name = gathering.getGatheringName();
+                accountNo = gatheringAccount.getAccountNo();
+                accountBalance = gatheringAccount.getAccountBalance();
+                break;
+            case PERSONAL:
+                PersonalAccount personalAccount = user.getPersonalAccount();
+                trades = tradeRepo.getPersonalTradesByAccountIdOrderByTradeTimeDesc(
+                        personalAccount.getAccountId(),
+                        PageRequest.of(0, tradeHistoryRequestDTO.getLimit()));
+                System.out.println("trades.size() = " + trades.size());
+                name = user.getName();
+                accountNo = personalAccount.getAccountNo();
+                accountBalance = personalAccount.getAccountBalance();
+                break;
+        }
+        // totalDeposit(입금)이랑 totalWithdrawal(송금) 계산하는 로직
+        for (Trade trade : trades) {
+            Long tradeAmount = trade.getTradeAmount();
+            if (tradeAmount < 0) {
+                // tradeAmount가 -(송금) 이면 totalWithdrawal에서 뺴줘야 값 증가함.
+                totalWithdrawal -= tradeAmount;
+            } else {
+                totalDeposit += tradeAmount;
+            }
+        }
 
-        // accountId를 통해 모든 거래 내역 조회
-        // 거래 내역은 어차피 개인, 모임 밖에 없어서 이렇게 만드는것 보다
-
-        // 거래내역 조회 기능 구현
-        return new TradeResponseDTO();
+        return TradeResponseDTO.builder()
+                .name(name)
+                .accountNo(accountNo)
+                .accountBalance(accountBalance)
+                .totalDeposit(totalDeposit)
+                .totalWithdrawal(totalWithdrawal)
+                .tradeList(trades.stream()
+                                .map(trade -> TradeDetailDTO.builder()
+                                        .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
+                                        .tradeTime(trade.getTradeTime())
+                                        .tradeAmount(trade.getTradeAmount())
+                                        .tradeBalance(trade.getTradeBalance())
+                                        .build())
+                                .collect(Collectors.toList()))
+                .build();
     }
 }

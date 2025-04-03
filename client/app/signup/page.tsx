@@ -1,225 +1,218 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Header } from "@/components/Header"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "@/components/ui/use-toast"
-import { Toaster } from "@/components/ui/toaster"
-import axios from "axios"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import axios from "axios";
+import { publicApi, authApi } from "@/lib/api";
 
 export default function SignUpPage() {
-  const router = useRouter()
-  const [step, setStep] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    pinPassword: "",
-    confirmPinPassword: "",
-  })
+    birth: "",
+    personalAccountPW: "",
+    confirmPersonalAccountPW: "",
+  });
+
+  // 비밀번호 유효성 검사
+  const validatePassword = (password: string) => {
+    const passwordRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{4,20}$/;
+    return passwordRegex.test(password);
+  };
+
+  // PIN 번호 유효성 검사
+  const validatePin = (pin: string) => {
+    return /^\d{6}$/.test(pin);
+  };
 
   useEffect(() => {
-    if (formData.pinPassword.length === 6 && step === 3) {
+    // 개인계좌 비밀번호 입력 완료 시 다음 단계로 이동
+    if (formData.personalAccountPW.length === 6 && step === 3) {
       toast({
-        title: "PIN 번호 입력 완료",
-        description: "PIN 번호를 한 번 더 입력해주세요.",
-      })
-      setTimeout(() => {
-        setStep(4)
-      }, 1000)
+        title: "개인계좌 비밀번호 입력 완료",
+        description: "개인계좌 비밀번호를 한 번 더 입력해주세요.",
+      });
     }
 
-    if (formData.confirmPinPassword.length === 6 && step === 4) {
-      if (formData.confirmPinPassword !== formData.pinPassword) {
+    // 개인계좌 비밀번호 확인 완료 시
+    if (formData.confirmPersonalAccountPW.length === 6 && step === 4) {
+      if (formData.confirmPersonalAccountPW !== formData.personalAccountPW) {
         toast({
-          title: "PIN 번호 불일치",
-          description: "PIN 번호가 일치하지 않습니다. 다시 입력해주세요.",
+          title: "개인계좌 비밀번호 불일치",
+          description:
+            "개인계좌 비밀번호가 일치하지 않습니다. 다시 입력해주세요.",
           variant: "destructive",
-        })
-        setTimeout(() => {
-          setStep(3)
-          setFormData((prev) => ({ ...prev, pinPassword: "", confirmPinPassword: "" }))
-        }, 1500)
+        });
+        setFormData((prev) => ({
+          ...prev,
+          personalAccountPW: "",
+          confirmPersonalAccountPW: "",
+        }));
       } else {
         toast({
-          title: "PIN 번호 확인 완료",
-          description: "PIN 번호가 성공적으로 설정되었습니다.",
-        })
+          title: "개인계좌 비밀번호 확인 완료",
+          description: "개인계좌 비밀번호가 성공적으로 설정되었습니다.",
+        });
       }
     }
-  }, [formData.pinPassword, formData.confirmPinPassword, step])
+  }, [formData.personalAccountPW, formData.confirmPersonalAccountPW, step]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleVerification = () => {
-    setIsVerified(true)
+    setIsVerified(true);
     toast({
       title: "본인인증 완료",
       description: "본인인증이 성공적으로 완료되었습니다.",
-    })
-  }
+    });
+  };
 
   const handleNextStep = () => {
-    if (step < 4) setStep(step + 1)
-  }
+    if (step < 4) {
+      // 각 단계별 유효성 검사
+      switch (step) {
+        case 1:
+          // 이메일 인증 확인
+          if (!isVerified) {
+            toast({
+              title: "이메일 인증 필요",
+              description: "이메일 인증을 완료해주세요.",
+              variant: "destructive",
+            });
+            return;
+          }
+          break;
+        case 2:
+          // 비밀번호 유효성 검사
+          if (!validatePassword(formData.password)) {
+            toast({
+              title: "비밀번호 형식 오류",
+              description:
+                "비밀번호는 4~20자리수여야 합니다. 영문 대소문자, 숫자, 특수문자를 1개 이상 포함해야 합니다.",
+              variant: "destructive",
+            });
+            return;
+          }
+          // 비밀번호 확인 일치 여부
+          if (formData.password !== formData.confirmPassword) {
+            toast({
+              title: "비밀번호 불일치",
+              description: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+              variant: "destructive",
+            });
+            return;
+          }
+          break;
+        case 3:
+          // 개인계좌 비밀번호 유효성 검사
+          if (!validatePin(formData.personalAccountPW)) {
+            toast({
+              title: "개인계좌 비밀번호 형식 오류",
+              description: "개인계좌 비밀번호는 6자리 숫자여야 합니다.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (formData.personalAccountPW.length !== 6) {
+            toast({
+              title: "개인계좌 비밀번호 미입력",
+              description: "개인계좌 비밀번호를 6자리 입력해주세요.",
+              variant: "destructive",
+            });
+            return;
+          }
+          // 다음 단계로 넘어갈 때 개인계좌 비밀번호 확인 필드 초기화
+          setFormData((prev) => ({
+            ...prev,
+            confirmPersonalAccountPW: "",
+          }));
+          break;
+      }
+      setStep(step + 1);
+    }
+  };
 
   const handlePrevStep = () => {
-    if (step > 1) setStep(step - 1)
-  }
-
-  const handlePinInput = (digit: string, field: "pinPassword" | "confirmPinPassword") => {
-    if (formData[field].length < 6) {
-      const newValue = formData[field] + digit
-      setFormData((prev) => ({
-        ...prev,
-        [field]: newValue,
-      }))
+    if (step > 1) {
+      // 이전 단계로 돌아갈 때 개인계좌 비밀번호 관련 필드 초기화
+      if (step === 4) {
+        setFormData((prev) => ({
+          ...prev,
+          personalAccountPW: "",
+          confirmPersonalAccountPW: "",
+        }));
+      }
+      setStep(step - 1);
     }
-  }
+  };
 
-  const handlePinDelete = (field: "pinPassword" | "confirmPinPassword") => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].slice(0, -1),
-    }))
-  }
-
-  const handlePinClear = (field: "pinPassword" | "confirmPinPassword") => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: "",
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    if (step !== 4) return
-
-    if (formData.pinPassword.length !== 6 || formData.confirmPinPassword.length !== 6) {
-      // toast({
-      //   title: "PIN 비밀번호 미완료",
-      //   description: "PIN 비밀번호는 6자리여야 합니다.",
-      //   variant: "destructive",
-      // })
-      return
-    }
-
-    if (formData.pinPassword !== formData.confirmPinPassword) {
-      toast({
-        title: "PIN 비밀번호 불일치",
-        description: "PIN 비밀번호가 일치하지 않습니다.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsLoading(true)
-
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "비밀번호 불일치",
-        description: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-        variant: "destructive",
-      })
-      setIsLoading(false)
-      return
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
-      const response = await axios.post('/api/auth/signup', {
+      // 마지막 단계에서 개인계좌 비밀번호 확인 검증
+      if (formData.personalAccountPW !== formData.confirmPersonalAccountPW) {
+        toast({
+          title: "개인계좌 비밀번호 불일치",
+          description: "개인계좌 비밀번호가 일치하지 않습니다.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await authApi.post("/api/v1/signup", {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        pin: parseInt(formData.pinPassword)
+        birth: formData.birth,
+        personalAccountPW: parseInt(formData.personalAccountPW),
       });
 
-      if (response.status === 200) {
-        toast({
-          title: "회원가입 성공",
-          description: "회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.",
-        })
-        setTimeout(() => {
-          router.push("/login")
-        }, 1500)
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast({
-          title: "회원가입 실패",
-          description: error.response?.data?.message || "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.",
-          variant: "destructive",
-        })
-      } else {
-        toast({
-          title: "회원가입 실패",
-          description: "알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
-          variant: "destructive",
-        })
-      }
-      setTimeout(() => {
-        setFormData({
-          name: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          pinPassword: "",
-          confirmPinPassword: "",
-        })
-        setStep(1)
-        setIsVerified(false)
-      }, 1500)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      toast({
+        title: "회원가입 완료",
+        description: "회원가입이 완료되었습니다. 로그인해주세요.",
+      });
 
-  const renderPinInput = (field: "pinPassword" | "confirmPinPassword") => (
-    <>
-      <div className="space-y-2">
-        <Label htmlFor={field}>
-          {field === "pinPassword" ? "PIN 비밀번호 설정 (6자리)" : "PIN 비밀번호 확인 (6자리)"}
-        </Label>
-        <Input
-          id={field}
-          name={field}
-          type="password"
-          maxLength={6}
-          value={formData[field]}
-          readOnly
-          className="text-center text-2xl tracking-widest"
-        />
-      </div>
-      <div className="grid grid-cols-3 gap-2 mt-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <Button key={num} onClick={() => handlePinInput(num.toString(), field)} className="text-2xl py-6">
-            {num}
-          </Button>
-        ))}
-        <Button onClick={() => handlePinClear(field)} className="text-lg py-6">
-          Clear
-        </Button>
-        <Button onClick={() => handlePinInput("0", field)} className="text-2xl py-6">
-          0
-        </Button>
-        <Button onClick={() => handlePinDelete(field)} className="text-lg py-6">
-          Delete
-        </Button>
-      </div>
-    </>
-  )
+      router.push("/login");
+    } catch (error: any) {
+      toast({
+        title: "회원가입 실패",
+        description:
+          error.response?.data?.message || "회원가입 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -231,7 +224,7 @@ export default function SignUpPage() {
               {isVerified ? "인증 완료" : "본인인증"}
             </Button>
           </div>
-        )
+        );
       case 2:
         return (
           <>
@@ -243,6 +236,8 @@ export default function SignUpPage() {
                 type="text"
                 placeholder="홍길동"
                 required
+                minLength={2}
+                maxLength={20}
                 value={formData.name}
                 onChange={handleInputChange}
               />
@@ -260,15 +255,34 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="birth">생년월일</Label>
+              <Input
+                id="birth"
+                name="birth"
+                type="date"
+                required
+                value={formData.birth}
+                onChange={handleInputChange}
+                max="9999-12-31"
+                min="1900-01-01"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="password">비밀번호</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
                 required
+                minLength={4}
+                maxLength={20}
                 value={formData.password}
                 onChange={handleInputChange}
+                pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{4,20}$"
               />
+              <p className="text-sm text-gray-500">
+                4~20자리수, 영문 대소문자, 숫자, 특수문자 1개 이상 포함
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">비밀번호 확인</Label>
@@ -282,13 +296,60 @@ export default function SignUpPage() {
               />
             </div>
           </>
-        )
+        );
       case 3:
-        return renderPinInput("pinPassword")
+        return (
+          <div className="space-y-2">
+            <Label htmlFor="personalAccountPW">개인계좌 비밀번호 (6자리)</Label>
+            <Input
+              id="personalAccountPW"
+              name="personalAccountPW"
+              type="password"
+              maxLength={6}
+              required
+              value={formData.personalAccountPW}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                setFormData((prev) => ({
+                  ...prev,
+                  personalAccountPW: value,
+                }));
+              }}
+              pattern="[0-9]{6}"
+            />
+            <p className="text-sm text-gray-500">
+              {formData.personalAccountPW.length === 6
+                ? "다음 단계로 진행할 수 있습니다."
+                : "6자리 숫자를 입력해주세요."}
+            </p>
+          </div>
+        );
       case 4:
-        return renderPinInput("confirmPinPassword")
+        return (
+          <div className="space-y-2">
+            <Label htmlFor="confirmPersonalAccountPW">
+              개인계좌 비밀번호 확인
+            </Label>
+            <Input
+              id="confirmPersonalAccountPW"
+              name="confirmPersonalAccountPW"
+              type="password"
+              maxLength={6}
+              required
+              value={formData.confirmPersonalAccountPW}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                setFormData((prev) => ({
+                  ...prev,
+                  confirmPersonalAccountPW: value,
+                }));
+              }}
+              pattern="[0-9]{6}"
+            />
+          </div>
+        );
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -299,44 +360,57 @@ export default function SignUpPage() {
           <form onSubmit={handleSubmit}>
             <CardHeader>
               <CardTitle>회원가입 - 단계 {step}/4</CardTitle>
-              <CardDescription>새 계정을 만들어 서비스를 이용하세요.</CardDescription>
+              <CardDescription>
+                새 계정을 만들어 서비스를 이용하세요.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Progress bar */}
               <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${(step / 4) * 100}%` }}></div>
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full"
+                  style={{ width: `${(step / 4) * 100}%` }}
+                ></div>
               </div>
               {renderStepContent()}
             </CardContent>
             <CardFooter className="flex justify-between">
               {step > 1 && step !== 4 && (
-                <Button type="button" onClick={handlePrevStep} variant="outline">
+                <Button
+                  type="button"
+                  onClick={handlePrevStep}
+                  variant="outline"
+                >
                   이전
                 </Button>
               )}
-              {step < 3 ? (
-                <Button type="button" onClick={handleNextStep} disabled={step === 1 && !isVerified} className="ml-auto">
+              {step < 4 ? (
+                <Button
+                  type="button"
+                  onClick={handleNextStep}
+                  disabled={step === 1 && !isVerified}
+                  className="ml-auto"
+                >
                   다음
                 </Button>
-              ) : step === 4 ? (
+              ) : (
                 <Button
                   type="submit"
                   className="ml-auto"
                   disabled={
                     isLoading ||
-                    formData.confirmPinPassword.length !== 6 ||
-                    formData.pinPassword !== formData.confirmPinPassword
+                    formData.confirmPersonalAccountPW.length !== 6 ||
+                    formData.personalAccountPW !==
+                      formData.confirmPersonalAccountPW
                   }
                 >
                   {isLoading ? "처리 중..." : "가입 완료"}
                 </Button>
-              ) : null}
+              )}
             </CardFooter>
           </form>
         </Card>
       </main>
     </div>
-  )
-  
+  );
 }
-

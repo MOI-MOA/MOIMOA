@@ -5,16 +5,12 @@ import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
-import com.b110.jjeonchongmu.domain.account.dto.*;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-
-import com.b110.jjeonchongmu.domain.user.entity.User;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,12 +86,14 @@ public class ExternalBankApiComponent {
 
 		Map<String, Object> requestBody = createHeaderAndBody("updateDemandDepositAccountTransfer",
 				"updateDemandDepositAccountTransfer", requestDTO.getUserKey());
-
-		requestBody.put("depositAccountNo", requestDTO.getFromAccountNo());
+		System.out.println(requestDTO.getUserKey() + "회원키");
+		System.out.println(requestDTO.getToAccountNo() + "받는사람");
+		System.out.println(requestDTO.getFromAccountNo() + "주는사람");
+		requestBody.put("depositAccountNo", requestDTO.getToAccountNo());
 		requestBody.put("depositTransactionSummary", "(수시입출금) : 입금(이체)");
 		requestBody.put("transactionBalance", requestDTO.getAmount());
-		requestBody.put("withdrawAccountNo", requestDTO.getToAccountNo());
-		requestBody.put("withdrawTransactionSummary", "(수시입출금) : 출금(이체)");
+		requestBody.put("withdrawalAccountNo", requestDTO.getFromAccountNo());
+		requestBody.put("withdrawalTransactionSummary", "(수시입출금) : 출금(이체)");
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);

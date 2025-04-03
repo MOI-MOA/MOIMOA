@@ -1,10 +1,11 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.*;
-import com.b110.jjeonchongmu.domain.account.dto.gatheringDTO.AccountCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.GatheringTransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
@@ -19,7 +20,6 @@ import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
-import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
@@ -27,12 +27,9 @@ import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 @Service
 @RequiredArgsConstructor
 public class GatheringAccountService {
@@ -90,7 +87,13 @@ public class GatheringAccountService {
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
-		Account account = accountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+		Account account = null;
+		if(requestDto.getToAccountType()==AccountType.PERSONAL){
+			account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+		} else if (requestDto.getToAccountType()==AccountType.GATHERING){
+			account = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
+		}
+
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
@@ -113,7 +116,7 @@ public class GatheringAccountService {
 
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
 			GatheringAccount fromAccount = gatheringAccountRepo.findByAccount(
-							transferTransactionHistoryDTO.getToAccountId())
+							transferTransactionHistoryDTO.getFromAccountId())
 					.orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
 			// 잔액 검증
@@ -165,9 +168,16 @@ public class GatheringAccountService {
 
 			tradeRepo.save(trade);
 
+			String accountNo = null;
+			if (toAccount instanceof PersonalAccount) {
+				accountNo = ((PersonalAccount) toAccount).getAccountNo();
+			} else if(toAccount instanceof GatheringAccount){
+				accountNo = ((GatheringAccount) toAccount).getAccountNo();
+			}
+
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
 					toAccount.getUser().getUserKey(),
-					toAccount.getAccountNo(),
+					accountNo,
 					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount()
 			);
@@ -204,7 +214,13 @@ public class GatheringAccountService {
 		AccountType fromAccountType = AccountType.GATHERING;
 		Long fromAccountId = gathering.getGatheringAccount().getAccountId();
 
-		Account account = accountRepo.findAccountByAccountNo(accountNo);
+
+
+		Account account = personalAccountRepo.findByAccountNo(accountNo);
+
+
+
+
 		AccountType toAccountType = account.getDtype();
 
 		PersonalAccount personalAccount = personalAccountRepo.findByAccountNo(accountNo);
@@ -228,7 +244,12 @@ public class GatheringAccountService {
 	}
 	@Transactional
 	public String findNameByAccountNo(String accountNo) {
-		Account account = accountRepo.findAccountByAccountNo(accountNo);
+		Account account;
+		if(personalAccountRepo.existsByAccountNo(accountNo)){
+			account = personalAccountRepo.findByAccountNo(accountNo);
+		}
+		account = gatheringAccountRepo.findAccountByAccountNo(accountNo);
+
 		return account.getUser().getName();
 	}
 }

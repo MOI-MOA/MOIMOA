@@ -1,20 +1,22 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/jjeonchongmu?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: root
-    password: ssafy
+    url: jdbc:mysql://${MY_DB}:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    # password: ${MYSQL_ROOT_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
-#      host: my-cache-server
-      host: localhost
+      host: my-cache-server
+      #      host: localhost
       port: 6379
 
 paging:
@@ -36,20 +38,19 @@ springdoc:
     path: /v3/api-docs
 
 jwt:
-  secret: 7Jqw5Y2wZHvFgT8KmN3jP6sXrE4yL9cB2DaRQzUxVbWpAoZiYuMkGnS5dCh1fJ
-  access-token-validity: 86400000
-  refresh-token-validity: 86400000
-
+  secret: ${JWT_SECRET_KEY}
+  access-token-validity: 2592000000
+  refresh-token-validity: 2592000000
 
 external:
   bank:
     api:
-      url: https://finopenapi.ssafy.io/ssafy/api/v1/edu/
-      key: 4c56f9b9514141e3a39dd6783f4c536a
-      accountType: 999-1-733c0f121c8c4e
+      url: ${EXTERNAL_BANK_URI}
+      key: ${EXTERNAL_BANK_KEY}
+      accountType: ${EXTERNAL_BANK_AT}
   user:
     api:
-      url: https://finopenapi.ssafy.io/ssafy/api/v1/
+      url: ${EXTERNAL_USER_URI}
 
 server:
   port: 8080
