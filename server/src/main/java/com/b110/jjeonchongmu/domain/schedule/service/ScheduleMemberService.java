@@ -132,16 +132,24 @@ public class ScheduleMemberService {
         GatheringMember gatheringMember= gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId,subManagerId)
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"GatheringMember Not Found"));
 
-        ScheduleMember scheduleMember = ScheduleMember.builder()
+        List<GatheringMember> gatheringMembers = gatheringMemberRepo.findByGatheringGatheringId(gatheringId);
+
+        for(GatheringMember g : gatheringMembers){
+            ScheduleMember scheduleMember = ScheduleMember.builder()
                 .schedule(schedule)
-                .scheduleMember(subManager)
-                .scheduleIsCheck(true)
+                .scheduleMember(g.getGatheringMemberUser())
+                .scheduleIsCheck(false)
                 .isPenaltyApply(false)
-                .isAttend(true)
+                .isAttend(false)
                 .build();
+            scheduleMemberRepo.save(scheduleMember);
+        }
+
+        scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendTrue(scheduleId,subManagerId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"scheduleMember Not Found"))
+                .updateIsAttenedToTrue();
+
         gatheringMember.decreaseGatheringMemberAccountBalance(perBudget);
 
-
-        scheduleMemberRepo.save(scheduleMember);
     }
 }
