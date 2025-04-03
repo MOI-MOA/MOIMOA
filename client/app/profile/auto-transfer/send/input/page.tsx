@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 
 interface AccountCheckResponse {
   httpStatus: number;
@@ -36,7 +36,7 @@ export default function SendMoneyInputPage() {
     setIsLoading(true);
 
     try {
-      const response = await publicApi.get<
+      const response = await authApi.get<
         AccountCheckResponse,
         AccountCheckResponse
       >(`/api/v1/personal-account/check/${accountNumber}/${amount}`);

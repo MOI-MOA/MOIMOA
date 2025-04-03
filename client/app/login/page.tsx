@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { publicApi } from "@/lib/api";
+import { publicApi, authApi } from "@/lib/api";
 import axios from "axios";
 
 interface LoginResponse {
@@ -44,7 +44,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response: LoginResponse = await publicApi.post("/api/v1/login", {
+      const response: LoginResponse = await authApi.post("/api/v1/login", {
         email: formData.email,
         password: formData.password,
       });

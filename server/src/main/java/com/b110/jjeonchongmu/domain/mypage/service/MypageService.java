@@ -12,6 +12,8 @@ import com.b110.jjeonchongmu.domain.mypage.dto.auto.AutoPaymentResponse;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.GatheringProjection;
 import com.b110.jjeonchongmu.domain.mypage.dto.auto.UpdateAutoPaymentRequestDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.profile.ProfileDefaultResponse;
+import com.b110.jjeonchongmu.domain.mypage.dto.profile.UpdateUserRequestDto;
+import com.b110.jjeonchongmu.domain.mypage.dto.profile.UpdateUserResponseDto;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.GroupExpenseData;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.MonthlyExpenseData;
 import com.b110.jjeonchongmu.domain.mypage.dto.statistics.ParticipationRateData;
@@ -148,6 +150,7 @@ public class MypageService {
 		return new ProfileDefaultResponse(user);
 	}
 
+	@Transactional
 	public void updateAutoTransfer(Long id, Long autoPaymentId,
 			UpdateAutoPaymentRequestDto requestDto) {
 		User user = userRepo.getUserByUserId(id);
@@ -164,6 +167,13 @@ public class MypageService {
 		autoPayment.updateAutoPaymentDate(day);
 		autoPayment.updateIsActive(requestDto.isStatus());
 		autoPaymentRepo.save(autoPayment);
+	}
+
+	@Transactional
+	public UpdateUserResponseDto updateUserProfile(UpdateUserRequestDto requestDto, Long userId) {
+		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("회원 정보 조회 오류"));
+		user.updateName(requestDto.getName());
+		return new UpdateUserResponseDto(true);
 	}
 
 //    public MyAccountResponseDto getMyAccount(Long userId) {
