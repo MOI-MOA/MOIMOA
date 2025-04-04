@@ -19,6 +19,7 @@ public class GatheringDTO {
     private String depositDate;
     private Long basicFee;
     private Long gatheringDeposit;
+    private Boolean isCheck;
 
     @Builder
     public GatheringDTO(Long gatheringId, Long managerId, Long gatheringAccountId, String gatheringName,

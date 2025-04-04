@@ -55,35 +55,24 @@ public class ScheduleMemberService {
     @Transactional
     public void attendSchedule(Long userId,Long scheduleId) {
 
+        // 스케줄 찾고
         Schedule schedule = scheduleRepo.findById(scheduleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
-
+        // 유저 찾고
         User user = userRepo.findByUserId(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        Long gatheringId = schedule.getGathering().getGatheringId(); // schedule 로 gatheringId 조회
-        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
-        if (!isMember) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this gathering");
+        // 일정 참석할때 돈 확인하는 로직
+        Long gatheringId = schedule.getGathering().getGatheringId();
+        GatheringMember gatheringMember = gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, userId)
+                .orElseThrow(() -> new RuntimeException("userId와 gatheringId로 gatheringMember를 찾을 수 없습니다."));
+        if (gatheringMember.getGatheringMemberAccountBalance() < schedule.getPerBudget()) {
+            throw new RuntimeException("돈이 부족해 참석할 수 없습니다.");
         }
-
-        ScheduleMember scheduleMember = ScheduleMember.builder()
-                .schedule(schedule)
-                .scheduleMember(user)
-                .scheduleIsCheck(true)
-                .isAttend(true)
-                .isPenaltyApply(false)
-                .build();
-
-        schedule.updateScheduleAttendees(scheduleMember);
-        scheduleMemberRepo.save(scheduleMember);
-
-        GatheringMember gatheringMember = gatheringMemberRepo.findGatheringMemberByScheduleIdAndUserId(scheduleId,userId);
-
-        // 개인돈이 인당예산보다 작으면 오류 발생
-        if(gatheringMember.getGatheringMemberAccountBalance() < schedule.getPerBudget())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"돈부족");
-
+        // 참석 true로 바꿔줌.
+        ScheduleMember scheduleMember = scheduleMemberRepo.getScheduleMemberByUserIdAndScheduleId(userId, scheduleId)
+                .orElseThrow(() -> new RuntimeException("userId와 scheduleId로 scheduleMember를 찾을 수 없습니다."));
+        scheduleMember.updateScheduleIsCheckToTrue();
+        scheduleMember.updateIsAttenedToTrue();
         // 개인돈에서 인당예산 만큼 차감
         gatheringMember.decreaseGatheringMemberAccountBalance(schedule.getPerBudget());
         // 일정계좌 잔액 인당예산 만큼 증가
@@ -91,6 +80,7 @@ public class ScheduleMemberService {
 
     }
 
+    @Transactional
     // 일정 참여 거절
     public void attendRejectSchedule(Long userId, Long scheduleId) {
 
@@ -162,9 +152,11 @@ public class ScheduleMemberService {
             scheduleMemberRepo.save(scheduleMember);
         }
 
-        scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendFalse(scheduleId,subManagerId)
-                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"scheduleMember Not Found"))
-                .updateIsAttenedToTrue();
+        ScheduleMember subManagerScheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendFalse(scheduleId,subManagerId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"scheduleMember Not Found"));
+
+        subManagerScheduleMember.updateIsAttenedToTrue();
+        subManagerScheduleMember.updateScheduleIsCheckToTrue();
 
         gatheringMember.decreaseGatheringMemberAccountBalance(perBudget);
     }
