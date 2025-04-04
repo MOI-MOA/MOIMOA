@@ -19,6 +19,7 @@ import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
@@ -239,6 +240,33 @@ public class GatheringService {
 		Long managerUserId = gathering.getManagerId();
 		User managerUser = userRepo.getUserByUserId(managerUserId);
 
+		List<GatheringDetailSchedules> list = new ArrayList<>();
+		for (Schedule schedule : schedules) {
+			Boolean isChecked = false;
+			Boolean isAttend = false;
+			Integer numberOfParticipant = 0;
+			for (ScheduleMember sm : schedule.getAttendees()) {
+				if (sm.getIsAttend()) {
+					numberOfParticipant++;
+				}
+				if (Objects.equals(sm.getScheduleMember().getUserId(), userId)) {
+					isChecked = sm.getScheduleIsCheck();
+					isAttend = sm.getIsAttend();
+				}
+			}
+			list.add(GatheringDetailSchedules.builder()
+					.id(schedule.getId())
+					.name(schedule.getTitle())
+					.date(schedule.getStartTime())
+					.participants(numberOfParticipant)
+					.budgetPerPerson(schedule.getPerBudget())
+					.totalBudget(schedule.getAttendees().size() * schedule.getPerBudget())
+					.location(schedule.getPlace())
+					.isChecked(isChecked)
+					.isAttend(isAttend)
+					.build());
+		}
+
 		return GatheringDetailResponseDTO.builder()
 				.id(gathering.getGatheringId())
 				.name(gathering.getGatheringName())
@@ -248,16 +276,7 @@ public class GatheringService {
 				.isManager(Objects.equals(gathering.getManagerId(), userId))
 				.manager(new GatheringDetailManagerDTO(managerUser))
 				.accounts(new GatheringDetailAccountDTO(gathering, gatheringMember))
-				.schedules(schedules.stream()
-						.map(schedule -> GatheringDetailSchedules.builder()
-								.id(schedule.getId())
-								.date(schedule.getStartTime())
-								.participants(schedule.getAttendees().size())
-								.budgetPerPerson(schedule.getPerBudget())
-								.totalBudget(schedule.getAttendees().size() * schedule.getPerBudget())
-								.location(schedule.getPlace())
-								.build())
-						.collect(Collectors.toList()))
+				.schedules(list)
 				.build();
 	}
 

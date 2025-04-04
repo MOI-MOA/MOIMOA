@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +32,10 @@ public interface ScheduleMemberRepo extends JpaRepository<ScheduleMember, Long> 
     @Query("SELECT COUNT(sm) FROM ScheduleMember sm WHERE sm.schedule.id = :scheduleId AND sm.isPenaltyApply = false And sm.isAttend = true")
     Integer countByScheduleIdAndPenaltyNotAppliedIsAttendTrue(@Param("scheduleId") Long scheduleId);
 
+    // userId, scheduleId로 scheduleMember 찾기
+    @Query("SELECT sm " +
+            "FROM ScheduleMember sm " +
+            "WHERE sm.scheduleMember.userId = :userId " +
+            "AND sm.schedule.id = :scheduleId")
+    Optional<ScheduleMember> getScheduleMemberByUserIdAndScheduleId(Long userId, Long scheduleId);
 }

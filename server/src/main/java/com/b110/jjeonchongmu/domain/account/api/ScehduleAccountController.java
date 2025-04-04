@@ -47,7 +47,7 @@ public class ScehduleAccountController {
      */
     @PostMapping("/transfer")
     public ResponseEntity<Object> transfer(
-            @RequestBody TransferRequestDTO requestDto) {
+            @RequestBody TransferScheduleRequestDTO requestDto) {
         Long userId = jwtTokenProvider.getUserId();
         TransferTransactionHistoryDTO response = scheduleAccountService.initTransfer(requestDto);
         CompletableFuture.runAsync(() -> {

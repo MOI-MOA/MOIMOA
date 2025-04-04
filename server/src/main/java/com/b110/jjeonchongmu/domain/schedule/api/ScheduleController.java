@@ -105,12 +105,17 @@ public class ScheduleController {
     public ResponseEntity<String> attendSchedule(@PathVariable Long scheduleId) {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 4L;
-        scheduleMemberService.attendSchedule(userId,scheduleId);
+        try {
+            scheduleMemberService.attendSchedule(userId,scheduleId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(400).body("돈이 부족합니다.");
+        }
         return ResponseEntity.status(200).body("일정 참석이 완료되었습니다.");
     }
 
     // 일정 참석 거절
-    @PatchMapping("/{scheduleId}/attend-reject")
+    @PostMapping("/{scheduleId}/attend-reject")
     public ResponseEntity<String> attendRejectSchedule(@PathVariable Long scheduleId){
         Long userId = jwtTokenProvider.getUserId();
 
@@ -122,8 +127,9 @@ public class ScheduleController {
 
 
     // 일정 참석 취소
-    @DeleteMapping("/{scheduleId}/cancel")
+    @PostMapping("/{scheduleId}/cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
+        System.out.println("들어옴################");
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 4L;
         scheduleMemberService.cancelAttendance(userId,scheduleId);
