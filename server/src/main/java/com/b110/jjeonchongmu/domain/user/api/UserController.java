@@ -65,7 +65,7 @@ public class UserController {
             TokenResponseDTO tokenResponse = userService.refreshToken(refreshToken.substring(7));
             return ResponseEntity.status(200).body(tokenResponse);
         } catch (CustomException e) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).build(); 
         }
     }
 
