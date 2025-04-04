@@ -36,7 +36,7 @@ public class AutoPaymentService {
             AutoPayment autoPayment = existingAutoPayment.get();
             autoPayment.updateAutoPaymentAmount(gatheringMember.getGathering().getBasicFee());
             autoPayment.updateAutoPaymentDate(Integer.parseInt(gatheringMember.getGathering().getDepositDate()));
-            autoPayment.updateIsActive(true);
+            autoPayment.updateIsActive(false);
             autoPaymentRepo.save(autoPayment);
             return;
         }
@@ -47,7 +47,7 @@ public class AutoPaymentService {
                 .gatheringAccount(gatheringAccount)
                 .autoPaymentAmount(gatheringMember.getGathering().getBasicFee())
                 .autoPaymentDate(Integer.parseInt(gatheringMember.getGathering().getDepositDate()))
-                .isActive(true)
+                .isActive(false)
                 .build();
 
         autoPaymentRepo.save(autoPayment);

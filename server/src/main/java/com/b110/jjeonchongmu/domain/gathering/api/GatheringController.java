@@ -94,15 +94,15 @@ public class GatheringController {
         return ResponseEntity.status(201).body(response);
     }
 
-    /**
-     * 내 모임 조회
-     */
-    @GetMapping("/my")
-    public ResponseEntity<GatheringListResponseDTO> getMyGatherings() {
-        Long userId = jwtTokenProvider.getUserId();
-        GatheringListResponseDTO response = gatheringService.getMyGatherings(userId);
-        return ResponseEntity.status(201).body(response);
-    }
+//     * 내 모임 조회
+//     */
+//    @GetMapping("/my")
+//    public ResponseEntity<GatheringListResponseDTO> getMyGatherings() {
+//        Long userId = jwtTokenProvider.getUserId();
+//        GatheringListResponseDTO response = gatheringService.getMyGatherings(userId);
+//        return ResponseEntity.status(201).body(response);
+//    }
+//    /**
 
     /**
      * 모임 상세 조회

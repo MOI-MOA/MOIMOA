@@ -2,6 +2,8 @@ package com.b110.jjeonchongmu.domain.schedule.api;
 
 import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
 import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.schedule.dto.*;
 import com.b110.jjeonchongmu.domain.schedule.service.ScheduleMemberService;
 import com.b110.jjeonchongmu.domain.schedule.service.ScheduleService;
@@ -32,6 +34,8 @@ public class ScheduleController {
     private final ScheduleMemberService scheduleMemberService;
     private final ScheduleAccountService scheduleAccountService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final GatheringMemberRepo gatheringMemberRepo;
+
     // 모임 일정목록 조회
     @GetMapping("/{gatheringId}")
     public ResponseEntity<List<ScheduleDTO>> getScheduleList(@PathVariable Long gatheringId ) {
@@ -47,19 +51,22 @@ public class ScheduleController {
 //        Long userId = 1L;
         return ResponseEntity.status(200).body(scheduleService.getScheduleDetail(userId,scheduleId));
     }
-    // 일정 생성(총무만)
+    // 일정 생성
     @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 5L;
-        Long scheduleId = scheduleService.createSchedule(userId,gatheringId,scheduleCreateDTO);
 
-            MakeAccountDTO makeAccountDTO = MakeAccountDTO.builder().accountPw(scheduleCreateDTO.getScheduleAccountPw()).build();
+        Long scheduleId;
+        try {
+            scheduleId = scheduleService.createSchedule(userId, gatheringId, scheduleCreateDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(405).build();
+        }
 
-        scheduleAccountService.createAccount(userId,scheduleId,makeAccountDTO,scheduleCreateDTO.getPerBudget());
 
-        System.out.println("일정 번호" + scheduleId);
-        scheduleMemberService.setSubManager(gatheringId,scheduleId,scheduleCreateDTO.getSubManagerId(),scheduleCreateDTO.getPerBudget());
+
         return ResponseEntity.status(201).body("일정이 생성되었습니다.");
     }
     // 일정 수정(총무만)
@@ -96,15 +103,36 @@ public class ScheduleController {
     public ResponseEntity<String> attendSchedule(@PathVariable Long scheduleId) {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 4L;
-        scheduleMemberService.attendSchedule(userId,scheduleId);
+        try {
+            scheduleMemberService.attendSchedule(userId,scheduleId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(400).body("돈이 부족합니다.");
+        }
         return ResponseEntity.status(200).body("일정 참석이 완료되었습니다.");
     }
+
+    // 일정 참석 거절
+    @PostMapping("/{scheduleId}/attend-reject")
+    public ResponseEntity<String> attendRejectSchedule(@PathVariable Long scheduleId){
+        Long userId = jwtTokenProvider.getUserId();
+
+        scheduleMemberService.attendRejectSchedule(userId,scheduleId);
+
+        return ResponseEntity.status(200).body("일정 참여 거절 완료");
+    }
+
+
+
     // 일정 참석 취소
-    @DeleteMapping("/{scheduleId}/cancel")
+    @PostMapping("/{scheduleId}/cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
+        System.out.println("들어옴################");
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 4L;
         scheduleMemberService.cancelAttendance(userId,scheduleId);
         return ResponseEntity.status(200).body("일정 참석이 취소되었습니다.");
     }
+
+
 }

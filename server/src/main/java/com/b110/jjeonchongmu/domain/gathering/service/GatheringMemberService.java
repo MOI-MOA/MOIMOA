@@ -155,9 +155,12 @@ public class GatheringMemberService {
 			throw new RuntimeException("총무만 회원 관리를 조회할 수 있습니다.");
 		}
 		List<GatheringMember> members = gatheringMember.getGathering().getGatheringMembers();
+		Gathering gathering = gatheringRepo.getGatheringByGatheringId(gatheringId);
+		Long deposit = gathering.getGatheringDeposit();
+
 
 		User manager = gatheringMember.getGathering().getManager();
-
+		boolean isManager = Objects.equals(manager.getUserId(), currentUserId);
 		// 초대된 회원 목록
 		List<MemberManageResponseDTO.InviteMemberDTO> inviteMemberDTO = members.stream()
 				// 총무는 빼고 보여줌
@@ -218,6 +221,8 @@ public class GatheringMemberService {
 				.inviteList(inviteMemberDTO)
 				.manager(managerDTO)
 				.memberList(memberDTOs)
+				.isManager(isManager)
+				.myDeposit(deposit)
 				.build();
 	}
 
@@ -351,7 +356,7 @@ public class GatheringMemberService {
 		List<GatheringMember> gatheringMembers = gathering.getGatheringMembers();
 
 		for (GatheringMember gatheringMember : gatheringMembers) {
-			if (gatheringMember.getGatheringMemberUser().getUserId() == userId) {
+			if (Objects.equals(gatheringMember.getGatheringMemberUser().getUserId(), userId)) {
 				throw new RuntimeException("이미 신청했습니다");
 			}
 		}

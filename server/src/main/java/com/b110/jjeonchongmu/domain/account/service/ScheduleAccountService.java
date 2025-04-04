@@ -1,12 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.AccountType;
-import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
-import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
+import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
@@ -16,6 +10,9 @@ import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
@@ -24,7 +21,10 @@ import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,21 +44,30 @@ public class ScheduleAccountService {
     private final PersonalAccountRepo personalAccountRepo;
     private final PasswordEncoder passwordEncoder;
     private final ExternalBankApiComponent externalBankApiComponent;
+    private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepo accountRepo;
+    private final GatheringMemberRepo gatheringMemberRepo;
 //    계좌내역저장
-    public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
+    public TransferTransactionHistoryDTO initTransfer(TransferScheduleRequestDTO requestDto) {
 
 
-
+            System.out.println("들어와");
         Account ToAccount = null;
         if(requestDto.getToAccountType()==AccountType.PERSONAL){
+            System.out.println("개인계좌");
             ToAccount = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
         } else if (requestDto.getToAccountType()==AccountType.GATHERING){
+            System.out.println("모임계좌");
             ToAccount = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
         }
 
+        Long userId = jwtTokenProvider.getUserId();
+        ScheduleAccount scheduleAccount = scheduleAccountRepo.findScheduleAccountByUserIdAndScheduleId(userId, requestDto.getScheduleId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ScheduleAccount Not Found"));
+
 
         return TransferTransactionHistoryDTO.builder()
+                .fromAccountId(scheduleAccount.getAccountId())
                 .fromAccountType(requestDto.getFromAccountType())
                 .toAccountId(ToAccount.getAccountId())
                 .toAccountType(ToAccount.getDtype())
@@ -72,12 +81,14 @@ public class ScheduleAccountService {
 
     public boolean processTransfer(
             TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
+            System.out.println("입금하는 계좌 아이디" + transferTransactionHistoryDTO.getFromAccountId());
 
         try {
 
             transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
+
             ScheduleAccount fromAccount = scheduleAccountRepo.findByAccount(
-                            transferTransactionHistoryDTO.getToAccountId())
+                            transferTransactionHistoryDTO.getFromAccountId())
                     .orElseThrow(() -> new IllegalArgumentException("입금 계좌를 가져오는중 오류발생"));
 
             GatheringAccount fromGatheringAccount = fromAccount.getSchedule().getGathering().getGatheringAccount();
@@ -91,19 +102,15 @@ public class ScheduleAccountService {
                 throw new IllegalAccessException("비밀번호 불일치");
             }
 
-            // 잔액 검증
-            if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
-                transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
-                throw new IllegalStateException("잔액이 부족합니다");
-            }
 
             // 계좌 타입에 따라 입금 계좌 조회
-
             Account toAccount = null;
             String accountNo = null;
             GatheringAccount toGatheringAccount;
             PersonalAccount toPersonalAccount;
-            
+
+
+
             switch (transferTransactionHistoryDTO.getToAccountType()) {
                 case GATHERING -> {
                     toGatheringAccount = gatheringAccountRepo.findByAccount(
@@ -112,7 +119,7 @@ public class ScheduleAccountService {
                     toAccount = toGatheringAccount;
                     accountNo = toGatheringAccount.getAccountNo();
                 }
-            
+
                 case PERSONAL -> {
                     toPersonalAccount = personalAccountRepo.findByAccount(
                                     transferTransactionHistoryDTO.getToAccountId())
@@ -120,17 +127,59 @@ public class ScheduleAccountService {
                     toAccount = toPersonalAccount;
                     accountNo = toPersonalAccount.getAccountNo();
                 }
-            };
+            }
+            // 잔액 검증
 
-            fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 일정계좌 금액 차감
-            fromGatheringAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 모임계좌도 금액 차감
-            toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
+            // 1 . 일정계좌의 잔액이 결재금액을 초과하면
+            if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
+
+                // AmountExcess : 초과하는 금액
+                Long AmountExcess = transferTransactionHistoryDTO.getAmount()-fromAccount.getAccountBalance();
+                // attendees : 참여자 목록
+                List<GatheringMember> attendees = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(fromAccount.getSchedule().getId());
+                // perAmountExcess : 인당 부담해야하는 초과금액
+                Long perAmountExcess = AmountExcess / attendees.size();
+                // remainingAmount : 1원씩 남은금액
+                Long remainingAmount = AmountExcess / attendees.size();
+
+                for(GatheringMember a :attendees){
+                        // 1-1. 인당 부담해야하는 초과금액보다 내 개인 잔액이 크면 (정상적인 상황)
+                    if(a.getGatheringMemberAccountBalance()>=perAmountExcess){
+                        a.decreaseGatheringMemberAccountBalance(perAmountExcess);
+                        // 1-2. 인당 부담해야하는 초과금액보다 내 개인잔액이 작으면 (보증금 까야하는 상황)
+                    } else {
+                        a.decreaseGatheringMemberAccountBalance(a.getGatheringMemberAccountBalance());
+                        // haveToPayFromDeposit : 보증금에서 까야하는 금액
+                        Long haveToPayFromDeposit = perAmountExcess - a.getGatheringMemberAccountBalance();
+                            // 1-2-1. 보증금이 보증금에서 까야하는 금액보다 크면 ( 정상적인 상황 )
+                        if(a.getGatheringMemberAccountDeposit()>=haveToPayFromDeposit){
+                            a.decreaseGatheringMemberAccountDeposit(haveToPayFromDeposit);
+                            // 1-2-2. 보증금이 보증금에서 까야하는 금액보다 작으면 (결제가 불가능한 상황)
+                        } else {
+                            transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
+                            throw new IllegalStateException(a.getGatheringMemberUser().getName() +"님의 잔액이 부족합니다");
+                        }
+                    }
+                }
+            }
+            // 2 . 일정계좌의 잔액이 결제금액보다 크면 ( 정상적인 상황 )
+            else {
+                fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 일정계좌 금액 차감
+                fromGatheringAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 모임계좌도 금액 차감
+                toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
+            }
+
+
+
+
+
+
+
 
             scheduleAccountRepo.save(fromAccount);
 
             if (toAccount instanceof PersonalAccount) {
                 personalAccountRepo.save((PersonalAccount) toAccount);
-
             } else if  (toAccount instanceof  GatheringAccount){
                 gatheringAccountRepo.save((GatheringAccount) toAccount);
             }
@@ -202,8 +251,8 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
             Schedule schedule = scheduleRepo.findById(scheduleId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
 
-
-            ScheduleAccount scheduleAccount = new ScheduleAccount(user,requestDTO.getAccountPw(),schedule,perBudget);
+            System.out.println(perBudget);
+            ScheduleAccount scheduleAccount = new ScheduleAccount(user,passwordEncoder.encode(requestDTO.getAccountPw()),schedule,perBudget);
             // 부총무 한명의 인당예산만큼 잔액 추가
 
 
@@ -218,5 +267,15 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
             return false;
         }
     }
-
+    public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
+        Boolean isAccountNo = personalAccountRepo.existsByAccountNo(toAccountNo);
+        if(!isAccountNo) {
+            isAccountNo = gatheringAccountRepo.existsByAccountNo(toAccountNo);
+        }
+        return new AccountCheckResponseDTO(
+                toAccountNo,
+                amount,
+                isAccountNo
+        );
+    }
 }
