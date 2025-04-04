@@ -146,7 +146,13 @@ export default function MyPage() {
 
             <Button
               className="w-full"
-              onClick={() => router.push("/profile/mypage/edit")}
+              onClick={() =>
+                router.push(
+                  `/profile/mypage/edit?name=${encodeURIComponent(
+                    userInfo.name
+                  )}`
+                )
+              }
             >
               <Edit className="h-4 w-4 mr-2" />
               프로필 수정

@@ -32,6 +32,7 @@ interface AutoTransfer {
   deposit: number; // Long
   groupName: string; // String
   myBalance: number; // int
+  paymentStatus: boolean; // boolean
 }
 
 interface AutoTransferResponse {
@@ -60,6 +61,7 @@ export default function AutoTransferPage() {
       account: string;
       deposit: number;
       myBalance: number;
+      paymentStatus: boolean;
     }>
   >([]);
 
@@ -94,6 +96,7 @@ export default function AutoTransferPage() {
                 ...transfer,
                 status: transfer.status ? "active" : "inactive",
                 nextDate: new Date().toISOString().split("T")[0],
+                paymentStatus: transfer.paymentStatus,
               }))
             );
           } else {
@@ -332,7 +335,18 @@ export default function AutoTransferPage() {
                       <div className="flex items-center text-sm text-gray-600 mb-2">
                         <Calendar className="h-4 w-4 mr-1" />
                         <span>
-                          매월 {transfer.day}일 / 다음 결제: {transfer.nextDate}
+                          매월 {transfer.day}일 / 다음 결제:{" "}
+                          {transfer.paymentStatus
+                            ? new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth(),
+                                transfer.day
+                              ).toLocaleDateString()
+                            : new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth() + 1,
+                                transfer.day
+                              ).toLocaleDateString()}
                         </span>
                       </div>
                       <div className="text-lg font-semibold mb-2">
