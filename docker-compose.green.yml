@@ -11,7 +11,8 @@ services:
       - server-green
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_API_URL=/api
+      # - NEXT_PUBLIC_API_URL=https://server-green:8080
     restart: always
     networks:
       - app-network

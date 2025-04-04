@@ -10,8 +10,9 @@ services:
     depends_on:
       - server-blue
     environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=/api
+      # - NEXT_PUBLIC_API_URL=https://server-blue:8080
     restart: always
     networks:
       - app-network
