@@ -6,6 +6,7 @@ import com.b110.jjeonchongmu.domain.user.dto.request.SignupRequestDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.TokenResponseDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.UserResponseDTO;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
+import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,20 @@ public class UserController {
     public ResponseEntity<String> logout() {
         userService.logout();
         return ResponseEntity.status(200).body("로그아웃 성공");
+    }
+
+    /**
+     * 토큰 재발급 API
+     * Refresh Token을 이용하여 새로운 Access Token을 발급받습니다.
+     */
+    @PostMapping("/token/refresh")
+    public ResponseEntity<TokenResponseDTO> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        try {
+            TokenResponseDTO tokenResponse = userService.refreshToken(refreshToken.substring(7));
+            return ResponseEntity.status(200).body(tokenResponse);
+        } catch (CustomException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
     /**
