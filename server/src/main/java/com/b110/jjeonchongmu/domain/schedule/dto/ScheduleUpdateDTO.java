@@ -17,6 +17,5 @@ public class ScheduleUpdateDTO {
     private Long scheduleId;
     private String scheduleTitle;
     private String scheduleDetail;
-    private Long perBudget;
     private String schedulePlace;
 }

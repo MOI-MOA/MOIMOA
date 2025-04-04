@@ -55,9 +55,7 @@ public class ScheduleController {
     @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
         Long userId = jwtTokenProvider.getUserId();
-        System.out.println("userId = " + userId);
 //        Long userId = 5L;
-
 
         Long scheduleId;
         try {
