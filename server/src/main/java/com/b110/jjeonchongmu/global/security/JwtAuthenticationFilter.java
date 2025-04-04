@@ -1,12 +1,16 @@
 package com.b110.jjeonchongmu.global.security;
 
-import com.b110.jjeonchongmu.global.exception.CustomException;
-import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -15,13 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import java.util.Date;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * JWT 토큰 기반의 인증을 처리하는 필터
@@ -53,6 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        if (request.getRequestURI().equals("/api/v1/login") ||
+            request.getRequestURI().equals("/api/v1/signup") ||
+            request.getRequestURI().equals("/api/v1/token/refresh")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = jwtTokenProvider.resolveToken(request);
 
         if (token != null) {
