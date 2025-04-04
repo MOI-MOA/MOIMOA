@@ -10,6 +10,9 @@ import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
@@ -18,6 +21,7 @@ import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
@@ -42,6 +46,7 @@ public class ScheduleAccountService {
     private final ExternalBankApiComponent externalBankApiComponent;
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepo accountRepo;
+    private final GatheringMemberRepo gatheringMemberRepo;
 //    계좌내역저장
     public TransferTransactionHistoryDTO initTransfer(TransferScheduleRequestDTO requestDto) {
 
@@ -97,14 +102,8 @@ public class ScheduleAccountService {
                 throw new IllegalAccessException("비밀번호 불일치");
             }
 
-            // 잔액 검증
-            if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
-                transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
-                throw new IllegalStateException("잔액이 부족합니다");
-            }
 
             // 계좌 타입에 따라 입금 계좌 조회
-
             Account toAccount = null;
             String accountNo = null;
             GatheringAccount toGatheringAccount;
@@ -120,7 +119,7 @@ public class ScheduleAccountService {
                     toAccount = toGatheringAccount;
                     accountNo = toGatheringAccount.getAccountNo();
                 }
-            
+
                 case PERSONAL -> {
                     toPersonalAccount = personalAccountRepo.findByAccount(
                                     transferTransactionHistoryDTO.getToAccountId())
@@ -129,10 +128,53 @@ public class ScheduleAccountService {
                     accountNo = toPersonalAccount.getAccountNo();
                 }
             }
+            // 잔액 검증
 
-            fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 일정계좌 금액 차감
-            fromGatheringAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 모임계좌도 금액 차감
-            toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
+            // 1 . 일정계좌의 잔액이 결재금액을 초과하면
+            if (fromAccount.getAccountBalance() < transferTransactionHistoryDTO.getAmount()) {
+
+                // AmountExcess : 초과하는 금액
+                Long AmountExcess = transferTransactionHistoryDTO.getAmount()-fromAccount.getAccountBalance();
+                // attendees : 참여자 목록
+                List<GatheringMember> attendees = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(fromAccount.getSchedule().getId());
+                // perAmountExcess : 인당 부담해야하는 초과금액
+                Long perAmountExcess = AmountExcess / attendees.size();
+                // remainingAmount : 1원씩 남은금액
+                Long remainingAmount = AmountExcess / attendees.size();
+
+                for(GatheringMember a :attendees){
+                        // 1-1. 인당 부담해야하는 초과금액보다 내 개인 잔액이 크면 (정상적인 상황)
+                    if(a.getGatheringMemberAccountBalance()>=perAmountExcess){
+                        a.decreaseGatheringMemberAccountBalance(perAmountExcess);
+                        // 1-2. 인당 부담해야하는 초과금액보다 내 개인잔액이 작으면 (보증금 까야하는 상황)
+                    } else {
+                        a.decreaseGatheringMemberAccountBalance(a.getGatheringMemberAccountBalance());
+                        // haveToPayFromDeposit : 보증금에서 까야하는 금액
+                        Long haveToPayFromDeposit = perAmountExcess - a.getGatheringMemberAccountBalance();
+                            // 1-2-1. 보증금이 보증금에서 까야하는 금액보다 크면 ( 정상적인 상황 )
+                        if(a.getGatheringMemberAccountDeposit()>=haveToPayFromDeposit){
+                            a.decreaseGatheringMemberAccountDeposit(haveToPayFromDeposit);
+                            // 1-2-2. 보증금이 보증금에서 까야하는 금액보다 작으면 (결제가 불가능한 상황)
+                        } else {
+                            transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
+                            throw new IllegalStateException(a.getGatheringMemberUser().getName() +"님의 잔액이 부족합니다");
+                        }
+                    }
+                }
+            }
+            // 2 . 일정계좌의 잔액이 결제금액보다 크면 ( 정상적인 상황 )
+            else {
+                fromAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 일정계좌 금액 차감
+                fromGatheringAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 모임계좌도 금액 차감
+                toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
+            }
+
+
+
+
+
+
+
 
             scheduleAccountRepo.save(fromAccount);
 
