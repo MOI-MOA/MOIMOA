@@ -19,6 +19,8 @@ import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import java.util.Optional;
+
+import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,26 +40,29 @@ public class ScheduleAccountService {
     private final PersonalAccountRepo personalAccountRepo;
     private final PasswordEncoder passwordEncoder;
     private final ExternalBankApiComponent externalBankApiComponent;
+    private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepo accountRepo;
 //    계좌내역저장
-    public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
+    public TransferTransactionHistoryDTO initTransfer(TransferScheduleRequestDTO requestDto) {
 
 
             System.out.println("들어와");
-
         Account ToAccount = null;
         if(requestDto.getToAccountType()==AccountType.PERSONAL){
             System.out.println("개인계좌");
             ToAccount = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
         } else if (requestDto.getToAccountType()==AccountType.GATHERING){
-
             System.out.println("모임계좌");
             ToAccount = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
         }
 
+        Long userId = jwtTokenProvider.getUserId();
+        ScheduleAccount scheduleAccount = scheduleAccountRepo.findScheduleAccountByUserIdAndScheduleId(userId, requestDto.getScheduleId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"ScheduleAccount Not Found"));
+
 
         return TransferTransactionHistoryDTO.builder()
-                .fromAccountId(requestDto.getFromAccountId())
+                .fromAccountId(scheduleAccount.getAccountId())
                 .fromAccountType(requestDto.getFromAccountType())
                 .toAccountId(ToAccount.getAccountId())
                 .toAccountType(ToAccount.getDtype())
