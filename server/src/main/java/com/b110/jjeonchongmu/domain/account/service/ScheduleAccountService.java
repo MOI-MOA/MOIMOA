@@ -146,6 +146,10 @@ public class ScheduleAccountService {
                         // 1-1. 인당 부담해야하는 초과금액보다 내 개인 잔액이 크면 (정상적인 상황)
                     if(a.getGatheringMemberAccountBalance()>=perAmountExcess){
                         a.decreaseGatheringMemberAccountBalance(perAmountExcess);
+                        if(a.getGatheringMemberAccountBalance()>0 && remainingAmount>0){
+                            a.decreaseGatheringMemberAccountBalance(1L);
+                            remainingAmount--;
+                        }
                         // 1-2. 인당 부담해야하는 초과금액보다 내 개인잔액이 작으면 (보증금 까야하는 상황)
                     } else {
                         a.decreaseGatheringMemberAccountBalance(a.getGatheringMemberAccountBalance());
@@ -154,6 +158,10 @@ public class ScheduleAccountService {
                             // 1-2-1. 보증금이 보증금에서 까야하는 금액보다 크면 ( 정상적인 상황 )
                         if(a.getGatheringMemberAccountDeposit()>=haveToPayFromDeposit){
                             a.decreaseGatheringMemberAccountDeposit(haveToPayFromDeposit);
+                            if(a.getGatheringMemberAccountBalance()>0 && remainingAmount>0) {
+                                a.decreaseGatheringMemberAccountDeposit(1L);
+                                remainingAmount--;
+                            }
                             // 1-2-2. 보증금이 보증금에서 까야하는 금액보다 작으면 (결제가 불가능한 상황)
                         } else {
                             transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
@@ -161,6 +169,14 @@ public class ScheduleAccountService {
                         }
                     }
                 }
+                if(remainingAmount>0){
+                    transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
+                    throw new IllegalStateException("잔액이 부족합니다");
+                }
+
+                fromAccount.decreaseBalance(fromAccount.getAccountBalance()); // 일정계좌 금액 차감
+                fromGatheringAccount.decreaseBalance(transferTransactionHistoryDTO.getAmount()); // 모임계좌도 금액 차감
+                toAccount.increaseBalance(transferTransactionHistoryDTO.getAmount());
             }
             // 2 . 일정계좌의 잔액이 결제금액보다 크면 ( 정상적인 상황 )
             else {
