@@ -9,6 +9,7 @@ import {
   Users,
   Wallet,
   AlertCircle,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,6 +47,9 @@ type Schedule = {
   budgetPerPerson: number;
   totalBudget: number;
   location: string;
+  isChecked: boolean;
+  isAttend: boolean;
+  name: string;
 };
 
 type GroupData = {
@@ -132,6 +136,80 @@ export default function GroupDetailPage({
     }
     setIsLeaveDialogOpen(false);
   };
+
+  // 참석 처리 함수 추가
+  const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
+    e.stopPropagation() // 카드 클릭 이벤트 전파 방지
+    try {
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend`)
+      
+      // 성공 시 해당 일정의 상태 업데이트
+      setGroupData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          schedules: prev.schedules.map(schedule => {
+            if (schedule.id === scheduleId) {
+              return {
+                ...schedule,
+                isChecked: true,
+                isAttend: true
+              }
+            }
+            return schedule
+          })
+        }
+      })
+      
+      toast({
+        title: "참석 완료",
+        description: "일정 참석이 완료되었습니다.",
+      })
+    } catch (error) {
+      toast({
+        title: "참석 실패",
+        description: "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // 거절 처리 함수 추가
+  const handleCancel = async (scheduleId: number, e: React.MouseEvent) => {
+    e.stopPropagation() // 카드 클릭 이벤트 전파 방지
+    try {
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend-reject`)
+      
+      // 성공 시 해당 일정의 상태 업데이트
+      setGroupData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          schedules: prev.schedules.map(schedule => {
+            if (schedule.id === scheduleId) {
+              return {
+                ...schedule,
+                isChecked: true,
+                isAttend: false
+              }
+            }
+            return schedule
+          })
+        }
+      })
+      
+      toast({
+        title: "거절 완료",
+        description: "일정 거절이 완료되었습니다.",
+      })
+    } catch (error) {
+      toast({
+        title: "거절 실패",
+        description: "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <>
@@ -255,8 +333,41 @@ export default function GroupDetailPage({
             >
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
-                  <div className="font-medium">{schedule.location}</div>
-                  <Badge variant="secondary">#{schedule.id}차</Badge>
+                  <div className="font-medium">{schedule.name}</div>
+                  <div className="flex items-center space-x-2">
+                    {!schedule.isChecked ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={(e) => handleAttend(schedule.id, e)}
+                        >
+                          참석
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={(e) => handleCancel(schedule.id, e)}
+                        >
+                          거절
+                        </Button>
+                      </>
+                    ) : (
+                      <Badge 
+                        variant={schedule.isAttend ? "outline" : "destructive"}
+                        className={
+                          schedule.isAttend 
+                            ? "text-green-600" 
+                            : "bg-red-100 text-red-800 border-0"
+                        }
+                      >
+                        {schedule.isAttend ? "참석함" : "거절함"}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary">#{schedule.id}차</Badge>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
                   <div className="flex items-center">
@@ -266,6 +377,10 @@ export default function GroupDetailPage({
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-1" />
                     {schedule.participants}명
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {schedule.location}
                   </div>
                   <div className="flex items-center">
                     <Wallet className="h-4 w-4 mr-1" />
