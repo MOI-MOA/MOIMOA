@@ -36,9 +36,17 @@ authInstance.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem("refreshToken");
-        const response = await axios.post(`${baseUrl}/auth/refresh`, {
-          refreshToken,
-        });
+        console.log("refreshToken", refreshToken);
+        const response = await axios.post(
+          `${baseUrl}/api/v1/token/refresh`,
+          {}, // 비어있는 요청 본문 (또는 필요한 데이터)
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${refreshToken}`,
+            },
+          }
+        );
 
         const { accessToken } = response.data;
         localStorage.setItem("accessToken", accessToken);
