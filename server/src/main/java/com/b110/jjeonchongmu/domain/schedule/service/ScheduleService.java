@@ -84,8 +84,8 @@ public class ScheduleService {
                 .orElseThrow(() -> new RuntimeException("gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
         Long gatheringDeposit = gatheringMember.getGathering().getGatheringDeposit();
 
-        if (gatheringMember.getGatheringMemberAccountBalance() < scheduleCreateDTO.getPerBudget() + gatheringDeposit) {
-            throw new RuntimeException("일정 생성하는 사람의 잔액이 일정에서 설정된 인당 금액 + 보증금보다 적어서 생성이 불가능 합니다.");
+        if (gatheringMember.getGatheringMemberAccountBalance() < scheduleCreateDTO.getPerBudget()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"일정 생성자의 잔액이 인당예산보다 적어 생성이 불가능합니다");
         }
 
         Gathering gathering = gatheringRepo.findById(gatheringId)
@@ -95,7 +95,8 @@ public class ScheduleService {
         User subManager = userRepo.findByUserId(scheduleCreateDTO.getSubManagerId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SubManger not found"));
 
-//        일정 생성후에 계좌를 생성해야하고  부총무가 일정멤버로 지정되어야 함
+//      일정 생성후에 계좌를 생성해야하고  부총무가 일정멤버로 지정되어야 함
+
         Schedule schedule = Schedule.builder()
                 .gathering(gathering)
                 .subManager(subManager)
@@ -145,7 +146,6 @@ public class ScheduleService {
         schedule.updateTitle(scheduleUpdateDTO.getScheduleTitle());
         schedule.updateDetail(scheduleUpdateDTO.getScheduleDetail());
         schedule.updatePlace(scheduleUpdateDTO.getSchedulePlace());
-        schedule.updatePerBudget(scheduleUpdateDTO.getPerBudget());
 
     }
 
@@ -173,15 +173,10 @@ public class ScheduleService {
         Long remainingAmount = scheduleAccount.getAccountBalance();
         Long perBudget = schedule.getPerBudget();
         Long AmountToBeGuaranteed = (perBudget * penaltyRate) / 100;
-        System.out.println("페이백 대상자 수 : " + penaltyApplyCount);
-        System.out.println("참여자 수 : " + attendeeCount);
-        System.out.println("인당 예산 : " + perBudget);
-        System.out.println("페이백 대상자에게 보상해줘야할 금액 : " + perBudget);
 
         List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
         List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
-        System.out.println("참여자 GatheringMember 목록 : " + attendeeMembers);
-        //////
+
 
         // 일정 멤버 삭제
         scheduleMemberRepo.deleteAllByScheduleId(scheduleId);
@@ -196,7 +191,14 @@ public class ScheduleService {
         System.out.println("일정 아이디 : " + scheduleId);
 
 
-        if (AmountToBeGuaranteed * penaltyApplyCount <= remainingAmount) {
+        // 돈을 1원도 안썻으면 그냥 페널티 대상자들까지 전부다 인당예산만큼 나눠주기
+        if(perBudget*(penaltyApplyCount + attendeeCount) == scheduleAccount.getAccountBalance()){
+            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget));
+            attendeeMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget));
+
+        }
+
+        else if (AmountToBeGuaranteed * penaltyApplyCount <= remainingAmount) {
 
             penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(AmountToBeGuaranteed));
 
@@ -235,9 +237,7 @@ public class ScheduleService {
         scheduleAccount.decreaseBalance(scheduleAccount.getAccountBalance());
         ///////////////////////////////////////////////////////
 
-        System.out.println("일정 계좌 돈 이동 완료 ");
             scheduleAccountRepo.deleteById(scheduleAccountId);
-        System.out.println("일정 계좌 삭제완료 ");
 
 
         }
