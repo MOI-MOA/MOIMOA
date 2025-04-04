@@ -25,11 +25,25 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { authApi } from "@/lib/api";
-import { useParams } from "next/navigation";
+import { authApi, publicApi } from "@/lib/api";
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
+
+interface AccountCheckResponse {
+  toAccountNo: string;
+  amount: number;
+  isAccount: boolean;
+}
+
+interface TransferResponse {
+  transactionId: string;
+  status: string;
+  // 필요한 다른 필드들 추가
+}
 
 export default function SendMoneyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [amount, setAmount] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [message, setMessage] = useState("");
@@ -40,24 +54,109 @@ export default function SendMoneyPage() {
   const [accountName, setAccountName] = useState("");
   const [isAccountCheckDialogOpen, setIsAccountCheckDialogOpen] =
     useState(false);
-  const [setScheduleId] = useState("");
-  const params = useParams();
-  const scheduleId = params.scheduleId;
-  const groupId = params.groupId;
+  const [showPinInput, setShowPinInput] = useState(false);
+  const [accountOwner, setAccountOwner] = useState("");
+  const [transferStatus, setTransferStatus] = useState<string>("");
+  const [stompClient, setStompClient] = useState<any>(null);
+  const [toAccountType, setToAccountType] = useState<string>("PERSONAL");
+  const [userId, setUserId] = useState<string>("");
+
+  useEffect(() => {
+    const account = searchParams.get("account");
+    const cost = searchParams.get("cost");
+    const type = searchParams.get("type");
+    const userIdParam = searchParams.get("userId");
+
+    console.log("Received URL parameters:", {
+      account,
+      cost,
+      type,
+      userId: userIdParam,
+      allParams: Object.fromEntries(searchParams.entries()),
+    });
+
+    if (account) {
+      setAccountNumber(account);
+    }
+    if (cost) {
+      setAmount(cost);
+    }
+    if (type) {
+      setToAccountType(type);
+      console.log("Setting toAccountType to:", type);
+    }
+    if (userIdParam) {
+      setUserId(userIdParam);
+      console.log("Setting userId to:", userIdParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const socket = new SockJS("http://localhost:8080/ws");
+    const client = Stomp.over(socket);
+
+    client.connect({}, () => {
+      console.log("WebSocket Connected");
+      // 송금 결과 구독
+      const subscriptionPath = `/queue/transfer-results/${userId}`;
+      console.log("Subscribing to:", subscriptionPath);
+
+      client.subscribe(subscriptionPath, (message) => {
+        const result = message.body;
+        console.log("Received WebSocket message:", result);
+
+        if (result === "true") {
+          toast({
+            title: "송금 완료",
+            description: `${accountNumber}로 ${Number(
+              amount
+            ).toLocaleString()}원이 성공적으로 송금되었습니다.`,
+          });
+          router.back();
+        } else if (result === "송금중 오류가 발생") {
+          toast({
+            title: "송금 실패",
+            description: "송금 중 오류가 발생했습니다. 다시 시도해주세요.",
+            variant: "destructive",
+          });
+        }
+        setIsLoading(false);
+      });
+    });
+
+    setStompClient(client);
+
+    return () => {
+      if (client) {
+        client.disconnect();
+      }
+    };
+  }, [userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await authApi.get(
-        `/api/v1/gathering-account/account/${accountNumber}/check`
+      const response = await authApi.get<AccountCheckResponse>(
+        `/api/v1/personal-account/${accountNumber}/${amount}/check`
       );
 
-      if (response) {
-        setAccountName(response.name);
+      console.log("API Response:", response);
+
+      if (response.isAccount) {
+        setAccountName(response.toAccountNo);
         setIsConfirmDialogOpen(true);
+      } else {
+        toast({
+          title: "계좌 확인 실패",
+          description: "존재하지 않는 계좌번호입니다.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
+      console.error("API Error:", error);
       if (error.response?.status === 404) {
         toast({
           title: "계좌 확인 실패",
@@ -74,70 +173,59 @@ export default function SendMoneyPage() {
     }
   };
 
+  const handleAccountCheckConfirm = () => {
+    setIsAccountCheckDialogOpen(false);
+    setIsConfirmDialogOpen(true);
+  };
+
   const handleConfirm = () => {
     setIsConfirmDialogOpen(false);
     setIsPinDialogOpen(true);
   };
 
-  const handlePinInput = (digit: string) => {
-    if (pinCode.length < 4) {
-      setPinCode((prev) => prev + digit);
+  const handlePinSubmit = async () => {
+    setIsLoading(true);
+    setIsPinDialogOpen(false);
+    setTransferStatus("송금 처리 중...");
+
+    console.log("Submitting transfer with toAccountType:", toAccountType);
+
+    try {
+      const response: TransferResponse = await authApi.post(
+        `/api/v1/personal-account/transfer`,
+        {
+          fromAccountType: "PERSONAL",
+          toAccountType: toAccountType,
+          toAccountNo: accountNumber,
+          tradeDetail: message || "",
+          transferAmount: Number(amount),
+          accountPw: pinCode,
+        }
+      );
+
+      // WebSocket을 통해 결과를 받을 때까지 대기
+      // 결과는 WebSocket 구독 핸들러에서 처리됨
+    } catch (error: any) {
+      if (error.response?.status === 400) {
+        toast({
+          title: "PIN 오류",
+          description: "올바른 PIN 번호를 입력해주세요.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "송금 실패",
+          description: "송금 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      }
+      setIsLoading(false);
     }
   };
 
-  const handlePinSubmit = async () => {
-    if (pinCode.length !== 4) {
-      toast({
-        title: "PIN 오류",
-        description: "4자리 PIN 번호를 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // if (pinCode !== "0000") {
-    //   toast({
-    //     title: "PIN 오류",
-    //     description: "올바른 PIN 번호를 입력해주세요.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    setIsLoading(true);
-    setIsPinDialogOpen(false);
-
-    try {
-      const response = await authApi.post("/api/v1/schedule-account/transfer", {
-        toAccountNo: accountNumber,
-        transferAmount: Number(amount),
-        message: message,
-        toAccountType: "PERSONAL",
-        scheduleId: scheduleId,
-        accountPw: pinCode,
-      });
-      console.log(scheduleId);
-      console.log(response);
-      if (response) {
-        toast({
-          title: "송금 완료",
-          description: `${accountNumber}로 ${Number(
-            amount
-          ).toLocaleString()}원이 성공적으로 송금되었습니다.`,
-        });
-        router.back();
-      }
-    } catch (error: any) {
-      console.error("송금 실패:", error);
-      toast({
-        title: "송금 실패",
-        description:
-          error.response?.data?.message ||
-          "송금 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  const handlePinInput = (digit: string) => {
+    if (pinCode.length < 6) {
+      setPinCode((prev) => prev + digit);
     }
   };
 
@@ -200,12 +288,46 @@ export default function SendMoneyPage() {
                 className="w-full mt-4"
                 disabled={isLoading}
               >
-                {isLoading ? "송금 중..." : "송금하기"}
+                {isLoading ? transferStatus : "송금하기"}
               </Button>
             </form>
           </CardContent>
         </Card>
       </main>
+
+      <Dialog
+        open={isAccountCheckDialogOpen}
+        onOpenChange={setIsAccountCheckDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>계좌 확인</DialogTitle>
+            <DialogDescription>아래 계좌로 송금하시겠습니까?</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <p className="text-lg font-semibold text-center">
+              {accountName}에게 보냅니다
+            </p>
+            <p className="text-sm text-center text-gray-500">
+              계좌번호: <span className="font-semibold">{accountNumber}</span>
+            </p>
+            {message && (
+              <p className="text-sm text-center text-gray-500 mt-2">
+                메시지: <span className="font-semibold">{message}</span>
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAccountCheckDialogOpen(false)}
+            >
+              취소
+            </Button>
+            <Button onClick={handleAccountCheckConfirm}>확인</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
         <DialogContent>
@@ -218,9 +340,6 @@ export default function SendMoneyPage() {
           <div className="py-4 space-y-2">
             <p className="text-sm">
               계좌번호: <span className="font-semibold">{accountNumber}</span>
-            </p>
-            <p className="text-sm">
-              받는 사람: <span className="font-semibold">{accountName}</span>
             </p>
             <p className="text-lg font-semibold text-center">
               {Number(amount).toLocaleString()}원
@@ -248,7 +367,7 @@ export default function SendMoneyPage() {
           <DialogHeader>
             <DialogTitle>PIN 번호 입력</DialogTitle>
             <DialogDescription>
-              송금을 완료하려면 4자리 PIN 번호를 입력해주세요.
+              송금을 완료하려면 6자리 PIN 번호를 입력해주세요.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -285,7 +404,7 @@ export default function SendMoneyPage() {
             <Button
               onClick={handlePinSubmit}
               className="w-full"
-              disabled={pinCode.length !== 4}
+              disabled={pinCode.length !== 6}
             >
               확인
             </Button>

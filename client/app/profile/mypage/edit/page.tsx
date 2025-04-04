@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import {
   Card,
@@ -16,13 +16,16 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/use-toast";
 import { Camera } from "lucide-react";
+import { authApi } from "@/lib/api";
 
 export default function EditProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nameParam = searchParams.get("name");
 
   // 사용자 정보 (실제로는 API에서 가져와야 함)
   const [userInfo, setUserInfo] = useState({
-    name: "배한진",
+    name: nameParam || "",
     email: "user@example.com",
     phone: "010-1234-5678",
     avatar: "/placeholder.svg?height=100&width=100",
@@ -36,13 +39,24 @@ export default function EditProfilePage() {
     }));
   };
 
-  const handleSaveProfile = () => {
-    // 실제로는 API를 통해 저장해야 함
-    toast({
-      title: "프로필 저장 완료",
-      description: "프로필 정보가 성공적으로 저장되었습니다.",
-    });
-    router.push("/profile/mypage");
+  const handleSaveProfile = async () => {
+    try {
+      await authApi.patch("/api/v1/profile", {
+        name: userInfo.name,
+      });
+      toast({
+        title: "프로필 저장 완료",
+        description: "프로필 정보가 성공적으로 저장되었습니다.",
+      });
+      router.push("/profile/mypage");
+    } catch (error) {
+      console.error("프로필 저장 실패:", error);
+      toast({
+        title: "오류",
+        description: "프로필 정보 저장에 실패했습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -76,17 +90,6 @@ export default function EditProfilePage() {
                   id="name"
                   name="name"
                   value={userInfo.name}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">이메일</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={userInfo.email}
                   onChange={handleInputChange}
                 />
               </div>

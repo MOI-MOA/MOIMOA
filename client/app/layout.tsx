@@ -10,8 +10,13 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "모임 돈관리 앱",
-  description: "모임별 일정 및 정산 관리 애플리케이션",
+  title: "MOIMO",
+  description: "MOIMO - 간편한 모임비 관리",
+  icons: {
+    icon: "/우리어플 아이콘.png",
+    shortcut: "/우리어플 아이콘.png",
+    apple: "/우리어플 아이콘.png",
+  },
 };
 
 export default function RootLayout({
