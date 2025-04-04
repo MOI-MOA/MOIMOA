@@ -15,8 +15,8 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
-      host: localhost
-      #      host: my-cache-server
+      # host: localhost
+      host: my-cache-server
       port: 6379
 
 paging:
