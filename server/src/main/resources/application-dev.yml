@@ -16,8 +16,8 @@ spring:
   data:
     redis:
       # host: localhost
-      host: my-cache-server
-      port: 6379
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
 
 paging:
   default-page-size: 10
