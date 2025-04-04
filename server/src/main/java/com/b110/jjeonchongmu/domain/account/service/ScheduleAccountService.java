@@ -1,12 +1,6 @@
 package com.b110.jjeonchongmu.domain.account.service;
 
-import com.b110.jjeonchongmu.domain.account.dto.AccountType;
-import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.DeleteRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
-import com.b110.jjeonchongmu.domain.account.dto.PasswordCheckRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
-import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
+import com.b110.jjeonchongmu.domain.account.dto.*;
 import com.b110.jjeonchongmu.domain.account.entity.Account;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
@@ -226,5 +220,15 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
             return false;
         }
     }
-
+    public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
+        Boolean isAccountNo = personalAccountRepo.existsByAccountNo(toAccountNo);
+        if(!isAccountNo) {
+            isAccountNo = gatheringAccountRepo.existsByAccountNo(toAccountNo);
+        }
+        return new AccountCheckResponseDTO(
+                toAccountNo,
+                amount,
+                isAccountNo
+        );
+    }
 }
