@@ -29,7 +29,7 @@ public class ScehduleAccountController {
      * 계좌 송금
      */
     @PostMapping("/transfer")
-    public ResponseEntity<String> transfer(@RequestBody TransferRequestDTO requestDto) {
+    public ResponseEntity<String> transfer(@RequestBody TransferScheduleRequestDTO requestDto) {
         TransferTransactionHistoryDTO response = scheduleAccountService.initTransfer(requestDto);
 
         scheduleAccountService.processTransfer(response);
