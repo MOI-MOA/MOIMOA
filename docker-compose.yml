@@ -9,7 +9,7 @@ services:
       - server
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=/api
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       # - NEXT_PUBLIC_API_URL=https://server:8080
     restart: always
     networks:
