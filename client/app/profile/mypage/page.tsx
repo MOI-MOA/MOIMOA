@@ -13,18 +13,32 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Edit, User, Shield, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { authApi } from "@/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
+
+interface UserInfo {
+  name: string;
+  email: string;
+  birth: string;
+  profileImage: string;
+  notifications: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+}
 
 export default function MyPage() {
   const router = useRouter();
-
-  // 사용자 정보 (실제로는 API에서 가져와야 함)
-  const [userInfo, setUserInfo] = useState({
-    name: "배한진",
-    email: "user@example.com",
-    phone: "010-1234-5678",
-    avatar: "/placeholder.svg?height=100&width=100",
+  const { logout } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState<UserInfo>({
+    name: "",
+    email: "",
+    birth: "",
+    profileImage: "/placeholder.svg?height=100&width=100",
     notifications: {
       email: true,
       push: true,
@@ -32,8 +46,40 @@ export default function MyPage() {
     },
   });
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await authApi.get("/api/v1/profile/mypage");
+        if (response) {
+          setUserInfo({
+            name: response.name,
+            email: response.email,
+            birth: response.birth || "",
+            profileImage:
+              response.profileImage || "/placeholder.svg?height=100&width=100",
+            notifications: {
+              email: true,
+              push: true,
+              sms: false,
+            },
+          });
+        }
+      } catch (error) {
+        console.error("사용자 정보 조회 실패:", error);
+        toast({
+          title: "오류",
+          description: "사용자 정보를 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
   const handleNotificationChange = (type: string, checked: boolean) => {
-    // 상태 업데이트
     setUserInfo((prev) => ({
       ...prev,
       notifications: {
@@ -42,7 +88,6 @@ export default function MyPage() {
       },
     }));
 
-    // 토스트 메시지 표시
     toast({
       title: `${
         type === "email" ? "이메일" : type === "push" ? "푸시" : "SMS"
@@ -52,6 +97,19 @@ export default function MyPage() {
       } 알림이 ${checked ? "활성화" : "비활성화"} 되었습니다.`,
     });
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <Header title="마이페이지" showBackButton />
+        <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -65,7 +123,7 @@ export default function MyPage() {
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center mb-4">
               <Avatar className="h-24 w-24 mb-2">
-                <AvatarImage src={userInfo.avatar} />
+                <AvatarImage src={userInfo.profileImage} />
                 <AvatarFallback>{userInfo.name.slice(0, 2)}</AvatarFallback>
               </Avatar>
             </div>
@@ -84,18 +142,17 @@ export default function MyPage() {
                   <p className="font-medium">{userInfo.email}</p>
                 </div>
               </div>
-
-              <div className="flex justify-between items-center border-b pb-2">
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">전화번호</p>
-                  <p className="font-medium">{userInfo.phone}</p>
-                </div>
-              </div>
             </div>
 
             <Button
               className="w-full"
-              onClick={() => router.push("/profile/mypage/edit")}
+              onClick={() =>
+                router.push(
+                  `/profile/mypage/edit?name=${encodeURIComponent(
+                    userInfo.name
+                  )}`
+                )
+              }
             >
               <Edit className="h-4 w-4 mr-2" />
               프로필 수정
@@ -136,6 +193,10 @@ export default function MyPage() {
             <Button
               variant="outline"
               className="w-full flex justify-start text-red-500 hover:text-red-600"
+              onClick={() => {
+                logout();
+                router.push("/login");
+              }}
             >
               <LogOut className="h-4 w-4 mr-2" />
               로그아웃

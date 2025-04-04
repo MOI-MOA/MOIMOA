@@ -32,6 +32,7 @@ interface AutoTransfer {
   deposit: number; // Long
   groupName: string; // String
   myBalance: number; // int
+  paymentStatus: boolean; // boolean
 }
 
 interface AutoTransferResponse {
@@ -46,6 +47,7 @@ export default function AutoTransferPage() {
 
   // 사용자의 계좌 잔액
   const [accountBalance, setAccountBalance] = useState<number>(0);
+  const [userId, setUserId] = useState<number>(0);
 
   // 자동이체 데이터
   const [autoTransfers, setAutoTransfers] = useState<
@@ -59,6 +61,7 @@ export default function AutoTransferPage() {
       account: string;
       deposit: number;
       myBalance: number;
+      paymentStatus: boolean;
     }>
   >([]);
 
@@ -81,17 +84,19 @@ export default function AutoTransferPage() {
 
         // API 응답 데이터를 상태에 설정
         if (response) {
-          const { accountBalance, autoTransfers } = response;
+          const { accountBalance, autoTransfers, userId } = response;
           if (
             typeof accountBalance === "number" &&
             Array.isArray(autoTransfers)
           ) {
             setAccountBalance(accountBalance);
+            setUserId(userId);
             setAutoTransfers(
               autoTransfers.map((transfer: AutoTransfer) => ({
                 ...transfer,
                 status: transfer.status ? "active" : "inactive",
                 nextDate: new Date().toISOString().split("T")[0],
+                paymentStatus: transfer.paymentStatus,
               }))
             );
           } else {
@@ -188,8 +193,9 @@ export default function AutoTransferPage() {
     const params = new URLSearchParams({
       account: account,
       cost: cost.toString(),
-      userId: "1", // TODO: 실제 사용자 ID로 변경 필요
+      userId: userId.toString(),
       accountBalance: accountBalance.toString(),
+      type: "GATHERING",
       autoTransfers: JSON.stringify([
         {
           id: id,
@@ -200,6 +206,7 @@ export default function AutoTransferPage() {
           deposit: deposit,
           groupName: groupName,
           myBalance: myBalance,
+          type: "GATHERING",
         },
       ]),
     });
@@ -246,7 +253,11 @@ export default function AutoTransferPage() {
                       </p>
                     </div>
                     <Button
-                      onClick={() => router.push("/profile/auto-transfer/send")}
+                      onClick={() =>
+                        router.push(
+                          `/profile/auto-transfer/send?type=PERSONAL&userId=${userId}`
+                        )
+                      }
                       className="bg-purple-600 hover:bg-purple-700 text-white"
                     >
                       <SendHorizontal className="h-4 w-4 mr-2" />
@@ -324,7 +335,18 @@ export default function AutoTransferPage() {
                       <div className="flex items-center text-sm text-gray-600 mb-2">
                         <Calendar className="h-4 w-4 mr-1" />
                         <span>
-                          매월 {transfer.day}일 / 다음 결제: {transfer.nextDate}
+                          매월 {transfer.day}일 / 다음 결제:{" "}
+                          {transfer.paymentStatus
+                            ? new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth(),
+                                transfer.day
+                              ).toLocaleDateString()
+                            : new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth() + 1,
+                                transfer.day
+                              ).toLocaleDateString()}
                         </span>
                       </div>
                       <div className="text-lg font-semibold mb-2">

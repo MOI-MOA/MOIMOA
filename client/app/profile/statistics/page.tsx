@@ -1,17 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
+import { authApi } from "@/lib/api"
 import { Header } from "@/components/Header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 // 기본 데이터 정의
+/*
 const DEFAULT_DATA = {
   monthlyExpenseData: [
     { name: "1월", amount: 120000 },
     { name: "2월", amount: 150000 },
-    { name: "3월", amount: 180000 },
+    { name: "3월", amount: 180000 }, 
     { name: "4월", amount: 130000 },
     { name: "5월", amount: 160000 },
     { name: "6월", amount: 200000 },
@@ -49,30 +50,31 @@ const DEFAULT_DATA = {
     },
   ],
 }
+*/
 
 // 원형 차트 색상
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
 
 export default function StatisticsPage() {
-  const [monthlyExpenseData, setMonthlyExpenseData] = useState(DEFAULT_DATA.monthlyExpenseData)
-  const [groupExpenseData, setGroupExpenseData] = useState(DEFAULT_DATA.groupExpenseData)
-  const [participationRateData, setParticipationRateData] = useState(DEFAULT_DATA.participationRateData)
+  const [monthlyExpenseData, setMonthlyExpenseData] = useState([])
+  const [groupExpenseData, setGroupExpenseData] = useState([])
+  const [participationRateData, setParticipationRateData] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`/api/v1/mypage/statistics`)
-        const data = response.data
-        setMonthlyExpenseData(data.monthlyExpenseData)
-        setGroupExpenseData(data.groupExpenseData)
-        setParticipationRateData(data.participationRateData)
+        const response = await authApi.get("api/v1/profile/mypage/statistics")
+        console.log("서버 응답:", response);
+        
+        if (response) {
+          setMonthlyExpenseData(response.monthlyExpenseData)
+          setGroupExpenseData(response.groupExpenseData )
+          setParticipationRateData(response.participationRateData )
+          console.log("api 호출 성공");
+        }
       } catch (error) {
         console.error("통계 데이터를 가져오는데 실패했습니다:", error)
-        // API 호출 실패 시 기본 데이터 사용
-        setMonthlyExpenseData(DEFAULT_DATA.monthlyExpenseData)
-        setGroupExpenseData(DEFAULT_DATA.groupExpenseData)
-        setParticipationRateData(DEFAULT_DATA.participationRateData)
       } finally {
         setIsLoading(false)
       }

@@ -40,6 +40,8 @@ interface GroupMembersResponse {
   inviteList: InviteMember[];
   manager: Manager;
   memberList: Member[];
+  isManager: boolean;
+  myDeposit: number;
 }
 
 export default function GroupMembersPage({ params }: { params: Promise<{ groupId: string }> }) {
@@ -65,6 +67,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   const [password, setPassword] = useState("")
   const [pinCode, setPinCode] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [myDeposit, setMyDeposit] = useState<number>(0)
   
   // API 호출 함수
   const fetchGroupMembers = async () => {
@@ -76,9 +79,9 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
       setPendingMembers(response.inviteList)
       setManager(response.manager)
       
-      // 현재 사용자가 총무인지 확인 (이메일로 비교)
-      const currentUserEmail = "test1@naver.com" // 실제로는 로그인된 사용자의 이메일을 사용해야 함
-      setIsManager(response.manager.email === currentUserEmail)
+      // API 응답의 isManager 값을 직접 사용
+      setIsManager(response.isManager)
+      setMyDeposit(response.myDeposit)
     } catch (error) {
       console.error('Error fetching group members:', error)
       toast({
@@ -286,6 +289,11 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
     }
   }
 
+  // 회원 상태 체크 함수
+  const checkPaymentStatus = (balance: number) => {
+    return balance >= myDeposit
+  }
+
   return (
     <>
       <Header title="회원 목록" showBackButton />
@@ -299,7 +307,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                 {isLoading ? (
                   <span className="text-gray-400">로딩 중...</span>
                 ) : (
-                  `${members.filter((m) => m.gatheringPaymentStatus).length}/${members.length}명 완료`
+                  `${members.filter((m) => checkPaymentStatus(m.balance)).length}/${members.length}명 완료`
                 )}
               </div>
             </div>
@@ -395,13 +403,13 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                   <div className="text-right">
                     <div className="mt-1">
                       <Badge
-                        variant={manager.gatheringPaymentStatus ? "outline" : "destructive"}
+                        variant={checkPaymentStatus(manager.balance) ? "outline" : "destructive"}
                         className={
-                          manager.gatheringPaymentStatus ? "text-green-600" : "bg-red-100 text-red-800 border-0"
+                          checkPaymentStatus(manager.balance) ? "text-green-600" : "bg-red-100 text-red-800 border-0"
                         }
                       >
-                        {!manager.gatheringPaymentStatus && <AlertCircle className="h-3 w-3 mr-1" />}
-                        {manager.gatheringPaymentStatus ? "완료" : "미납"}
+                        {!checkPaymentStatus(manager.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
+                        {checkPaymentStatus(manager.balance) ? "완료" : "미납"}
                       </Badge>
                     </div>
                   </div>
@@ -432,13 +440,13 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                   <div className="text-right">
                     <div className="mt-1">
                       <Badge
-                        variant={member.gatheringPaymentStatus ? "outline" : "destructive"}
+                        variant={checkPaymentStatus(member.balance) ? "outline" : "destructive"}
                         className={
-                          member.gatheringPaymentStatus ? "text-green-600" : "bg-red-100 text-red-800 border-0"
+                          checkPaymentStatus(member.balance) ? "text-green-600" : "bg-red-100 text-red-800 border-0"
                         }
                       >
-                        {!member.gatheringPaymentStatus && <AlertCircle className="h-3 w-3 mr-1" />}
-                        {member.gatheringPaymentStatus ? "완료" : "미납"}
+                        {!checkPaymentStatus(member.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
+                        {checkPaymentStatus(member.balance) ? "완료" : "미납"}
                       </Badge>
                     </div>
                   </div>
