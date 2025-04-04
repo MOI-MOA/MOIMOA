@@ -142,7 +142,7 @@ public class JwtTokenProvider {
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
-            return false;
+            return false; 
         }
     }
 
