@@ -48,12 +48,12 @@ jwt:
 external:
   bank:
     api:
-      url: ${EXTERNAL_BANK_URI}
+      url: ${EXTERNAL_BANK_URL}
       key: ${EXTERNAL_BANK_KEY}
       accountType: ${EXTERNAL_BANK_AT}
   user:
     api:
-      url: ${EXTERNAL_USER_URI}
+      url: ${EXTERNAL_USER_URL}
 
 server:
   port: 8080
