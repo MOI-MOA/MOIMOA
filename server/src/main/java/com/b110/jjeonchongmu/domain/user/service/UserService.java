@@ -119,6 +119,46 @@ public class UserService {
 	}
 
 	/**
+	 * 토큰 재발급
+	 * Refresh Token을 검증하고 새로운 Access Token을 발급합니다.
+	 */
+	public TokenResponseDTO refreshToken(String refreshToken) {
+		// Refresh Token이 비어있는지 확인
+		if (refreshToken == null || refreshToken.isEmpty()) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// Refresh Token 유효성 검사
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// Refresh Token이 Redis에 존재하는지 확인
+		if (!refreshTokenService.existsRefreshToken(refreshToken)) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// Refresh Token에서 사용자 ID 추출
+		Long userId = refreshTokenService.getUserIdByRefreshToken(refreshToken);
+		if (userId == null) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// 사용자가 존재하는지 확인
+		if (!userRepo.existsById(userId)) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		// 새로운 Access Token 발급
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId);
+
+		return TokenResponseDTO.builder()
+				.accessToken(newAccessToken)
+				.refreshToken(refreshToken)
+				.build();
+	}
+
+	/**
 	 * 사용자 정보 조회
 	 */
 	public UserResponseDTO getMyInfo(long userId) {

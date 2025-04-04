@@ -78,7 +78,7 @@ export default function UncheckSchedulePage() {
   const handleCancel = async (scheduleId: number, e: React.MouseEvent) => {
     e.stopPropagation() // 카드 클릭 이벤트 전파 방지
     try {
-      await authApi.post(`api/v1/schedule/${scheduleId}/cancel`)
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend-reject`)
       
       // 성공 시 해당 일정을 목록에서 제거
       setSchedules(prev => prev.filter(schedule => schedule.scheduleId !== scheduleId))
