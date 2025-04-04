@@ -137,7 +137,8 @@ public class MypageService {
 									matchedProjection.getAccountNo(),
 									matchedProjection.getGatheringDeposit(),
 									matchedProjection.getGatheringName(),
-									matchedProjection.getAccountBalance()
+									matchedProjection.getAccountBalance() + matchedProjection.getAccountDeposit(),
+									true// 이부분 수정
 							));
 				}).collect(Collectors.toList());
 

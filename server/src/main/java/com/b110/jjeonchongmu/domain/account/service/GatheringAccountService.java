@@ -27,13 +27,11 @@ import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -262,11 +260,11 @@ public class GatheringAccountService {
 	}
 	@Transactional
 	public String findNameByAccountNo(String accountNo) {
-		Account account;
+		Account account = null;
 		if(personalAccountRepo.existsByAccountNo(accountNo)){
 			account = personalAccountRepo.findByAccountNo(accountNo);
 		}
-		account = gatheringAccountRepo.findAccountByAccountNo(accountNo);
+		//if(account == null) account = gatheringAccountRepo.findAccountByAccountNo(accountNo);
 
 		return account.getUser().getName();
 	}
