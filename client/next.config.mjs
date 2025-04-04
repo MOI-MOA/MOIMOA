@@ -21,6 +21,20 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  // CSP 헤더 추가
+  // async headers() {
+  //   return [
+  //     {
+  //       source: '/:path*',
+  //       headers: [
+  //         {
+  //           key: 'Content-Security-Policy',
+  //           value: 'upgrade-insecure-requests'
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // },
 }
 
 mergeConfig(nextConfig, userConfig)
