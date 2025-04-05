@@ -44,7 +44,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response: LoginResponse = await publicApi.post("/api/v1/login", {
+      const response: LoginResponse = await authApi.post("/api/v1/login", {
         email: formData.email,
         password: formData.password,
       });
