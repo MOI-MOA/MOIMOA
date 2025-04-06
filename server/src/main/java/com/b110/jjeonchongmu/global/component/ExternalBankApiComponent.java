@@ -7,6 +7,7 @@ import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,9 +81,12 @@ public class ExternalBankApiComponent {
 
 	@SneakyThrows
 	public BankTransferResponseDTO externalTransfer(BankTransferRequestDTO requestDTO) {
-
-		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+		// ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+		// String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		// String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+		ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+		String currentDate = LocalDate.now(koreaZoneId).format(DateTimeFormatter.ofPattern	("yyyyMMdd"));
+		String currentTime = LocalTime.now(koreaZoneId).format(DateTimeFormatter.ofPattern	("HHmmss"));
 
 		Map<String, Object> requestBody = createHeaderAndBody("updateDemandDepositAccountTransfer",
 				"updateDemandDepositAccountTransfer", requestDTO.getUserKey());
@@ -180,8 +184,9 @@ public class ExternalBankApiComponent {
 			String userKey) {
 		Map<String, Object> requestBody = new HashMap<>();
 		Map<String, Object> header = new HashMap<>();
-		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+		ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+		String currentDate = LocalDate.now(koreaZoneId).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		String currentTime = LocalTime.now(koreaZoneId).format(DateTimeFormatter.ofPattern("HHmmss"));
 		header.put("apiName", apiName);
 		header.put("transmissionDate", currentDate);
 		header.put("transmissionTime", currentTime);
