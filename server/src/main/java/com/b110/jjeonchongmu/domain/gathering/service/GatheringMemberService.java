@@ -7,9 +7,15 @@ import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleMemberRepo;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -31,6 +37,8 @@ public class GatheringMemberService {
 	private final JwtTokenProvider jwtTokenProvider;         // JWT 토큰 제공자
 	private final EntityManager em;
 	private final AutoPaymentService autoPaymentService;
+	private final ScheduleRepo scheduleRepo;
+	private final ScheduleMemberRepo scheduleMemberRepo;
 
 	/**
 	 * 모임 초대 링크 생성 (총무 전용)
@@ -113,7 +121,39 @@ public class GatheringMemberService {
 				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, memberId)
 						.orElseThrow(() -> new RuntimeException("gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
 
+		// 참여 시킴
 		gatheringMember.updateStatus(GatheringMemberStatus.ACTIVE);
+
+		// 참여 하면 해당모임중 아직 시작되지 않은 일정에
+		// 일정멤버 생성해줌. (이렇게 해야 그룹 참여시 미확인 일정에 나와서 수락 거절 할 수 있음.)
+		User targetUser = userRepo.getUserByUserId(memberId);
+		List<Schedule> schedules = gathering.getSchedules();
+		LocalDateTime nowDateTime = LocalDateTime.now();
+		for (Schedule schedule : schedules) {
+			// 이미 지난 스케줄은 확인 했다고 생성
+			// %%%%%%%%%%주의 날짜가 지났을떄 수락거절 버튼이 떠있을것 같음%%%%%%%%%%%%%%%% 일단 진행중
+			if (nowDateTime.isAfter(schedule.getStartTime())) {
+				ScheduleMember sm = ScheduleMember.builder()
+						.schedule(schedule)
+						.scheduleMember(targetUser)
+						.scheduleIsCheck(true)
+						.isPenaltyApply(false)
+						.isAttend(false)
+						.build();
+				scheduleMemberRepo.save(sm);
+			}
+			// 안지난 스케줄은 확인 안했다고
+			else {
+				ScheduleMember sm = ScheduleMember.builder()
+						.schedule(schedule)
+						.scheduleMember(targetUser)
+						.scheduleIsCheck(false)
+						.isPenaltyApply(false)
+						.isAttend(false)
+						.build();
+				scheduleMemberRepo.save(sm);
+			}
+		}
 	}
 
 	/**
@@ -295,6 +335,7 @@ public class GatheringMemberService {
 			throw new RuntimeException("모임 회원이 아닙니다.");
 		}
 
+		// 들어가있는 일정중에
 		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
 	}
 
