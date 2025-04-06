@@ -52,7 +52,7 @@ export default function HomePage() {
     const fetchData = async () => {
       try {
         const response = (await authApi.get<HomeData>(
-          "api/v1/main"
+          "v1/main"
         )) as unknown as HomeData;
         console.log(response);
 
