@@ -61,8 +61,6 @@ export default function CreateSchedulePage({
     location: "",
     description: "",
     paybackDate: undefined as Date | undefined,
-    penaltyRate: "",
-    scheduleAccountPw: "",
   });
   const [insufficientMembers, setInsufficientMembers] = useState<
     MemberWithStatus[]
@@ -107,32 +105,22 @@ export default function CreateSchedulePage({
         totalBudget:
           Number(formData.budgetPerPerson) * Number(formData.participants),
         penaltyApplyDate: formData.paybackDate?.toISOString(),
-        penaltyRate: Number(formData.penaltyRate),
-        scheduleAccountPw: formData.scheduleAccountPw
       };
 
-      const response = await authApi.post(`/api/v1/schedule/${groupId}`, scheduleData);
+      const response = await authApi.post(`/api/v1/schedule`, scheduleData);
 
       toast({
         title: "일정 생성 완료",
         description: "새로운 일정이 성공적으로 생성되었습니다.",
       });
       router.push(`/group/${groupId}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      if (error.response && error.response.status === 405) {
-        toast({
-          title: "일정 생성 불가",
-          description: "잔액이 보증금 + 인당 일정 금액보다 부족해 일정 생성이 불가능합니다.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "오류 발생",
-          description: "일정 생성 중 문제가 발생했습니다. 다시 시도해주세요.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "오류 발생",
+        description: "일정 생성 중 문제가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -204,34 +192,6 @@ export default function CreateSchedulePage({
                 value={formData.location}
                 onChange={handleInputChange}
                 placeholder="모임 장소를 입력하세요"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="penaltyRate">페널티 비율 (%)</Label>
-              <Input
-                id="penaltyRate"
-                name="penaltyRate"
-                type="number"
-                min="0"
-                max="100"
-                value={formData.penaltyRate}
-                onChange={handleInputChange}
-                placeholder="페널티 비율을 입력하세요 (예: 10)"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="scheduleAccountPw">정산 비밀번호</Label>
-              <Input
-                id="scheduleAccountPw"
-                name="scheduleAccountPw"
-                type="password"
-                maxLength={4}
-                value={formData.scheduleAccountPw}
-                onChange={handleInputChange}
-                placeholder="4자리 숫자를 입력하세요"
-                pattern="[0-9]{4}"
                 required
               />
             </div>
