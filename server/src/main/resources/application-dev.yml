@@ -1,7 +1,9 @@
 spring:
   batch:
     jdbc:
-      initialize-schema: ALWAYS  # Spring Batch 메타데이터 테이블 자동 생성
+      initialize-schema: ALWAYS # Spring Batch 메타데이터 테이블 자동 생성
+  jackson:
+    time-zone: Asia/Seoul
   datasource:
     url: jdbc:mysql://${MY_DB}:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: ${MYSQL_USER}
@@ -11,18 +13,19 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
-    show-sql: true
 
   data:
     redis:
-      host: localhost
-      #      host: my-cache-server
-      port: 6379
+      # host: localhost
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+      password: ${SPRING_DATA_REDIS_PASSWORD}
 
 logging:
   level:
@@ -45,21 +48,22 @@ springdoc:
     path: /v3/api-docs
 
 jwt:
-  secret: ${JWT_SECRET_KEY}
-#  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY}
-#  refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
-  access-token-validity: 3600
-  refresh-token-validity: 2592000000
+  secret: ${JWT_SECRET}
+  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY}
+  refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
+
+  # access-token-validity: 3600000
+  # refresh-token-validity: 2592000000
 
 external:
   bank:
     api:
-      url: ${EXTERNAL_BANK_URI}
-      key: ${EXTERNAL_BANK_KEY}
-      accountType: ${EXTERNAL_BANK_AT}
+      url: ${EXTERNAL_BANK_API_URL}
+      key: ${EXTERNAL_BANK_API_KEY}
+      accountType: ${EXTERNAL_BANK_API_AT}
   user:
     api:
-      url: ${EXTERNAL_USER_URI}
+      url: ${EXTERNAL_USER_API_URL}
 
 server:
   port: 8080

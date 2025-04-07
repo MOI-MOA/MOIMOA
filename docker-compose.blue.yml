@@ -39,8 +39,11 @@ services:
       - MY_DB=${MY_DB}
       - EXTERNAL_BANK_API_URL=${EXTERNAL_BANK_API_URL}
       - EXTERNAL_BANK_API_KEY=${EXTERNAL_BANK_API_KEY}
-      - EXTERNAL_BANK_API_ACCOUNTTYPE=${EXTERNAL_BANK_API_AT}
+      - EXTERNAL_BANK_API_ACCOUNTTYPE=${EXTERNAL_BANK_API_ACCOUNTTYPE}
       - EXTERNAL_USER_API_URL=${EXTERNAL_USER_API_URL}
+      - SPRING_DATA_REDIS_HOST=${SPRING_DATA_REDIS_HOST}
+      - SPRING_DATA_REDIS_PORT=${SPRING_DATA_REDIS_PORT}
+      - SPRING_DATA_REDIS_PASSWORD=${SPRING_DATA_REDIS_PASSWORD}
     depends_on:
       my-db:
         condition: service_healthy
@@ -62,6 +65,7 @@ services:
     volumes:
       # - ./mysql_data:/var/lib/mysql
       - mysql_data_volume:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
     ports:
       - 3307:3306
     networks:
@@ -75,15 +79,18 @@ services:
     image: redis
     ports:
       - 6379:6379
-    command: redis-server --port 6379 --protected-mode yes
+    # command: redis-server --port 6379 --protected-mode yes
+    command: redis-server --port 6379 --requirepass ${SPRING_DATA_REDIS_PASSWORD}
     volumes:
-      - ./redis_data:/data
+      # - ./redis_data:/data
+    - redis_data_volume:/data      
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "${SPRING_DATA_REDIS_PASSWORD}", "ping" ]
       interval: 5s
       retries: 10
+
     # nginx:
   #   image: nginx:latest
   #   ports:
@@ -100,6 +107,7 @@ services:
 
 volumes:
   mysql_data_volume:
+  redis_data_volume:
 
 networks:
   app-network:
