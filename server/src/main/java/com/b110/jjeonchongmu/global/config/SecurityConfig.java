@@ -52,7 +52,7 @@ public class SecurityConfig {
                         authorizeRequests
                                 // 인증 없이 접근 가능한 경로 (로그인, 회원가입)
                                 // 테스트 엔드포인트 추가
-                                .requestMatchers("/api/v1/login", "/api/v1/signup", "api/v1/token/refresh", "/swagger-ui/**", "/v3/api-docs/**", "/test/health").permitAll()
+                                .requestMatchers("/api/v1/login", "/api/v1/signup", "api/v1/token/refresh", "/ws/**", "/swagger-ui/**", "/v3/api-docs/**", "/test/health").permitAll()
 
                                 // 요청은 일단 전부 허용 ().
                                 .anyRequest().permitAll())
@@ -75,7 +75,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-                "https://j12b110.p.ssafy.io:8888",
+                "https://j12b110.p.ssafy.io",
                 "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
