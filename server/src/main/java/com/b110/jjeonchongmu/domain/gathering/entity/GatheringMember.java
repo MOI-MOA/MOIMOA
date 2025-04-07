@@ -74,4 +74,8 @@ public class GatheringMember {
     public void updateGatheringMemberAccountBalance(long gatheringMemberAccountBalance) {
         this.gatheringMemberAccountBalance = gatheringMemberAccountBalance;
     }
+
+    public void increaseBalance(Long amount) {
+        this.gatheringMemberAccountBalance += amount;
+    }
 }
