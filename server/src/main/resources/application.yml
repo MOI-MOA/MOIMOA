@@ -1,3 +1,22 @@
 spring:
   profiles:
     active: dev
+  batch:
+    job:
+      enabled: false  # 애플리케이션 시작 시 모든 배치 작업 자동 실행 방지
+    jdbc:
+      initialize-schema: never  # 수동으로 테이블을 생성했으므로 자동 생성 비활성화
+      platform: mysql  # MySQL용 스키마 사용
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    show-sql: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/jjeonchongmu?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}

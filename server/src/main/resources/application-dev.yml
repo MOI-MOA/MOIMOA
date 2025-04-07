@@ -1,4 +1,7 @@
 spring:
+  batch:
+    jdbc:
+      initialize-schema: ALWAYS  # Spring Batch 메타데이터 테이블 자동 생성
   datasource:
     url: jdbc:mysql://${MY_DB}:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: ${MYSQL_USER}
@@ -11,25 +14,29 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+
   data:
     redis:
       host: localhost
       #      host: my-cache-server
       port: 6379
 
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
+    org.springframework:
+      security: DEBUG
+      web.socket: DEBUG
+      messaging: DEBUG
+    com.b110.jjeonchongmu: DEBUG
+
 paging:
   default-page-size: 10
   default-page-number: 0
-
-logging.level:
-  org.hibernate.SQL: DEBUG
-  org.springframework:
-    security: DEBUG
-    web.socket: DEBUG
-    messaging: DEBUG
-  com.b110.jjeonchongmu: DEBUG
 
 springdoc:
   swagger-ui:
