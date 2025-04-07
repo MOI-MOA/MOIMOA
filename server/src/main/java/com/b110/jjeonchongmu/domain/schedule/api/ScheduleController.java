@@ -123,7 +123,6 @@ public class ScheduleController {
     }
 
 
-
     // 일정 참석 취소
     @PostMapping("/{scheduleId}/cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
