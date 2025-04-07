@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
+@EntityScan("com.b110.jjeonchongmu.domain")
 public class JjeonchongmuApplication {
 
 	public static void main(String[] args) {
