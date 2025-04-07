@@ -26,7 +26,7 @@ public enum ErrorCode {
     SCHEDULE_MEMBER_NOT_FOUND("일정 멤버를 찾을 수 없습니다."),
     INVALID_MEMBER_STATUS("유효하지 않은 회원 상태입니다."),
     AUTO_PAYMENT_NOT_FOUND("자동이체를 찾을 수 없습니다."),
-    INSUFFICIENT_BALANCE("잔액이 부족합니다.");
+    INSUFFICIENT_BALANCE("잔액이 부족합니다."), GATHERING_MEMBER_NOT_FOUND("모임 멤버를 찾알 수 없습니다.");
 
     private final String message;
 
