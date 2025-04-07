@@ -26,6 +26,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int port;
 
+    @Value("${spring.data.redis.password}")
+    private String password;
+
     /**
      * Redis 연결을 위한 ConnectionFactory 빈 등록
      * Lettuce 클라이언트를 사용하여 Redis 서버와 연결
@@ -34,7 +37,9 @@ public class RedisConfig {
      */
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(host, port);
+        LettuceConnectionFactory connectionFactory = new LettuceConnectionFactory(host, port);
+        connectionFactory.setPassword(password); // 비밀번호 설정    
+        return connectionFactory;
     }
 
     /**
