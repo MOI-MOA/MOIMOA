@@ -16,6 +16,8 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+        hbm2ddl.auto: create # 명시적으로 추가
+
   data:
     redis:
       # host: localhost
@@ -29,11 +31,15 @@ paging:
 
 logging.level:
   org.hibernate.SQL: DEBUG
+  org.hibernate.type.descriptor.sql: TRACE  # 바인딩되는 파라미터 값 표시
+  org.springframework.orm.jpa: DEBUG         # JPA 관련 더 자세한 로그
+  org.hibernate.tool.hbm2ddl: DEBUG         # 스키마 생성 관련 로그
   org.springframework:
     security: DEBUG
     web.socket: DEBUG
     messaging: DEBUG
   com.b110.jjeonchongmu: DEBUG
+
 
 springdoc:
   swagger-ui:
