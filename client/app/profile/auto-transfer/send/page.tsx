@@ -94,11 +94,14 @@ export default function SendMoneyPage() {
   useEffect(() => {
     if (!userId) return;
 
-    const socket = new SockJS("http://localhost:8080/ws");
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = process.env.NEXT_PUBLIC_API_URL || "localhost:8080";
+    const socket = new SockJS(`${protocol}//${host}/ws`);
     const client = Stomp.over(socket);
+    const accessToken = localStorage.getItem("accessToken");
 
-    client.connect({}, () => {
-      console.log("WebSocket Connected");
+    client.connect({ Authorization: `Bearer ${accessToken}` }, () => {
+      console.log("WebSocke    t Connected");
       // 송금 결과 구독
       const subscriptionPath = `/queue/transfer-results/${userId}`;
       console.log("Subscribing to:", subscriptionPath);
