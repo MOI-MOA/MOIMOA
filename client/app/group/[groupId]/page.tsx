@@ -291,16 +291,14 @@ export default function GroupDetailPage({
                 회원 관리
               </Button>
             )}
-            {groupData.isManager && (
-              <Button
-                variant="outline"
-                className="w-full mt-2"
-                onClick={() => router.push(`/group/${groupId}/member-list`)}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                회원 목록
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => router.push(`/group/${groupId}/member-list`)}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              회원 목록
+            </Button>
           </CardContent>
         </Card>
 
