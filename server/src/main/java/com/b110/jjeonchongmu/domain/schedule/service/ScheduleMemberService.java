@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.schedule.service;
 
+import com.b110.jjeonchongmu.domain.account.entity.ScheduleAccount;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
@@ -115,12 +116,18 @@ public class ScheduleMemberService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule member not found"));
 
 
+
         if(LocalDateTime.now().isBefore(schedule.getPenaltyApplyDate())){
             gatheringMember.increaseGatheringMemberAccountBalance(schedule.getPerBudget());
             schedule.getScheduleAccount().decreaseBalance(schedule.getPerBudget());
             scheduleMember.updateIsAttenedToFalse();
 
         } else {
+            Long paybackAmount = schedule.getPerBudget() * schedule.getPenaltyRate();
+
+            schedule.getScheduleAccount().decreaseBalance(paybackAmount);
+            gatheringMember.increaseGatheringMemberAccountBalance(paybackAmount);
+
             scheduleMember.updateIsPenaltyApplyToTrue();
             scheduleMember.updateIsAttenedToFalse();
         }

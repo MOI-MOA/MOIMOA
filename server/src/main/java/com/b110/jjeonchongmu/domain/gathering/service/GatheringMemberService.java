@@ -1,6 +1,11 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
 import com.b110.jjeonchongmu.domain.account.service.AutoPaymentService;
+import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
+import com.b110.jjeonchongmu.domain.account.service.PersonalAccountService;
 import com.b110.jjeonchongmu.domain.gathering.dto.*;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
@@ -23,6 +28,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.converters.SchemaPropertyDeprecatingConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +45,9 @@ public class GatheringMemberService {
 	private final AutoPaymentService autoPaymentService;
 	private final ScheduleRepo scheduleRepo;
 	private final ScheduleMemberRepo scheduleMemberRepo;
+	private final SchemaPropertyDeprecatingConverter schemaPropertyDeprecatingConverter;
+	private final PersonalAccountService personalAccountService;
+	private final GatheringAccountService gatheringAccountService;
 
 	/**
 	 * 모임 초대 링크 생성 (총무 전용)
@@ -291,7 +300,7 @@ public class GatheringMemberService {
 		// 회원 목록 DTO 생성
 		List<MemberListResponseDTO.MemberDTO> memberDTOs = members.stream()
 				.filter(member -> {
-					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), userId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), manager.getUserId())
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
 						return true;
 					}
@@ -335,8 +344,61 @@ public class GatheringMemberService {
 			throw new RuntimeException("모임 회원이 아닙니다.");
 		}
 
-		// 들어가있는 일정중에
-		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
+		/**
+		 * 해당 모임의 일정중 내가 참여한 일정 찾기
+		 */
+		GatheringMember gatheringMember = gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, userId)
+				.orElseThrow(() -> new RuntimeException("gatheringId, userId로 gatheringMember를 찾을 수 없습니다."));
+		List<Schedule> schedules = gatheringMember.getGathering().getSchedules();
+
+		Long totalGivebackAmount = 0L;
+		totalGivebackAmount += gatheringMember.getGatheringMemberAccountDeposit();
+		totalGivebackAmount += gatheringMember.getGatheringMemberAccountBalance();
+
+		// 모임의 모든 일정에 모든 일정사람들을 살펴본다.
+		for (Schedule schedule : schedules) {
+			Long paybackAmount = 0L;
+			for (ScheduleMember sm : schedule.getAttendees()) {
+				// 일점을 참여 혹은 거절을 눌렀고,
+				// 참여를 눌렀거나, 페널티 적용이 된 일정 찾기.
+				if (sm.getScheduleMember().getUserId().equals(userId)) {
+					if (sm.getScheduleIsCheck() && (sm.getIsAttend() || sm.isPenaltyApply())) {
+						LocalDateTime now = LocalDateTime.now();
+						LocalDateTime paybackDate = schedule.getPenaltyApplyDate();
+						LocalDateTime startDate = schedule.getStartTime();
+						int paybackRate = schedule.getPenaltyRate();
+						Long perBudget = schedule.getPerBudget();
+
+						//	&& now.isBefore(startDate) 추가 할까말까 고민함.
+						//	isAttend가 일정끝날때 false로 바뀌면 추가 안해도 되고
+						//	안바뀌게해놓으면 위에 조건 추가하고 일정시작날짜와 일정마감누를때까지의 기간에 특수한 로직이 필요함.
+						if (now.isAfter(paybackDate)) {
+							paybackAmount += (perBudget * paybackRate) / 100;
+						} else {
+							paybackAmount += perBudget;
+						}
+					}
+					// 내 sm만 삭제
+					scheduleMemberRepo.delete(sm);
+				}
+			}
+			// 일정계좌에서 빼줌. 밑에 transfer에서 해주는듯
+			schedule.getScheduleAccount().decreaseBalance(paybackAmount);
+			totalGivebackAmount += paybackAmount;
+		}
+
+		TransferTransactionHistoryDTO dto = gatheringAccountService.initTransfer(TransferRequestDTO.builder()
+						.fromAccountType(AccountType.GATHERING)
+						.fromAccountId(gathering.getGatheringAccount().getAccountId())
+						.toAccountType(AccountType.PERSONAL)
+						.toAccountNo(gatheringMember.getGatheringMemberUser().getPersonalAccount().getAccountNo())
+						.tradeDetail(gathering.getGatheringName() + " 탈퇴")
+						.transferAmount(totalGivebackAmount)
+						.accountPw(gathering.getGatheringAccount().getAccountPw())
+						.build());
+		boolean isTransfer = gatheringAccountService.processTransfer(dto);
+
+		gatheringMemberRepo.delete(gatheringMember);
 	}
 
 	/**

@@ -45,38 +45,38 @@ public class GatheringAccountController {
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepo accountRepo;
 
-    /**
-     * 계좌 송금
-     */
-    @PostMapping("/transfer")
-
-    public ResponseEntity<Object> transfer(
-            @RequestBody GatheringTransferRequestDTO transferRequestDto) {
-
-        Long userId = jwtTokenProvider.getUserId();
-        TransferRequestDTO requestDto = gatheringAccountService.getTransferRequestDto(userId, transferRequestDto);
-        TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);
-
-        CompletableFuture.runAsync(() -> {
-            try {
-                // 성공하면 계좌 잔액을 함께 보내기??
-                boolean isCompleted = gatheringAccountService.processTransfer(response);
-
-                simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results" + userId,
-                        isCompleted
-                );
-            } catch (Exception e) {
-
-                TransferResponseDTO result = new TransferResponseDTO();
-                simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results" + userId,
-                        "송금중 오류가 발생"
-                );
-            }
-        });
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
-    }
+//    /**
+//     * 계좌 송금
+//     */
+//    @PostMapping("/transfer")
+//
+//    public ResponseEntity<Object> transfer(
+//            @RequestBody GatheringTransferRequestDTO transferRequestDto) {
+//
+//        Long userId = jwtTokenProvider.getUserId();
+//        TransferRequestDTO requestDto = gatheringAccountService.getTransferRequestDto(userId, transferRequestDto);
+//        TransferTransactionHistoryDTO response = gatheringAccountService.initTransfer(requestDto);
+//
+//        CompletableFuture.runAsync(() -> {
+//            try {
+//                // 성공하면 계좌 잔액을 함께 보내기??
+//                boolean isCompleted = gatheringAccountService.processTransfer(response);
+//
+//                simpMessagingTemplate.convertAndSend(
+//                        "/queue/transfer-results" + userId,
+//                        isCompleted
+//                );
+//            } catch (Exception e) {
+//
+//                TransferResponseDTO result = new TransferResponseDTO();
+//                simpMessagingTemplate.convertAndSend(
+//                        "/queue/transfer-results" + userId,
+//                        "송금중 오류가 발생"
+//                );
+//            }
+//        });
+//        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+//    }
     /**
      * 계좌 존재하는지 확인
      * 존재하면 200 ok

@@ -56,7 +56,8 @@ public class ScheduleController {
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 5L;
-
+        System.out.println("scheduleCreateDTO = " + scheduleCreateDTO.getScheduleStartTime());
+        System.out.println("scheduleCreateDTO = " + scheduleCreateDTO.getPenaltyApplyDate());
         Long scheduleId;
         try {
             scheduleId = scheduleService.createSchedule(userId, gatheringId, scheduleCreateDTO);
@@ -123,13 +124,11 @@ public class ScheduleController {
     }
 
 
-
     // 일정 참석 취소
     @PostMapping("/{scheduleId}/cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
         System.out.println("들어옴################");
         Long userId = jwtTokenProvider.getUserId();
-//        Long userId = 4L;
         scheduleMemberService.cancelAttendance(userId,scheduleId);
         return ResponseEntity.status(200).body("일정 참석이 취소되었습니다.");
     }

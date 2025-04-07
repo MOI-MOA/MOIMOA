@@ -53,7 +53,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (request.getRequestURI().equals("/api/v1/login") ||
             request.getRequestURI().equals("/api/v1/signup") ||
-            request.getRequestURI().equals("/api/v1/token/refresh")) {
+            request.getRequestURI().equals("/api/v1/token/refresh") ||
+            request.getRequestURI().startsWith("/ws") ||
+            request.getRequestURI().contains("/ws/info")) {
             filterChain.doFilter(request, response);
             return;
         }
