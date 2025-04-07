@@ -82,6 +82,7 @@ public class AutoPaymentBatchService {
         // 계좌 잔액 업데이트
         fromAccount.decreaseBalance(autoPayment.getAmount());
         toAccount.increaseBalance(autoPayment.getAmount());
+        String gatheringName = toAccount.getGathering().getGatheringName();
 
         // 모임 멤버 잔액 업데이트
         GatheringMember gatheringMember = gatheringMemberRepo.findByGatheringAndGatheringMemberUser(
@@ -90,6 +91,10 @@ public class AutoPaymentBatchService {
         ).orElseThrow(() -> new CustomException(ErrorCode.GATHERING_MEMBER_NOT_FOUND));
         
         gatheringMember.increaseBalance(autoPayment.getAmount());
+
+        //gathering_payment_status 업데이트
+
+
         gatheringMemberRepo.save(gatheringMember);
 
         // 계좌 정보 저장
@@ -105,7 +110,7 @@ public class AutoPaymentBatchService {
             AccountType.GATHERING,
             autoPayment.getAmount(),
             LocalDateTime.now(),
-            "자동이체",
+            gatheringName + "(자동이체)",
             fromAccount.getAccountBalance(),
             toAccount.getAccountBalance()
         );
