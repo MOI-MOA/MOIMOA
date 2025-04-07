@@ -1,12 +1,14 @@
 package com.b110.jjeonchongmu.global.component;
 
 import com.b110.jjeonchongmu.domain.account.dto.BankAccountResponseDTO;
+import com.b110.jjeonchongmu.domain.account.dto.BankDepositResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferRequestDTO;
 import com.b110.jjeonchongmu.domain.account.dto.BankTransferResponseDTO;
 import com.b110.jjeonchongmu.domain.account.dto.MakeExternalAccountDTO;
 import com.b110.jjeonchongmu.domain.user.dto.response.MakeUserResponseDTO;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,17 +80,16 @@ public class ExternalBankApiComponent {
 		throw new RuntimeException("예상치 못한 오류");
 	}
 
+
 	@SneakyThrows
 	public BankTransferResponseDTO externalTransfer(BankTransferRequestDTO requestDTO) {
 
-		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+		ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+		String currentDate = LocalDate.now(koreaZoneId).format(DateTimeFormatter.ofPattern			("yyyyMMdd"));
+		String currentTime = LocalTime.now(koreaZoneId).format(DateTimeFormatter.ofPattern			("HHmmss"));
 
 		Map<String, Object> requestBody = createHeaderAndBody("updateDemandDepositAccountTransfer",
 				"updateDemandDepositAccountTransfer", requestDTO.getUserKey());
-		System.out.println(requestDTO.getUserKey() + "회원키");
-		System.out.println(requestDTO.getToAccountNo() + "받는사람");
-		System.out.println(requestDTO.getFromAccountNo() + "주는사람");
 		requestBody.put("depositAccountNo", requestDTO.getToAccountNo());
 		requestBody.put("depositTransactionSummary", "(수시입출금) : 입금(이체)");
 		requestBody.put("transactionBalance", requestDTO.getAmount());
@@ -112,6 +113,31 @@ public class ExternalBankApiComponent {
 		}
 	}
 
+	@SneakyThrows
+	public void externalDeposit(String userKey, String accountNo) {
+		Map<String, Object> requestBody = createHeaderAndBody(
+				"updateDemandDepositAccountDeposit",
+				"updateDemandDepositAccountDeposit",
+				userKey);
+		requestBody.put("accountNo", accountNo);
+		requestBody.put("transactionBalance", 300_000);
+		requestBody.put("transactionSummary", "(수시입출금) : 입금");
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
+
+		try {
+			String transferUrl = "demandDeposit/updateDemandDepositAccountDeposit";
+			ResponseEntity<BankDepositResponseDTO> response =
+					restTemplate.exchange(apiUrl + transferUrl, HttpMethod.POST, entity,
+							BankDepositResponseDTO.class);
+		} catch (RestClientException e) {
+			// API 호출 예외 처리
+			throw new IllegalAccessException("외부 api 요청에서 오류 발생");
+		}
+	}
+
 	public static String generate20DigitRandomNumber() {
 		StringBuilder sb = new StringBuilder(20);
 		Random random = new Random();
@@ -124,32 +150,32 @@ public class ExternalBankApiComponent {
 	}
 
 	public BankAccountResponseDTO externalMakeAccount(MakeExternalAccountDTO makeExternalAccountDTO) {
-		log.info("외부 은행 API - 계좌 생성 요청 시작 - userKey: {}, accountType: {}", 
-			makeExternalAccountDTO.getUserKey(), makeExternalAccountDTO.getExternalAccountType());
-		
+		log.info("외부 은행 API - 계좌 생성 요청 시작 - userKey: {}, accountType: {}",
+				makeExternalAccountDTO.getUserKey(), makeExternalAccountDTO.getExternalAccountType());
+
 		Map<String, Object> requestBody = createHeaderAndBody("createDemandDepositAccount",
 				"createDemandDepositAccount", makeExternalAccountDTO.getUserKey());
 		requestBody.put("accountTypeUniqueNo", makeExternalAccountDTO.getExternalAccountType());
-		
+
 		log.info("외부 은행 API - 요청 본문: {}", requestBody);
-		
+
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, httpHeaders);
-		
+
 		try {
 			String demandDepositUrl = "demandDeposit/createDemandDepositAccount";
 			log.info("외부 은행 API 호출 - URL: {}", apiUrl + demandDepositUrl);
-			
+
 			ResponseEntity<BankAccountResponseDTO> response =
 					restTemplate.exchange(apiUrl + demandDepositUrl, HttpMethod.POST, entity,
 							BankAccountResponseDTO.class);
-			
+
 			log.info("외부 은행 API - 계좌 생성 성공 - accountNo: {}", response.getBody().getRec().getAccountNo());
 			return response.getBody();
 		} catch (Exception e) {
-			log.error("외부 은행 API - 계좌 생성 실패 - userKey: {}, error: {}, stackTrace: {}", 
-				makeExternalAccountDTO.getUserKey(), e.getMessage(), e.getStackTrace());
+			log.error("외부 은행 API - 계좌 생성 실패 - userKey: {}, error: {}, stackTrace: {}",
+					makeExternalAccountDTO.getUserKey(), e.getMessage(), e.getStackTrace());
 			throw new RuntimeException("외부 은행 계좌 생성 중 오류 발생", e);
 		}
 	}
@@ -180,8 +206,9 @@ public class ExternalBankApiComponent {
 			String userKey) {
 		Map<String, Object> requestBody = new HashMap<>();
 		Map<String, Object> header = new HashMap<>();
-		String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
+		ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+		String currentDate = LocalDate.now(koreaZoneId).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		String currentTime = LocalTime.now(koreaZoneId).format(DateTimeFormatter.ofPattern("HHmmss"));
 		header.put("apiName", apiName);
 		header.put("transmissionDate", currentDate);
 		header.put("transmissionTime", currentTime);
@@ -191,7 +218,6 @@ public class ExternalBankApiComponent {
 		header.put("institutionTransactionUniqueNo", generate20DigitRandomNumber());
 		header.put("apiKey", apiKey);
 		header.put("userKey", userKey);
-
 		requestBody.put("Header", header);
 		return requestBody;
 	}
