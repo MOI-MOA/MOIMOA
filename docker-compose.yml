@@ -41,6 +41,7 @@ services:
       # - SPRING_DATASOURCE_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - SPRING_DATA_REDIS_HOST=${SPRING_DATA_REDIS_HOST}
       - SPRING_DATA_REDIS_PORT=${SPRING_DATA_REDIS_PORT}
+      - SPRING_DATA_REDIS_PASSWORD=${SPRING_DATA_REDIS_PASSWORD}
 
     depends_on:
       my-db:
@@ -77,13 +78,14 @@ services:
     image: redis
     ports:
       - 6379:6379
-    command: redis-server --port 6379 --protected-mode yes
+    # command: redis-server --port 6379 --protected-mode yes
+    command: redis-server --port 6379 --requirepass ${SPRING_DATA_REDIS_PASSWORD}
     volumes:
       - ./redis_data:/data
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "${SPRING_DATA_REDIS_PASSWORD}", "ping" ]
       interval: 5s
       retries: 10
 
