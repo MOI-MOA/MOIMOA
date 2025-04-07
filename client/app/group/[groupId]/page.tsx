@@ -137,79 +137,119 @@ export default function GroupDetailPage({
     setIsLeaveDialogOpen(false);
   };
 
-  // 참석 처리 함수 추가
-  const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
-    e.stopPropagation() // 카드 클릭 이벤트 전파 방지
-    try {
-      await authApi.post(`api/v1/schedule/${scheduleId}/attend`)
-      
-      // 성공 시 해당 일정의 상태 업데이트
-      setGroupData(prev => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          schedules: prev.schedules.map(schedule => {
-            if (schedule.id === scheduleId) {
-              return {
-                ...schedule,
-                isChecked: true,
-                isAttend: true
-              }
-            }
-            return schedule
-          })
-        }
-      })
-      
-      toast({
-        title: "참석 완료",
-        description: "일정 참석이 완료되었습니다.",
-      })
-    } catch (error) {
-      toast({
-        title: "참석 실패",
-        description: "알 수 없는 오류가 발생했습니다.",
-        variant: "destructive",
-      })
-    }
-  }
-
   // 거절 처리 함수 추가
   const handleCancel = async (scheduleId: number, e: React.MouseEvent) => {
-    e.stopPropagation() // 카드 클릭 이벤트 전파 방지
+    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
-      await authApi.post(`api/v1/schedule/${scheduleId}/attend-reject`)
-      
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend-reject`);
+
       // 성공 시 해당 일정의 상태 업데이트
-      setGroupData(prev => {
+      setGroupData((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
-          schedules: prev.schedules.map(schedule => {
+          schedules: prev.schedules.map((schedule) => {
             if (schedule.id === scheduleId) {
               return {
                 ...schedule,
                 isChecked: true,
-                isAttend: false
-              }
+                isAttend: false,
+              };
             }
-            return schedule
-          })
-        }
-      })
-      
+            return schedule;
+          }),
+        };
+      });
+
       toast({
         title: "거절 완료",
         description: "일정 거절이 완료되었습니다.",
-      })
+      });
     } catch (error) {
       toast({
         title: "거절 실패",
         description: "알 수 없는 오류가 발생했습니다.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
+
+  // 참석 처리 함수 추가
+  const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+    try {
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend`);
+
+      // 성공 시 해당 일정의 상태 업데이트
+      setGroupData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          schedules: prev.schedules.map((schedule) => {
+            if (schedule.id === scheduleId) {
+              return {
+                ...schedule,
+                isChecked: true,
+                isAttend: true,
+              };
+            }
+            return schedule;
+          }),
+        };
+      });
+
+      toast({
+        title: "참석 완료",
+        description: "일정 참석이 완료되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "참석 실패",
+        description: "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 참석 취소 처리 함수 추가
+  const handleCancelAttend = async (
+    scheduleId: number,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+    try {
+      await authApi.post(`api/v1/schedule/${scheduleId}/attend-cancel`);
+
+      // 성공 시 해당 일정의 상태 업데이트
+      setGroupData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          schedules: prev.schedules.map((schedule) => {
+            if (schedule.id === scheduleId) {
+              return {
+                ...schedule,
+                isChecked: false,
+                isAttend: false,
+              };
+            }
+            return schedule;
+          }),
+        };
+      });
+
+      toast({
+        title: "참석 취소 완료",
+        description: "일정 참석이 취소되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "참석 취소 실패",
+        description: "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <>
@@ -354,16 +394,21 @@ export default function GroupDetailPage({
                           거절
                         </Button>
                       </>
-                    ) : (
-                      <Badge 
-                        variant={schedule.isAttend ? "outline" : "destructive"}
-                        className={
-                          schedule.isAttend 
-                            ? "text-green-600" 
-                            : "bg-red-100 text-red-800 border-0"
-                        }
+                    ) : schedule.isAttend ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={(e) => handleCancelAttend(schedule.id, e)}
                       >
-                        {schedule.isAttend ? "참석함" : "거절함"}
+                        참석 취소
+                      </Button>
+                    ) : (
+                      <Badge
+                        variant="destructive"
+                        className="bg-red-100 text-red-800 border-0"
+                      >
+                        거절함
                       </Badge>
                     )}
                     <Badge variant="secondary">#{schedule.id}차</Badge>
