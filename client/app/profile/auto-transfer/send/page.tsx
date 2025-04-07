@@ -96,9 +96,10 @@ export default function SendMoneyPage() {
 
     const socket = new SockJS("http://localhost:8080/ws");
     const client = Stomp.over(socket);
+    const accessToken = localStorage.getItem("accessToken");
 
-    client.connect({}, () => {
-      console.log("WebSocket Connected");
+    client.connect({ Authorization: `Bearer ${accessToken}` }, () => {
+      console.log("WebSocke    t Connected");
       // 송금 결과 구독
       const subscriptionPath = `/queue/transfer-results/${userId}`;
       console.log("Subscribing to:", subscriptionPath);
