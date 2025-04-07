@@ -13,11 +13,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GatheringDetailAccountDTO {
     private Long groupBalance;
+    private Long groupDeposit;
     private Long myBalance;
     private Long myDeposit;
     public GatheringDetailAccountDTO(Gathering gathering, GatheringMember gatheringMember) {
         this.groupBalance = gathering.getGatheringAccount().getAccountBalance();
+        this.groupDeposit = gathering.getGatheringDeposit();
         this.myBalance = gatheringMember.getGatheringMemberAccountBalance();
-        this.myDeposit = gatheringMember.getGathering().getGatheringDeposit();
+        this.myDeposit = gatheringMember.getGatheringMemberAccountDeposit();
     }
 }
