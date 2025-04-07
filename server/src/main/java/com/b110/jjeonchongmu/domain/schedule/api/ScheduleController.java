@@ -129,7 +129,6 @@ public class ScheduleController {
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
         System.out.println("들어옴################");
         Long userId = jwtTokenProvider.getUserId();
-//        Long userId = 4L;
         scheduleMemberService.cancelAttendance(userId,scheduleId);
         return ResponseEntity.status(200).body("일정 참석이 취소되었습니다.");
     }

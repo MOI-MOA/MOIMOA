@@ -139,7 +139,8 @@ public class PersonalAccountService {
 
 					if (transferAmount <= depositNeeded) {
 						// 이체 금액이 필요 보증금보다 적거나 같으면 모두 보증금으로 처리
-						gatheringMember.updateGatheringMemberAccountDeposit(currentMemberDeposit + transferAmount);
+						gatheringMember.updateGatheringMemberAccountDeposit(
+								currentMemberDeposit + transferAmount);
 					} else {
 						// 필요한 보증금을 채우고 남은 금액은 잔액으로 처리
 						gatheringMember.updateGatheringMemberAccountDeposit(gatheringRequiredDeposit);
@@ -151,7 +152,8 @@ public class PersonalAccountService {
 								gatheringMember.getGatheringMemberAccountBalance() + remainingAmount);
 					}
 				} else {
-					System.out.println("여기? " + gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
+					System.out.println(
+							"여기? " + gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
 					gatheringMember.updateGatheringMemberAccountBalance(
 							gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
 				}
@@ -239,7 +241,11 @@ public class PersonalAccountService {
 				responseDTO.getRec().getAccountNo(),
 				passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw()))
 		);
-		personalAccountRepo.save(personalAccount);
+		personalAccountRepo.save(personalAccount); 
+		
+		// 300000만원 입금
+		externalBankApiComponent.externalDeposit(user.getUserKey(), responseDTO.getRec().getAccountNo());
+		personalAccount.increaseBalance(300_000L);
 	}
 
 	public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
