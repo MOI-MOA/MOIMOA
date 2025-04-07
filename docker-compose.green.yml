@@ -82,7 +82,8 @@ services:
     # command: redis-server --port 6379 --protected-mode yes
     command: redis-server --port 6379 --requirepass ${SPRING_DATA_REDIS_PASSWORD}
     volumes:
-      - ./redis_data:/data
+      # - ./redis_data:/data
+      - redis_data_volume:/data
     networks:
       - app-network
     healthcheck:
@@ -106,7 +107,7 @@ services:
 
 volumes:
   mysql_data_volume:
-
+  redis_data_volume:
 networks:
   app-network:
     driver: bridge
