@@ -1,6 +1,7 @@
 package com.b110.jjeonchongmu.domain.mypage.dto.profile;
 
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,13 @@ public class ProfileDefaultResponse {
         this.name = user.getName();
         this.email = user.getEmail();
 
-        this.joinedGroups = user.getGatherings().size();
+        int groupSize = 0;
+        for (GatheringMember gatheringMember : user.getGatheringMembers()) {
+            if (gatheringMember.getGatheringMemberStatus().equals(GatheringMemberStatus.ACTIVE)) {
+                groupSize++;
+            }
+        }
+        this.joinedGroups = groupSize;
 
         int sum = 0;
         for (GatheringMember member : user.getGatheringMembers()) {
