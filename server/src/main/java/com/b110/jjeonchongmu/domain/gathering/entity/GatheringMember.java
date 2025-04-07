@@ -67,4 +67,11 @@ public class GatheringMember {
     public void decreaseGatheringMemberAccountDeposit(Long amount) { this.gatheringMemberAccountDeposit -= amount; }
     public void increaseGatheringMemberAccountDeposit(Long amount) { this.gatheringMemberAccountDeposit += amount; }
 
+	public void updateGatheringMemberAccountDeposit(long gatheringMemberAccountDeposit) {
+        this.gatheringMemberAccountDeposit = gatheringMemberAccountDeposit;
+	}
+
+    public void updateGatheringMemberAccountBalance(long gatheringMemberAccountBalance) {
+        this.gatheringMemberAccountBalance = gatheringMemberAccountBalance;
+    }
 }

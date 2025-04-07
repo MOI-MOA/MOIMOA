@@ -13,13 +13,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ScheduleCreateDTO {
-    private String scheduleTitle;
-    private String scheduleDetail;
-    private String schedulePlace;
-    private LocalDateTime penaltyApplyDate;
+    private String scheduleTitle;//
+    private String scheduleDetail;//
+    private String schedulePlace;//
+    private LocalDateTime penaltyApplyDate; //
     private int penaltyRate;
-    private LocalDateTime scheduleStartTime;
+    private LocalDateTime scheduleStartTime; //
     private String scheduleAccountPw;
     private Long subManagerId;
-    private Long perBudget;
+    private Long perBudget;//
+
+    public void updateSubManagerId(Long id) {
+        this.subManagerId = id;
+    }
 }

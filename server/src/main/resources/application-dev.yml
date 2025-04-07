@@ -8,15 +8,15 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
   data:
     redis:
-      host: my-cache-server
-      #      host: localhost
+      host: localhost
+      #      host: my-cache-server
       port: 6379
 
 paging:
@@ -39,7 +39,9 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
-  access-token-validity: 2592000000
+#  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY}
+#  refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
+  access-token-validity: 3600
   refresh-token-validity: 2592000000
 
 external:

@@ -18,6 +18,6 @@ public class GatheringDetailAccountDTO {
     public GatheringDetailAccountDTO(Gathering gathering, GatheringMember gatheringMember) {
         this.groupBalance = gathering.getGatheringAccount().getAccountBalance();
         this.myBalance = gatheringMember.getGatheringMemberAccountBalance();
-        this.myDeposit = gatheringMember.getGatheringMemberAccountDeposit();
+        this.myDeposit = gatheringMember.getGathering().getGatheringDeposit();
     }
 }

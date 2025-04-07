@@ -1,15 +1,26 @@
 package com.b110.jjeonchongmu.domain.gathering.service;
 
+import com.b110.jjeonchongmu.domain.account.dto.AccountType;
+import com.b110.jjeonchongmu.domain.account.dto.TransferRequestDTO;
+import com.b110.jjeonchongmu.domain.account.dto.TransferTransactionHistoryDTO;
 import com.b110.jjeonchongmu.domain.account.service.AutoPaymentService;
+import com.b110.jjeonchongmu.domain.account.service.GatheringAccountService;
+import com.b110.jjeonchongmu.domain.account.service.PersonalAccountService;
 import com.b110.jjeonchongmu.domain.gathering.dto.*;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
+import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleMemberRepo;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -17,6 +28,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.converters.SchemaPropertyDeprecatingConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +43,11 @@ public class GatheringMemberService {
 	private final JwtTokenProvider jwtTokenProvider;         // JWT 토큰 제공자
 	private final EntityManager em;
 	private final AutoPaymentService autoPaymentService;
+	private final ScheduleRepo scheduleRepo;
+	private final ScheduleMemberRepo scheduleMemberRepo;
+	private final SchemaPropertyDeprecatingConverter schemaPropertyDeprecatingConverter;
+	private final PersonalAccountService personalAccountService;
+	private final GatheringAccountService gatheringAccountService;
 
 	/**
 	 * 모임 초대 링크 생성 (총무 전용)
@@ -113,7 +130,39 @@ public class GatheringMemberService {
 				gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, memberId)
 						.orElseThrow(() -> new RuntimeException("gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
 
+		// 참여 시킴
 		gatheringMember.updateStatus(GatheringMemberStatus.ACTIVE);
+
+		// 참여 하면 해당모임중 아직 시작되지 않은 일정에
+		// 일정멤버 생성해줌. (이렇게 해야 그룹 참여시 미확인 일정에 나와서 수락 거절 할 수 있음.)
+		User targetUser = userRepo.getUserByUserId(memberId);
+		List<Schedule> schedules = gathering.getSchedules();
+		LocalDateTime nowDateTime = LocalDateTime.now();
+		for (Schedule schedule : schedules) {
+			// 이미 지난 스케줄은 확인 했다고 생성
+			// %%%%%%%%%%주의 날짜가 지났을떄 수락거절 버튼이 떠있을것 같음%%%%%%%%%%%%%%%% 일단 진행중
+			if (nowDateTime.isAfter(schedule.getStartTime())) {
+				ScheduleMember sm = ScheduleMember.builder()
+						.schedule(schedule)
+						.scheduleMember(targetUser)
+						.scheduleIsCheck(true)
+						.isPenaltyApply(false)
+						.isAttend(false)
+						.build();
+				scheduleMemberRepo.save(sm);
+			}
+			// 안지난 스케줄은 확인 안했다고
+			else {
+				ScheduleMember sm = ScheduleMember.builder()
+						.schedule(schedule)
+						.scheduleMember(targetUser)
+						.scheduleIsCheck(false)
+						.isPenaltyApply(false)
+						.isAttend(false)
+						.build();
+				scheduleMemberRepo.save(sm);
+			}
+		}
 	}
 
 	/**
@@ -155,9 +204,12 @@ public class GatheringMemberService {
 			throw new RuntimeException("총무만 회원 관리를 조회할 수 있습니다.");
 		}
 		List<GatheringMember> members = gatheringMember.getGathering().getGatheringMembers();
+		Gathering gathering = gatheringRepo.getGatheringByGatheringId(gatheringId);
+		Long deposit = gathering.getGatheringDeposit();
+
 
 		User manager = gatheringMember.getGathering().getManager();
-
+		boolean isManager = Objects.equals(manager.getUserId(), currentUserId);
 		// 초대된 회원 목록
 		List<MemberManageResponseDTO.InviteMemberDTO> inviteMemberDTO = members.stream()
 				// 총무는 빼고 보여줌
@@ -218,6 +270,8 @@ public class GatheringMemberService {
 				.inviteList(inviteMemberDTO)
 				.manager(managerDTO)
 				.memberList(memberDTOs)
+				.isManager(isManager)
+				.myDeposit(deposit)
 				.build();
 	}
 
@@ -290,7 +344,60 @@ public class GatheringMemberService {
 			throw new RuntimeException("모임 회원이 아닙니다.");
 		}
 
-		gatheringMemberRepo.deleteByGatheringGatheringIdAndGatheringMemberUser_UserId(gatheringId, userId);
+		/**
+		 * 해당 모임의 일정중 내가 참여한 일정 찾기
+		 */
+		GatheringMember gatheringMember = gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, userId)
+				.orElseThrow(() -> new RuntimeException("gatheringId, userId로 gatheringMember를 찾을 수 없습니다."));
+		List<Schedule> schedules = gatheringMember.getGathering().getSchedules();
+
+		Long totalGivebackAmount = 0L;
+		totalGivebackAmount += gatheringMember.getGatheringMemberAccountDeposit();
+		totalGivebackAmount += gatheringMember.getGatheringMemberAccountBalance();
+
+		// 모임의 모든 일정에 모든 일정사람들을 살펴본다.
+		for (Schedule schedule : schedules) {
+			Long paybackAmount = 0L;
+			for (ScheduleMember sm : schedule.getAttendees()) {
+				// 내가 참여를 누른 일정들만
+				if (sm.getScheduleMember().getUserId().equals(userId)) {
+					if (sm.getIsAttend()) {
+						LocalDateTime now = LocalDateTime.now();
+						LocalDateTime paybackDate = schedule.getPenaltyApplyDate();
+						LocalDateTime startDate = schedule.getStartTime();
+						int paybackRate = schedule.getPenaltyRate();
+						Long perBudget = schedule.getPerBudget();
+
+						//	&& now.isBefore(startDate) 추가 할까말까 고민함.
+						//	isAttend가 일정끝날때 false로 바뀌면 추가 안해도 되고
+						//	안바뀌게해놓으면 위에 조건 추가하고 일정시작날짜와 일정마감누를때까지의 기간에 특수한 로직이 필요함.
+						if (now.isAfter(paybackDate)) {
+							paybackAmount += (perBudget * paybackRate) / 100;
+						} else {
+							paybackAmount += perBudget;
+						}
+					}
+					// 내 sm만 삭제
+					scheduleMemberRepo.delete(sm);
+				}
+			}
+			// 일정계좌에서 빼줌. 밑에 transfer에서 해주는듯
+			schedule.getScheduleAccount().decreaseBalance(paybackAmount);
+			totalGivebackAmount += paybackAmount;
+		}
+
+		TransferTransactionHistoryDTO dto = gatheringAccountService.initTransfer(TransferRequestDTO.builder()
+						.fromAccountType(AccountType.GATHERING)
+						.fromAccountId(gathering.getGatheringAccount().getAccountId())
+						.toAccountType(AccountType.PERSONAL)
+						.toAccountNo(gatheringMember.getGatheringMemberUser().getPersonalAccount().getAccountNo())
+						.tradeDetail(gathering.getGatheringName() + " 탈퇴")
+						.transferAmount(totalGivebackAmount)
+						.accountPw(gathering.getGatheringAccount().getAccountPw())
+						.build());
+		boolean isTransfer = gatheringAccountService.processTransfer(dto);
+
+		gatheringMemberRepo.delete(gatheringMember);
 	}
 
 	/**
@@ -351,7 +458,7 @@ public class GatheringMemberService {
 		List<GatheringMember> gatheringMembers = gathering.getGatheringMembers();
 
 		for (GatheringMember gatheringMember : gatheringMembers) {
-			if (gatheringMember.getGatheringMemberUser().getUserId() == userId) {
+			if (Objects.equals(gatheringMember.getGatheringMemberUser().getUserId(), userId)) {
 				throw new RuntimeException("이미 신청했습니다");
 			}
 		}

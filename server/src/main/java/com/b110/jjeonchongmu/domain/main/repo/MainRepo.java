@@ -53,6 +53,7 @@ public interface MainRepo extends JpaRepository<Schedule, Long> {
             "FROM schedule s " +
             "JOIN schedule_member sm ON s.schedule_id = sm.schedule_id " +
             "WHERE sm.user_id = :userId " +
+            "AND sm.schedule_is_check = true " +
             "AND YEAR(s.schedule_start_time) = :year AND MONTH(s.schedule_start_time) = :month " +
             "GROUP BY DAY(s.schedule_start_time) " +
             "ORDER BY DAY(s.schedule_start_time)", nativeQuery = true)
@@ -67,6 +68,7 @@ public interface MainRepo extends JpaRepository<Schedule, Long> {
             "LEFT JOIN gathering g ON s.gathering_id = g.gathering_id " +
             "JOIN schedule_member sm ON s.schedule_id = sm.schedule_id " +
             "WHERE sm.user_id = :userId " +
+            "AND sm.schedule_is_check = true " +
             "AND DATE(s.schedule_start_time) = :targetDate " +
             "GROUP BY s.schedule_id, g.gathering_id " +
             "ORDER BY s.schedule_start_time", nativeQuery = true)

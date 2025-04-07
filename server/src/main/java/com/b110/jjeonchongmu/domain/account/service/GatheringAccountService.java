@@ -19,6 +19,8 @@ import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
 import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
@@ -27,13 +29,13 @@ import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.security.auth.login.AccountNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ public class GatheringAccountService {
 	private final GatheringRepo gatheringRepo;
 	private final PasswordEncoder passwordEncoder;
 	private static final Logger log = LoggerFactory.getLogger(GatheringAccountService.class);
+	private final GatheringMemberRepo gatheringMemberRepo;
 
 	@Transactional
 	public Boolean checkPassword(PasswordCheckRequestDTO requestDto) {
@@ -105,33 +108,38 @@ public class GatheringAccountService {
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
+
 		Account account = null;
-		if(requestDto.getToAccountType()==AccountType.PERSONAL){
-			account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
-		} else if (requestDto.getToAccountType()==AccountType.GATHERING){
+
+		account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+		if (account == null) {
 			account = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
 		}
-
+		if (account == null) {
+			try {
+				throw new AccountNotFoundException("계좌를 찾을 수 없습니다: " + requestDto.getToAccountNo());
+			} catch (AccountNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
-				.fromAccountId(account.getAccountId())
+				.fromAccountId(requestDto.getFromAccountId())
 				.fromAccountType(requestDto.getFromAccountType())
 				.toAccountId(account.getAccountId())
-				.toAccountType(null)
+				.toAccountType(account.getDtype())
 				.amount(requestDto.getTransferAmount())
 				.detail(requestDto.getTradeDetail())
 				.status(TransactionStatus.BEFORE)
 				.createdAt(LocalDateTime.now())
+				.accountPw(requestDto.getAccountPw())
 				.build();
 	}
 
 	@Transactional
-	public boolean processTransfer(
-			TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
-
+	public boolean processTransfer(TransferTransactionHistoryDTO transferTransactionHistoryDTO) {
 		try {
-
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.PROCESSING);
 			GatheringAccount fromAccount = gatheringAccountRepo.findByAccount(
 							transferTransactionHistoryDTO.getFromAccountId())
@@ -166,9 +174,9 @@ public class GatheringAccountService {
 			if (toAccount instanceof PersonalAccount) {
 				personalAccountRepo.save((PersonalAccount) toAccount);
 			} else if (toAccount instanceof GatheringAccount) {
-				gatheringAccountRepo.save((GatheringAccount) toAccount);
+				throw new RuntimeException("모임계좌로는 송금할 수 없습니다.");
 			} else {
-				scheduleAccountRepo.save((ScheduleAccount) toAccount);
+				throw new RuntimeException("일정계좌로는 송금할 수 없습니다.");
 			}
 
 			Trade trade = new Trade(
@@ -204,6 +212,7 @@ public class GatheringAccountService {
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			transferTransactionHistoryDTO.updateStatus(TransactionStatus.FAILED);
 			return false;
 		}
@@ -262,11 +271,11 @@ public class GatheringAccountService {
 	}
 	@Transactional
 	public String findNameByAccountNo(String accountNo) {
-		Account account;
+		Account account = null;
 		if(personalAccountRepo.existsByAccountNo(accountNo)){
 			account = personalAccountRepo.findByAccountNo(accountNo);
 		}
-		account = gatheringAccountRepo.findAccountByAccountNo(accountNo);
+		//if(account == null) account = gatheringAccountRepo.findAccountByAccountNo(accountNo);
 
 		return account.getUser().getName();
 	}
