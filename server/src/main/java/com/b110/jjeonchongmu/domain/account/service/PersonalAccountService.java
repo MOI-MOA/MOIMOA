@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.security.auth.login.AccountNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,7 @@ public class PersonalAccountService {
 	private final AccountRepo accountRepo;
 	private final TradeRepo tradeRepo;
 	private final UserRepo userRepo;
+	private static final Logger log = LoggerFactory.getLogger(PersonalAccountService.class);
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
@@ -139,7 +142,8 @@ public class PersonalAccountService {
 
 					if (transferAmount <= depositNeeded) {
 						// 이체 금액이 필요 보증금보다 적거나 같으면 모두 보증금으로 처리
-						gatheringMember.updateGatheringMemberAccountDeposit(currentMemberDeposit + transferAmount);
+						gatheringMember.updateGatheringMemberAccountDeposit(
+								currentMemberDeposit + transferAmount);
 					} else {
 						// 필요한 보증금을 채우고 남은 금액은 잔액으로 처리
 						gatheringMember.updateGatheringMemberAccountDeposit(gatheringRequiredDeposit);
@@ -151,7 +155,8 @@ public class PersonalAccountService {
 								gatheringMember.getGatheringMemberAccountBalance() + remainingAmount);
 					}
 				} else {
-					System.out.println("여기? " + gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
+					System.out.println(
+							"여기? " + gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
 					gatheringMember.updateGatheringMemberAccountBalance(
 							gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
 				}
@@ -239,7 +244,25 @@ public class PersonalAccountService {
 				responseDTO.getRec().getAccountNo(),
 				passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw()))
 		);
-		personalAccountRepo.save(personalAccount);
+		personalAccountRepo.save(personalAccount); 
+		
+		// 300000만원 입금 - 외부 API 호출 부분을 try-catch로 감싸서 오류 처리
+		try {
+			// 외부 API 호출 전에 로그 추가
+			log.info("외부 API 입금 처리 시작 - 사용자: {}, 계좌번호: {}", user.getUserKey(), responseDTO.getRec().getAccountNo());
+			
+			// 외부 API 호출
+			externalBankApiComponent.externalDeposit(user.getUserKey(), responseDTO.getRec().getAccountNo());
+			
+			// 입금 성공 시 잔액 업데이트
+			personalAccount.increaseBalance(300_000L);
+			
+			log.info("외부 API 입금 처리 완료 - 사용자: {}, 계좌번호: {}, 잔액: {}", 
+					user.getUserKey(), responseDTO.getRec().getAccountNo(), personalAccount.getAccountBalance());
+		} catch (Exception e) {
+			log.error("외부 API 입금 처리 중 오류 발생: {}", e.getMessage());
+			// 외부 API 호출 실패 시에도 계좌 생성은 계속 진행
+		}
 	}
 
 	public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {

@@ -47,4 +47,8 @@ public class AutoPayment {
     public void updateIsActive(Boolean active) {
         this.isActive = active;
     }
+
+    public Long getAmount() {
+        return this.autoPaymentAmount;
+    }
 }

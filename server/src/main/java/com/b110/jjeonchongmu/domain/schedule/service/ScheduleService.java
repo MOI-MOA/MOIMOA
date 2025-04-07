@@ -172,7 +172,6 @@ public class ScheduleService {
         Integer penaltyRate = schedule.getPenaltyRate();
         Long remainingAmount = scheduleAccount.getAccountBalance();
         Long perBudget = schedule.getPerBudget();
-        Long AmountToBeGuaranteed = (perBudget * penaltyRate) / 100;
 
         List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
         List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
@@ -187,51 +186,30 @@ public class ScheduleService {
         System.out.println("일정 삭제");
         // 일정 계좌 삭제
 
-
         System.out.println("일정 아이디 : " + scheduleId);
 
 
         // 돈을 1원도 안썻으면 그냥 페널티 대상자들까지 전부다 인당예산만큼 나눠주기
-        if(perBudget*(penaltyApplyCount + attendeeCount) == scheduleAccount.getAccountBalance()){
-            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget));
+        if(perBudget*attendeeCount + perBudget*((100-penaltyRate)/100)*penaltyApplyCount == scheduleAccount.getAccountBalance()){
+            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget*((100-penaltyRate)/100)));
             attendeeMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget));
-
         }
 
-        else if (AmountToBeGuaranteed * penaltyApplyCount <= remainingAmount) {
-
-            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(AmountToBeGuaranteed));
-
-            // 페이백 대상자들에게 페이백 비용 나눠주기
-            remainingAmount -= AmountToBeGuaranteed * penaltyApplyCount;
+        else {
 
             Long attendeeMembersAmount = remainingAmount / attendeeCount; // 참여자가 한명당 받아야하는 금액
+            Long smallChangeAmount = remainingAmount % attendeeCount; // 1원 단위로 남은 금액
 
             attendeeMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(attendeeMembersAmount));
 
-            remainingAmount -= attendeeMembersAmount * attendeeCount;
             // 나머지 1원들
             Iterator<GatheringMember> iterator = attendeeMembers.iterator();
-            while (remainingAmount > 0 && iterator.hasNext()) {
+            while (smallChangeAmount > 0 && iterator.hasNext()) {
                 iterator.next().increaseGatheringMemberAccountBalance(1L);
-                remainingAmount--;
+                smallChangeAmount--;
             }
         }
-        else{
-            // 페이백 대상자 한명에게 나눠줘야할 금액
-            Long penaltyAppliedMembersAmount  = remainingAmount / penaltyApplyCount;
 
-            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(penaltyAppliedMembersAmount));
-
-            // 나눠준만큼 금액 차감
-            remainingAmount -= penaltyAppliedMembersAmount * penaltyApplyCount;
-
-            Iterator<GatheringMember> iterator = penaltyAppliedMembers.iterator();
-            while (remainingAmount > 0 && iterator.hasNext()) {
-                iterator.next().increaseGatheringMemberAccountBalance(1L);
-                remainingAmount--;
-            }
-        }
 
         // 일정계좌에 남은 금액을 0으로 만듬 (사실 필요없는데 일단 넣어놈)
         scheduleAccount.decreaseBalance(scheduleAccount.getAccountBalance());

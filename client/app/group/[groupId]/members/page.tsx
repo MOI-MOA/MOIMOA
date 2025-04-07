@@ -302,12 +302,12 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
         <Card>
           <CardContent className="p-4">
             <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600">이번 달 회비 납부 현황</div>
+              <div className="text-sm text-gray-600">보증금 납부 현황</div>
               <div className="text-sm font-medium">
                 {isLoading ? (
                   <span className="text-gray-400">로딩 중...</span>
                 ) : (
-                  `${members.filter((m) => checkPaymentStatus(m.balance)).length}/${members.length}명 완료`
+                  `${members.filter((m) => checkPaymentStatus(m.balance)).length + (manager && checkPaymentStatus(manager.balance) ? 1 : 0)}/${members.length + 1}명 완료`
                 )}
               </div>
             </div>
