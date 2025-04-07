@@ -12,17 +12,17 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
-    generate-ddl: true
+    generate-ddl: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
-        show-sql: true
+#        show-sql: true
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
-        hbm2ddl:
-          auto: create
+#        hbm2ddl:
+#          auto: update
 
   data:
     redis:
