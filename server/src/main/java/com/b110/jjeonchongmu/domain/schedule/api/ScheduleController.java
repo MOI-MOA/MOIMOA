@@ -56,7 +56,8 @@ public class ScheduleController {
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 5L;
-
+        System.out.println("scheduleCreateDTO = " + scheduleCreateDTO.getScheduleStartTime());
+        System.out.println("scheduleCreateDTO = " + scheduleCreateDTO.getPenaltyApplyDate());
         Long scheduleId;
         try {
             scheduleId = scheduleService.createSchedule(userId, gatheringId, scheduleCreateDTO);

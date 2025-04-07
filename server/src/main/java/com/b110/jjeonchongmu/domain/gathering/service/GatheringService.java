@@ -297,18 +297,24 @@ public class GatheringService {
 
 	private GatheringListResponseDTO convertToGatheringListResponse(List<Gathering> gatherings) {
 		List<GatheringDTO> gatheringDTOs = gatherings.stream()
-				.map(gathering -> GatheringDTO.builder()
-						.gatheringId(gathering.getGatheringId())
-						.managerId(gathering.getManagerId())
-						.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
-						.gatheringName(gathering.getGatheringName())
-						.gatheringIntroduction(gathering.getGatheringIntroduction())
-						.memberCount(gathering.getMemberCount())
-						.penaltyRate(gathering.getPenaltyRate())
-						.depositDate(gathering.getDepositDate())
-						.basicFee(gathering.getBasicFee())
-						.gatheringDeposit(gathering.getGatheringDeposit())
-						.build())
+				.map(gathering -> {
+					long activeCount = gathering.getGatheringMembers().stream()
+							.filter(gm -> gm.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE)
+							.count();
+
+					return GatheringDTO.builder()
+							.gatheringId(gathering.getGatheringId())
+							.managerId(gathering.getManagerId())
+							.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
+							.gatheringName(gathering.getGatheringName())
+							.gatheringIntroduction(gathering.getGatheringIntroduction())
+							.memberCount((int) activeCount)
+							.penaltyRate(gathering.getPenaltyRate())
+							.depositDate(gathering.getDepositDate())
+							.basicFee(gathering.getBasicFee())
+							.gatheringDeposit(gathering.getGatheringDeposit())
+							.build();
+				})
 				.collect(Collectors.toList());
 
 		return GatheringListResponseDTO.builder()

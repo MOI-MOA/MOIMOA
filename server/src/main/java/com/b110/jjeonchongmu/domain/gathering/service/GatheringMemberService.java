@@ -300,7 +300,7 @@ public class GatheringMemberService {
 		// 회원 목록 DTO 생성
 		List<MemberListResponseDTO.MemberDTO> memberDTOs = members.stream()
 				.filter(member -> {
-					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), userId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), manager.getUserId())
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
 						return true;
 					}
@@ -359,9 +359,10 @@ public class GatheringMemberService {
 		for (Schedule schedule : schedules) {
 			Long paybackAmount = 0L;
 			for (ScheduleMember sm : schedule.getAttendees()) {
-				// 내가 참여를 누른 일정들만
+				// 일점을 참여 혹은 거절을 눌렀고,
+				// 참여를 눌렀거나, 페널티 적용이 된 일정 찾기.
 				if (sm.getScheduleMember().getUserId().equals(userId)) {
-					if (sm.getIsAttend()) {
+					if (sm.getScheduleIsCheck() && (sm.getIsAttend() || sm.isPenaltyApply())) {
 						LocalDateTime now = LocalDateTime.now();
 						LocalDateTime paybackDate = schedule.getPenaltyApplyDate();
 						LocalDateTime startDate = schedule.getStartTime();

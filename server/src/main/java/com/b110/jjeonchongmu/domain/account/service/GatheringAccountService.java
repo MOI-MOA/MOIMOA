@@ -194,15 +194,10 @@ public class GatheringAccountService {
 
 			tradeRepo.save(trade);
 
-			String accountNo = null;
-			if (toAccount instanceof PersonalAccount) {
-				accountNo = ((PersonalAccount) toAccount).getAccountNo();
-			} else if(toAccount instanceof GatheringAccount){
-				accountNo = ((GatheringAccount) toAccount).getAccountNo();
-			}
+			String accountNo = ((PersonalAccount) toAccount).getAccountNo();
 
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
-					toAccount.getUser().getUserKey(),
+					fromAccount.getUser().getUserKey(),
 					accountNo,
 					fromAccount.getAccountNo(),
 					transferTransactionHistoryDTO.getAmount()
