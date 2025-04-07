@@ -8,6 +8,8 @@ import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.repo.AutoPaymentRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
@@ -31,6 +33,7 @@ public class AutoPaymentBatchService {
     private final AutoPaymentRepo autoPaymentRepo;
     private final PersonalAccountRepo personalAccountRepo;
     private final GatheringAccountRepo gatheringAccountRepo;
+    private final GatheringMemberRepo gatheringMemberRepo;
     private final TradeRepo tradeRepo;
     private final ExternalBankApiComponent externalBankApiComponent;
 
@@ -80,6 +83,15 @@ public class AutoPaymentBatchService {
         fromAccount.decreaseBalance(autoPayment.getAmount());
         toAccount.increaseBalance(autoPayment.getAmount());
 
+        // 모임 멤버 잔액 업데이트
+        GatheringMember gatheringMember = gatheringMemberRepo.findByGatheringAndGatheringMemberUser(
+            toAccount.getGathering(),
+            fromAccount.getUser()
+        ).orElseThrow(() -> new CustomException(ErrorCode.GATHERING_MEMBER_NOT_FOUND));
+        
+        gatheringMember.increaseBalance(autoPayment.getAmount());
+        gatheringMemberRepo.save(gatheringMember);
+
         // 계좌 정보 저장
         personalAccountRepo.save(fromAccount);
         gatheringAccountRepo.save(toAccount);
@@ -108,9 +120,10 @@ public class AutoPaymentBatchService {
         );
         externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
 
-        log.info("자동이체 완료 - 출금계좌: {}, 입금계좌: {}, 금액: {}", 
+        log.info("자동이체 완료 - 출금계좌: {}, 입금계좌: {}, 금액: {}, 모임멤버잔액: {}", 
                 fromAccount.getAccountId(), 
                 toAccount.getAccountId(), 
-                autoPayment.getAmount());
+                autoPayment.getAmount(),
+                gatheringMember.getGatheringMemberAccountBalance());
     }
 } 

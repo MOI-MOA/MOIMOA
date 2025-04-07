@@ -83,10 +83,12 @@ public class ExternalBankApiComponent {
 
 	@SneakyThrows
 	public BankTransferResponseDTO externalTransfer(BankTransferRequestDTO requestDTO) {
-
+		// ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+		// String currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		// String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
 		ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
-		String currentDate = LocalDate.now(koreaZoneId).format(DateTimeFormatter.ofPattern			("yyyyMMdd"));
-		String currentTime = LocalTime.now(koreaZoneId).format(DateTimeFormatter.ofPattern			("HHmmss"));
+		String currentDate = LocalDate.now(koreaZoneId).format(DateTimeFormatter.ofPattern	("yyyyMMdd"));
+		String currentTime = LocalTime.now(koreaZoneId).format(DateTimeFormatter.ofPattern	("HHmmss"));
 
 		Map<String, Object> requestBody = createHeaderAndBody("updateDemandDepositAccountTransfer",
 				"updateDemandDepositAccountTransfer", requestDTO.getUserKey());
