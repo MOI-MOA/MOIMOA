@@ -300,7 +300,7 @@ public class GatheringMemberService {
 		// 회원 목록 DTO 생성
 		List<MemberListResponseDTO.MemberDTO> memberDTOs = members.stream()
 				.filter(member -> {
-					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), userId)
+					if (!Objects.equals(member.getGatheringMemberUser().getUserId(), manager.getUserId())
 							&& member.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
 						return true;
 					}
