@@ -70,7 +70,9 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
             "JOIN g.schedules s " +
             "JOIN s.attendees sm " +
             "WHERE s.id = :scheduleId " +
-            "AND sm.isPenaltyApply = TRUE AND sm.isAttend = FALSE")
+            "AND sm.isPenaltyApply = TRUE " +
+            "AND sm.isAttend = FALSE " +
+            "AND sm.scheduleMember.userId = gm.gatheringMemberUser.userId")
     List<GatheringMember> findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(@Param("scheduleId") Long scheduleId);
 
 
@@ -79,7 +81,9 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
             "JOIN g.schedules s " +
             "JOIN s.attendees sm " +
             "WHERE s.id = :scheduleId " +
-            "AND sm.isPenaltyApply = FALSE AND sm.isAttend=true")
+            "AND sm.isPenaltyApply = FALSE " +
+            "AND sm.isAttend = TRUE " +
+            "AND sm.scheduleMember.userId = gm.gatheringMemberUser.userId")
     List<GatheringMember> findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(@Param("scheduleId") Long scheduleId);
 
     @Query("SELECT gm FROM GatheringMember gm " +

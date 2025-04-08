@@ -27,5 +27,5 @@ public class GatheringDetailSchedules {
     private Long scheduleAccountBalance;
 
 
-    public void updateIsSubManager(boolean isSubmanager){this.isSubManager = isSubManager;}
+    public void updateIsSubManager(boolean isSubmanager){this.isSubManager = isSubmanager;}
 }
