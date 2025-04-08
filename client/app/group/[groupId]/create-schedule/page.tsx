@@ -16,11 +16,13 @@ import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Header } from "@/components/Header";
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { toZonedTime } from "date-fns-tz";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -56,11 +58,13 @@ export default function CreateSchedulePage({
   const [formData, setFormData] = useState({
     title: "",
     date: undefined as Date | undefined,
+    time: "15:00",
     participants: "",
     budgetPerPerson: "",
     location: "",
     description: "",
     paybackDate: undefined as Date | undefined,
+    paybackTime: "15:00",
     penaltyRate: "",
     scheduleAccountPw: "",
   });
@@ -98,20 +102,33 @@ export default function CreateSchedulePage({
 
     setIsLoading(true);
     try {
+      const scheduleDateTime = formData.date
+        ? new Date(`${format(formData.date, "yyyy-MM-dd")}T${formData.time}:00`)
+        : null;
+
+      const paybackDateTime = formData.paybackDate
+        ? new Date(
+            `${format(formData.paybackDate, "yyyy-MM-dd")}T${
+              formData.paybackTime
+            }:00`
+          )
+        : null;
+
       const scheduleData = {
         scheduleTitle: formData.title,
         scheduleDetail: formData.description,
         schedulePlace: formData.location,
-        scheduleStartTime: formData.date?.toISOString(),
+        scheduleStartTime: scheduleDateTime,
         perBudget: Number(formData.budgetPerPerson),
-        totalBudget:
-          Number(formData.budgetPerPerson) * Number(formData.participants),
-        penaltyApplyDate: formData.paybackDate?.toISOString(),
+        penaltyApplyDate: paybackDateTime,
         penaltyRate: Number(formData.penaltyRate),
-        scheduleAccountPw: formData.scheduleAccountPw
+        scheduleAccountPw: formData.scheduleAccountPw,
       };
-
-      const response = await authApi.post(`/api/v1/schedule/${groupId}`, scheduleData);
+      console.log(scheduleData);
+      const response = await authApi.post(
+        `/api/v1/schedule/${groupId}`,
+        scheduleData
+      );
 
       toast({
         title: "일정 생성 완료",
@@ -123,7 +140,8 @@ export default function CreateSchedulePage({
       if (error.response && error.response.status === 405) {
         toast({
           title: "일정 생성 불가",
-          description: "잔액이 보증금 + 인당 일정 금액보다 부족해 일정 생성이 불가능합니다.",
+          description:
+            "잔액이 보증금 + 인당 일정 금액보다 부족해 일정 생성이 불가능합니다.",
           variant: "destructive",
         });
       } else {
@@ -155,15 +173,25 @@ export default function CreateSchedulePage({
               />
             </div>
             <div>
-              <Label htmlFor="date">날짜</Label>
-              <Calendar
-                mode="single"
-                selected={formData.date}
-                onSelect={(date: Date | undefined) =>
-                  setFormData((prev) => ({ ...prev, date }))
-                }
-                className="rounded-md border [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
-              />
+              <Label>날짜 및 시간</Label>
+              <div className="flex flex-col space-y-2">
+                <Calendar
+                  mode="single"
+                  selected={formData.date}
+                  onSelect={(date) =>
+                    setFormData((prev) => ({ ...prev, date }))
+                  }
+                  className="rounded-md border [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
+                />
+                <Input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, time: e.target.value }))
+                  }
+                  className="w-32"
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="participants">예상 참여 인원</Label>
@@ -251,15 +279,28 @@ export default function CreateSchedulePage({
               />
             </div>
             <div>
-              <Label htmlFor="paybackDate">페이백 적용 날짜</Label>
-              <Calendar
-                mode="single"
-                selected={formData.paybackDate}
-                onSelect={(date: Date | undefined) =>
-                  setFormData((prev) => ({ ...prev, paybackDate: date }))
-                }
-                className="rounded-md border [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
-              />
+              <Label>페이백 적용 날짜 및 시간</Label>
+              <div className="flex flex-col space-y-2">
+                <Calendar
+                  mode="single"
+                  selected={formData.paybackDate}
+                  onSelect={(date) =>
+                    setFormData((prev) => ({ ...prev, paybackDate: date }))
+                  }
+                  className="rounded-md border [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
+                />
+                <Input
+                  type="time"
+                  value={formData.paybackTime}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      paybackTime: e.target.value,
+                    }))
+                  }
+                  className="w-32"
+                />
+              </div>
             </div>
           </>
         );

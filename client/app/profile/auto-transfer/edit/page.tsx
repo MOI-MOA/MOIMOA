@@ -31,7 +31,7 @@ export default function EditAutoTransferPage() {
     amount: searchParams.get("amount") || "",
     day: searchParams.get("day") || "",
     account: searchParams.get("account") || "",
-    status: searchParams.get("status") === "active",
+    status: searchParams.get("status") === "true",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -45,10 +45,12 @@ export default function EditAutoTransferPage() {
   };
 
   const handleStatusChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      status: checked,
-    }));
+    setTimeout(() => {
+      setFormData((prev) => ({
+        ...prev,
+        status: checked,
+      }));
+    }, 0);
   };
 
   const saveData = async () => {
@@ -135,7 +137,12 @@ export default function EditAutoTransferPage() {
                     readOnly
                     className="bg-gray-100"
                   />
-                  <div className="text-gray-500">원</div>
+                  <div className="text-gray-500">
+                    {formData.amount
+                      ? Number(formData.amount).toLocaleString()
+                      : "0"}
+                    원
+                  </div>
                 </div>
               </div>
 
@@ -175,9 +182,7 @@ export default function EditAutoTransferPage() {
                 <Switch
                   id="status"
                   checked={formData.status}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({ ...prev, status: checked }))
-                  }
+                  onCheckedChange={handleStatusChange}
                 />
               </div>
             </form>
@@ -196,7 +201,7 @@ export default function EditAutoTransferPage() {
           </CardFooter>
         </Card>
 
-        {formData.status === "inactive" && (
+        {!formData.status && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 flex items-start">
             <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
             <div>

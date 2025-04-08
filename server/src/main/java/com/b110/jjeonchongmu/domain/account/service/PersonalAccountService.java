@@ -19,6 +19,8 @@ import com.b110.jjeonchongmu.domain.account.repo.AccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.GatheringAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.PersonalAccountRepo;
 import com.b110.jjeonchongmu.domain.account.repo.ScheduleAccountRepo;
+import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
+import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
@@ -27,7 +29,10 @@ import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javax.security.auth.login.AccountNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,20 +46,28 @@ public class PersonalAccountService {
 	private final PersonalAccountRepo personalAccountRepo;
 	private final GatheringAccountRepo gatheringAccountRepo;
 	private final ScheduleAccountRepo scheduleAccountRepo;
+	private final GatheringMemberRepo gatheringMemberRepo;
 	private final AccountRepo accountRepo;
 	private final TradeRepo tradeRepo;
 	private final UserRepo userRepo;
+	private static final Logger log = LoggerFactory.getLogger(PersonalAccountService.class);
 
 	@Transactional
 	public TransferTransactionHistoryDTO initTransfer(TransferRequestDTO requestDto) {
 
 		Account account = null;
-		if(requestDto.getToAccountType()==AccountType.PERSONAL){
-			account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
-		} else if (requestDto.getToAccountType()==AccountType.GATHERING){
+
+		account = personalAccountRepo.findByAccountNo(requestDto.getToAccountNo());
+		if (account == null) {
 			account = gatheringAccountRepo.findAccountByAccountNo(requestDto.getToAccountNo());
 		}
-
+		if (account == null) {
+			try {
+				throw new AccountNotFoundException("계좌를 찾을 수 없습니다: " + requestDto.getToAccountNo());
+			} catch (AccountNotFoundException e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		// 초기 송금기록
 		return TransferTransactionHistoryDTO.builder()
@@ -80,9 +93,8 @@ public class PersonalAccountService {
 
 			String originAccountPw = fromAccount.getAccountPw();
 			String userAccountPw = transferTransactionHistoryDTO.getAccountPw();
-			System.out.println(originAccountPw + " , " + userAccountPw);
 			boolean isPassword = passwordEncoder.matches(userAccountPw, originAccountPw);
-			if(!isPassword) {
+			if (!isPassword) {
 				throw new IllegalAccessException("비밀번호 불일치");
 			}
 
@@ -115,7 +127,41 @@ public class PersonalAccountService {
 			if (toAccount instanceof PersonalAccount) {
 				personalAccountRepo.save((PersonalAccount) toAccount);
 			} else if (toAccount instanceof GatheringAccount) {
-				gatheringAccountRepo.save((GatheringAccount) toAccount);
+				GatheringAccount gatheringAccount = (GatheringAccount) toAccount;
+
+				GatheringMember gatheringMember = gatheringMemberRepo.findByGatheringGatheringIdAndGatheringMemberUser_UserId(
+								gatheringAccount.getGathering().getGatheringId(), userId)
+						.orElseThrow(() -> new IllegalArgumentException("모임 멤버 조회 오류"));
+
+				long gatheringRequiredDeposit = gatheringAccount.getGathering().getGatheringDeposit();
+				long currentMemberDeposit = gatheringMember.getGatheringMemberAccountDeposit();
+				long transferAmount = transferTransactionHistoryDTO.getAmount();
+
+				if (currentMemberDeposit < gatheringRequiredDeposit) {
+					long depositNeeded = gatheringRequiredDeposit - currentMemberDeposit;
+
+					if (transferAmount <= depositNeeded) {
+						// 이체 금액이 필요 보증금보다 적거나 같으면 모두 보증금으로 처리
+						gatheringMember.updateGatheringMemberAccountDeposit(
+								currentMemberDeposit + transferAmount);
+					} else {
+						// 필요한 보증금을 채우고 남은 금액은 잔액으로 처리
+						gatheringMember.updateGatheringMemberAccountDeposit(gatheringRequiredDeposit);
+
+						// 남은 금액 계산
+						long remainingAmount = transferAmount - depositNeeded;
+						// 잔액 업데이트
+						gatheringMember.updateGatheringMemberAccountBalance(
+								gatheringMember.getGatheringMemberAccountBalance() + remainingAmount);
+					}
+				} else {
+					System.out.println(
+							"여기? " + gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
+					gatheringMember.updateGatheringMemberAccountBalance(
+							gatheringMember.getGatheringMemberAccountBalance() + transferAmount);
+				}
+				gatheringAccountRepo.save(gatheringAccount);
+				gatheringMemberRepo.save(gatheringMember);
 			} else {
 				scheduleAccountRepo.save((ScheduleAccount) toAccount);
 			}
@@ -136,10 +182,10 @@ public class PersonalAccountService {
 			tradeRepo.save(trade);
 
 			String accountNo = null;
-			if(toAccount instanceof PersonalAccount){
+			if (toAccount instanceof PersonalAccount) {
 				accountNo = ((PersonalAccount) toAccount).getAccountNo();
-			} else if (toAccount instanceof  GatheringAccount){
-				accountNo =((GatheringAccount) toAccount).getAccountNo();
+			} else if (toAccount instanceof GatheringAccount) {
+				accountNo = ((GatheringAccount) toAccount).getAccountNo();
 			}
 
 			BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
@@ -170,7 +216,8 @@ public class PersonalAccountService {
 		String storedEncodedPassword = account.getAccountPw();
 
 		// 3. BCrypt 비밀번호 검증
-		return passwordEncoder.matches(String.valueOf(requestDto.getAccountPW()), storedEncodedPassword);
+		return passwordEncoder.matches(String.valueOf(requestDto.getAccountPW()),
+				storedEncodedPassword);
 	}
 
 	public void addAutoPayment() {
@@ -187,20 +234,40 @@ public class PersonalAccountService {
 	}
 
 	public void addPersonalAccount(MakeExternalAccountDTO makeExternalAccountDTO, Long userId) {
-		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("회원 조회 실패"));
-		BankAccountResponseDTO responseDTO = externalBankApiComponent.externalMakeAccount(makeExternalAccountDTO);
+		User user = userRepo.findByUserId(userId)
+				.orElseThrow(() -> new IllegalArgumentException("회원 조회 실패"));
+		BankAccountResponseDTO responseDTO = externalBankApiComponent.externalMakeAccount(
+				makeExternalAccountDTO);
 		// 계좌 저장로직
 		PersonalAccount personalAccount = new PersonalAccount(
 				user,
 				responseDTO.getRec().getAccountNo(),
 				passwordEncoder.encode(String.valueOf(makeExternalAccountDTO.getAccountPw()))
 		);
-		personalAccountRepo.save(personalAccount);
+		personalAccountRepo.save(personalAccount); 
+		
+		// 300000만원 입금 - 외부 API 호출 부분을 try-catch로 감싸서 오류 처리
+		try {
+			// 외부 API 호출 전에 로그 추가
+			log.info("외부 API 입금 처리 시작 - 사용자: {}, 계좌번호: {}", user.getUserKey(), responseDTO.getRec().getAccountNo());
+			
+			// 외부 API 호출
+			externalBankApiComponent.externalDeposit(user.getUserKey(), responseDTO.getRec().getAccountNo());
+			
+			// 입금 성공 시 잔액 업데이트
+			personalAccount.increaseBalance(300_000L);
+			
+			log.info("외부 API 입금 처리 완료 - 사용자: {}, 계좌번호: {}, 잔액: {}", 
+					user.getUserKey(), responseDTO.getRec().getAccountNo(), personalAccount.getAccountBalance());
+		} catch (Exception e) {
+			log.error("외부 API 입금 처리 중 오류 발생: {}", e.getMessage());
+			// 외부 API 호출 실패 시에도 계좌 생성은 계속 진행
+		}
 	}
 
 	public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
 		Boolean isAccountNo = personalAccountRepo.existsByAccountNo(toAccountNo);
-		if(!isAccountNo) {
+		if (!isAccountNo) {
 			isAccountNo = gatheringAccountRepo.existsByAccountNo(toAccountNo);
 		}
 		return new AccountCheckResponseDTO(

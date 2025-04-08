@@ -19,6 +19,7 @@ import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
@@ -198,7 +199,13 @@ public class GatheringService {
 	 */
 	public GatheringListResponseDTO getAllGatherings(Long userId) {
 		User user = userRepo.getUserByUserId(userId);
-		List<Gathering> gatherings = user.getGatherings();
+		List<GatheringMember> gatheringMembers = user.getGatheringMembers();
+		List<Gathering> gatherings = new ArrayList<>();
+		for (GatheringMember gm : gatheringMembers) {
+			if (gm.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE) {
+				gatherings.add(gm.getGathering());
+			}
+		}
 		return convertToGatheringListResponse(gatherings);
 	}
 
@@ -230,6 +237,35 @@ public class GatheringService {
 						gathering.getGatheringId(), user.getUserId())
 						.orElseThrow(() -> new RuntimeException("NOTFOUND: gatheringId와 userId로 gatheringMember를 찾을 수 없습니다."));
 
+		Long managerUserId = gathering.getManagerId();
+		User managerUser = userRepo.getUserByUserId(managerUserId);
+
+		List<GatheringDetailSchedules> list = new ArrayList<>();
+		for (Schedule schedule : schedules) {
+			Boolean isChecked = false;
+			Boolean isAttend = false;
+			Integer numberOfParticipant = 0;
+			for (ScheduleMember sm : schedule.getAttendees()) {
+				if (sm.getIsAttend()) {
+					numberOfParticipant++;
+				}
+				if (Objects.equals(sm.getScheduleMember().getUserId(), userId)) {
+					isChecked = sm.getScheduleIsCheck();
+					isAttend = sm.getIsAttend();
+				}
+			}
+			list.add(GatheringDetailSchedules.builder()
+					.id(schedule.getId())
+					.name(schedule.getTitle())
+					.date(schedule.getStartTime())
+					.participants(numberOfParticipant)
+					.budgetPerPerson(schedule.getPerBudget())
+					.totalBudget(schedule.getAttendees().size() * schedule.getPerBudget())
+					.location(schedule.getPlace())
+					.isChecked(isChecked)
+					.isAttend(isAttend)
+					.build());
+		}
 
 		return GatheringDetailResponseDTO.builder()
 				.id(gathering.getGatheringId())
@@ -238,18 +274,9 @@ public class GatheringService {
 				.totalMembers(gathering.getGatheringMembers().size())
 				.monthlyFee(gathering.getBasicFee())
 				.isManager(Objects.equals(gathering.getManagerId(), userId))
-				.manager(new GatheringDetailManagerDTO(user))
+				.manager(new GatheringDetailManagerDTO(managerUser))
 				.accounts(new GatheringDetailAccountDTO(gathering, gatheringMember))
-				.schedules(schedules.stream()
-						.map(schedule -> GatheringDetailSchedules.builder()
-								.id(schedule.getId())
-								.date(schedule.getStartTime())
-								.participants(schedule.getAttendees().size())
-								.budgetPerPerson(schedule.getPerBudget())
-								.totalBudget(schedule.getAttendees().size() * schedule.getPerBudget())
-								.location(schedule.getPlace())
-								.build())
-						.collect(Collectors.toList()))
+				.schedules(list)
 				.build();
 	}
 
@@ -270,18 +297,24 @@ public class GatheringService {
 
 	private GatheringListResponseDTO convertToGatheringListResponse(List<Gathering> gatherings) {
 		List<GatheringDTO> gatheringDTOs = gatherings.stream()
-				.map(gathering -> GatheringDTO.builder()
-						.gatheringId(gathering.getGatheringId())
-						.managerId(gathering.getManagerId())
-						.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
-						.gatheringName(gathering.getGatheringName())
-						.gatheringIntroduction(gathering.getGatheringIntroduction())
-						.memberCount(gathering.getMemberCount())
-						.penaltyRate(gathering.getPenaltyRate())
-						.depositDate(gathering.getDepositDate())
-						.basicFee(gathering.getBasicFee())
-						.gatheringDeposit(gathering.getGatheringDeposit())
-						.build())
+				.map(gathering -> {
+					long activeCount = gathering.getGatheringMembers().stream()
+							.filter(gm -> gm.getGatheringMemberStatus() == GatheringMemberStatus.ACTIVE)
+							.count();
+
+					return GatheringDTO.builder()
+							.gatheringId(gathering.getGatheringId())
+							.managerId(gathering.getManagerId())
+							.gatheringAccountId(gathering.getGatheringAccount().getAccountId())
+							.gatheringName(gathering.getGatheringName())
+							.gatheringIntroduction(gathering.getGatheringIntroduction())
+							.memberCount((int) activeCount)
+							.penaltyRate(gathering.getPenaltyRate())
+							.depositDate(gathering.getDepositDate())
+							.basicFee(gathering.getBasicFee())
+							.gatheringDeposit(gathering.getGatheringDeposit())
+							.build();
+				})
 				.collect(Collectors.toList());
 
 		return GatheringListResponseDTO.builder()

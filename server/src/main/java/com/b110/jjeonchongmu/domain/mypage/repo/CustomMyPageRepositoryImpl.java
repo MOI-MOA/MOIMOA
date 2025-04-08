@@ -39,13 +39,14 @@ public class CustomMyPageRepositoryImpl implements CustomMyPageRepository {
 								qGathering.basicFee,
 								qGathering.gatheringDeposit,
 								qGatheringAccount.accountNo,
-								qGatheringMember.gatheringMemberAccountBalance))
-				.from(qGathering).leftJoin(qGatheringMember)
-				.on(qGathering.gatheringId.eq(qGatheringMember.gathering.gatheringId)
+								qGatheringMember.gatheringMemberAccountBalance,
+								qGatheringMember.gatheringMemberAccountDeposit,
+								qGatheringMember.gatheringPaymentStatus))
+				.from(qGathering)
+				.join(qGatheringMember).on(qGathering.gatheringId.eq(qGatheringMember.gathering.gatheringId)
 					.and(qGatheringMember.gatheringMemberUser.userId.eq(userId)))
-				.leftJoin(qGatheringAccount)
-				.on(qGathering.gatheringId.eq(qGatheringAccount.gathering.gatheringId))
-				.leftJoin(qGatheringMember).on(qGatheringMember.gathering.gatheringId.eq(qGathering.gatheringId))
+				.leftJoin(qGatheringAccount).on(qGathering.gatheringId.eq(qGatheringAccount.gathering.gatheringId))
+//				.leftJoin(qGatheringMember).on(qGatheringMember.gathering.gatheringId.eq(qGathering.gatheringId))
 				.fetch();
 	}
 }

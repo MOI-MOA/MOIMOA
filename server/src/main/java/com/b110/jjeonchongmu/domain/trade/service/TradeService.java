@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -58,13 +59,14 @@ public class  TradeService {
         Long accountBalance = 0L;
         Long totalDeposit = 0L;
         Long totalWithdrawal = 0L;
-        System.out.println("tradeHistoryRequestDTO.getAccountType() = " + tradeHistoryRequestDTO.getAccountType());
+        Long targetAccountId = 0L;
         switch (tradeHistoryRequestDTO.getAccountType()) {
             case GATHERING:
                 Gathering gathering = gatheringRepo.getGatheringByGatheringId(tradeHistoryRequestDTO.getGatheringId());
                 GatheringAccount gatheringAccount = gathering.getGatheringAccount();
+                targetAccountId = gatheringAccount.getAccountId();
                 trades = tradeRepo.getGatheringTradesByAccountIdOrderByTradeTimeDesc(
-                        gatheringAccount.getAccountId(),
+                        targetAccountId,
                         PageRequest.of(0, tradeHistoryRequestDTO.getLimit()));
                 System.out.println("trades.size() = " + trades.size());
                 name = gathering.getGatheringName();
@@ -73,8 +75,9 @@ public class  TradeService {
                 break;
             case PERSONAL:
                 PersonalAccount personalAccount = user.getPersonalAccount();
+                targetAccountId = personalAccount.getAccountId();
                 trades = tradeRepo.getPersonalTradesByAccountIdOrderByTradeTimeDesc(
-                        personalAccount.getAccountId(),
+                        targetAccountId,
                         PageRequest.of(0, tradeHistoryRequestDTO.getLimit()));
                 System.out.println("trades.size() = " + trades.size());
                 name = user.getName();
@@ -82,15 +85,25 @@ public class  TradeService {
                 accountBalance = personalAccount.getAccountBalance();
                 break;
         }
+
+        List<TradeDetailDTO> tradeDetailDTOs = new ArrayList<>();
         // totalDeposit(입금)이랑 totalWithdrawal(송금) 계산하는 로직
         for (Trade trade : trades) {
             Long tradeAmount = trade.getTradeAmount();
-            if (tradeAmount < 0) {
+            if (Objects.equals(trade.getFromAccount().getAccountId(), targetAccountId)) {
                 // tradeAmount가 -(송금) 이면 totalWithdrawal에서 뺴줘야 값 증가함.
-                totalWithdrawal -= tradeAmount;
+                totalWithdrawal += tradeAmount;
+                tradeAmount *= -1;
             } else {
                 totalDeposit += tradeAmount;
             }
+            TradeDetailDTO tradeDetailDTO = TradeDetailDTO.builder()
+                    .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
+                    .tradeTime(trade.getTradeTime())
+                    .tradeAmount(tradeAmount)
+                    .tradeBalance(trade.getTradeBalance())
+                    .build();
+            tradeDetailDTOs.add(tradeDetailDTO);
         }
 
         return TradeResponseDTO.builder()
@@ -99,14 +112,7 @@ public class  TradeService {
                 .accountBalance(accountBalance)
                 .totalDeposit(totalDeposit)
                 .totalWithdrawal(totalWithdrawal)
-                .tradeList(trades.stream()
-                                .map(trade -> TradeDetailDTO.builder()
-                                        .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
-                                        .tradeTime(trade.getTradeTime())
-                                        .tradeAmount(trade.getTradeAmount())
-                                        .tradeBalance(trade.getTradeBalance())
-                                        .build())
-                                .collect(Collectors.toList()))
+                .tradeList(tradeDetailDTOs)
                 .build();
     }
 }

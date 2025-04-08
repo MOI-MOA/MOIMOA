@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.global.security;
 
+import com.b110.jjeonchongmu.global.exception.CustomException;
+import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -35,7 +37,6 @@ public class JwtTokenProvider {
     private long refreshTokenValidity;
 
     private Key key;
-
 
     /**
      * 현재 요청의 HttpServletRequest 가져오기
@@ -83,8 +84,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-
-
     /**
      * 현재 사용자의 ID 추출
      */
@@ -93,7 +92,7 @@ public class JwtTokenProvider {
         if (token != null && validateToken(token)) {
             return getUserId(token);
         }
-        throw new RuntimeException("Invalid token");
+        throw new CustomException(ErrorCode.INVALID_TOKEN);
     }
 
     /**
@@ -125,13 +124,42 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
+            Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            // 토큰 만료 여부 확인
+            Date expiration = claims.getExpiration();
+            boolean isExpired = expiration.before(new Date());
+            
+            if (isExpired) {
+                log.error("JWT token is expired: {}", token);
+                return false;
+            }
+            
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
+            return false; 
+        }
+    }
+
+    /**
+     * 토큰이 Refresh Token인지 확인
+     */
+    public boolean isRefreshToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            // 토큰의 만료 시간이 refresh token validity와 같으면 refresh token으로 판단
+            return claims.getExpiration().getTime() - claims.getIssuedAt().getTime() == refreshTokenValidity;
+        } catch (Exception e) {
             return false;
         }
     }
@@ -146,5 +174,30 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getExpiration().getTime() - new Date().getTime();
+    }
+
+    /**
+     * 토큰이 Access Token인지 확인
+     */
+    public boolean isAccessToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            // 토큰의 만료 시간이 access token validity와 같으면 access token으로 판단
+            return claims.getExpiration().getTime() - claims.getIssuedAt().getTime() == accessTokenValidity;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 서명 키 반환
+     */
+    public Key getKey() {
+        return this.key;
     }
 } 

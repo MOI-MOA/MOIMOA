@@ -15,9 +15,12 @@ import java.time.LocalTime;
 @Builder
 public class GatheringDetailSchedules {
     private Long id;
+    private String name;
     private LocalDateTime date;
     private Integer participants;
     private Long budgetPerPerson;
     private Long totalBudget;
     private String location;
+    private Boolean isChecked;
+    private Boolean isAttend;
 }
