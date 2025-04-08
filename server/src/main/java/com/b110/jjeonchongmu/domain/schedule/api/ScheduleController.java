@@ -125,7 +125,7 @@ public class ScheduleController {
 
 
     // 일정 참석 취소
-    @PostMapping("/{scheduleId}/cancel")
+    @PostMapping("/{scheduleId}/attend-cancel")
     public ResponseEntity<String> cancelAttendance(@PathVariable Long scheduleId) {
         System.out.println("들어옴################");
         Long userId = jwtTokenProvider.getUserId();

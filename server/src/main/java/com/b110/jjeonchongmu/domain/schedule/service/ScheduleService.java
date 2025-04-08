@@ -53,10 +53,16 @@ public class ScheduleService {
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this gathering");
         }
+        User currentUser = userRepo.getUserByUserId(userId);
 
         return scheduleRepo.findByGatheringGatheringId(gatheringId)
                 .stream()
                 .map(ScheduleDTO::from)
+                .peek(dto -> dto.updateIsSubManager(
+                        scheduleRepo.findById(dto.getScheduleId())
+                                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Schedule Not Found"))
+                                .getSubManager().equals(currentUser)
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -72,8 +78,11 @@ public class ScheduleService {
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
+        ScheduleDetailDTO savedScheduleDetailDTO = ScheduleDetailDTO.from(schedule);
+        savedScheduleDetailDTO.updateIsSubManger(userId.equals(schedule.getSubManager().getUserId()));
+        savedScheduleDetailDTO.updateScheduleAccountBalance(schedule.getScheduleAccount().getAccountBalance());
 
-        return ScheduleDetailDTO.from(schedule);
+        return savedScheduleDetailDTO;
     }
 
     @Transactional
