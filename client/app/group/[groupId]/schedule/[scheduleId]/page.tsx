@@ -21,6 +21,14 @@ import { Header } from "@/components/Header";
 import axios, { AxiosInstance } from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { publicApi, authApi } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Attendee {
   userId: number;
@@ -54,6 +62,7 @@ export default function ScheduleDetailPage() {
   const { groupId, scheduleId } = params;
   const [scheduleData, setScheduleData] = useState<ScheduleData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEndDialogOpen, setIsEndDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchScheduleData = async () => {
@@ -93,6 +102,26 @@ export default function ScheduleDetailPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const handleEndSchedule = async () => {
+    try {
+      await authApi.delete(`api/v1/schedule/${scheduleId}`);
+
+      toast({
+        title: "일정 종료 완료",
+        description: "일정이 성공적으로 종료되었습니다.",
+      });
+
+      router.push(`/group/${groupId}`); // 그룹 메인 페이지로 이동
+    } catch (error) {
+      toast({
+        title: "오류 발생",
+        description: "일정 종료 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    }
+    setIsEndDialogOpen(false);
   };
 
   if (isLoading) {
@@ -275,22 +304,71 @@ export default function ScheduleDetailPage() {
               <p className="text-gray-600">{scheduleData.scheduleDetail}</p>
             </div>
 
-            {scheduleData.subManager?
-            (<Button
-              onClick={() =>
-                router.push(`/group/${groupId}/schedule/${scheduleId}/send`)
-              }
-              className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
-            >
-              <SendHorizontal className="h-4 w-4 mr-2" />
-              송금하기
-            </Button>) :(
-              <a></a>
-            )}   
+            {/* 송금하기 버튼과 일정 종료 버튼 컨테이너 */}
+            <div className="space-y-3">
+              {scheduleData.subManager && (
+                <>
+                  <Button
+                    onClick={() =>
+                      router.push(`/group/${groupId}/schedule/${scheduleId}/send`)
+                    }
+                    className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
+                  >
+                    <SendHorizontal className="h-4 w-4 mr-2" />
+                    송금하기
+                  </Button>
 
+                  <Button
+                    variant="outline"
+                    className="w-full py-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+                    onClick={() => setIsEndDialogOpen(true)}
+                  >
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    일정 종료하기
+                  </Button>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
       </main>
+
+      {/* 일정 종료 확인 다이얼로그 */}
+      <Dialog open={isEndDialogOpen} onOpenChange={setIsEndDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-red-600">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              일정 종료
+            </DialogTitle>
+            <DialogDescription className="text-slate-600">
+              정말로 <span className="font-medium text-slate-700">{scheduleData.scheduleTitle}</span> 일정을 종료하시겠습니까?
+              <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-100">
+                <p className="text-red-600 text-sm">
+                  일정 종료 시 더 이상 참석 관리 및 송금이 불가능합니다.
+                  이 작업은 되돌릴 수 없습니다.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setIsEndDialogOpen(false)}
+              className="rounded-xl border-slate-200"
+            >
+              취소
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleEndSchedule}
+              className="rounded-xl bg-red-600 hover:bg-red-700"
+            >
+              종료하기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
