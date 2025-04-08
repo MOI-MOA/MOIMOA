@@ -94,9 +94,9 @@ export default function SendMoneyPage() {
   useEffect(() => {
     if (!userId) return;
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = process.env.NEXT_PUBLIC_API_URL || "localhost:8080";
-    const socket = new SockJS(`${protocol}//${host}/ws`);
+    const socket = new SockJS("http://localhost:8080/ws", null, {
+      transports: ["xhr-streaming", "xhr-polling"],
+    });
     const client = Stomp.over(socket);
     const accessToken = localStorage.getItem("accessToken");
 
