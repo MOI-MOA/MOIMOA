@@ -1,17 +1,26 @@
 package com.b110.jjeonchongmu.domain.schedule.api;
 
-import com.b110.jjeonchongmu.domain.account.dto.MakeAccountDTO;
 import com.b110.jjeonchongmu.domain.account.service.ScheduleAccountService;
-import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
-import com.b110.jjeonchongmu.domain.schedule.dto.*;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleCreateDTO;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDTO;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleDetailDTO;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleMemberDTO;
+import com.b110.jjeonchongmu.domain.schedule.dto.ScheduleUpdateDTO;
 import com.b110.jjeonchongmu.domain.schedule.service.ScheduleMemberService;
 import com.b110.jjeonchongmu.domain.schedule.service.ScheduleService;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 일정 관련 API 컨트롤러
@@ -56,8 +65,10 @@ public class ScheduleController {
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
         Long userId = jwtTokenProvider.getUserId();
 //        Long userId = 5L;
-        System.out.println("scheduleCreateDTO = " + scheduleCreateDTO.getScheduleStartTime());
-        System.out.println("scheduleCreateDTO = " + scheduleCreateDTO.getPenaltyApplyDate());
+        scheduleCreateDTO.updateScheduleDate(scheduleCreateDTO.getScheduleStartTime().plusHours(9)
+            , scheduleCreateDTO.getPenaltyApplyDate().plusHours(9));
+        System.out.println(scheduleCreateDTO.getScheduleStartTime());
+        System.out.println(scheduleCreateDTO.getPenaltyApplyDate());
         Long scheduleId;
         try {
             scheduleId = scheduleService.createSchedule(userId, gatheringId, scheduleCreateDTO);
