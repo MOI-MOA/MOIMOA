@@ -58,7 +58,7 @@ export default function LoginPage() {
         title: "로그인 성공! 🎉",
         description: "환영합니다! 메인 페이지로 이동합니다.",
         variant: "default",
-        duration: 1500,
+        duration: 500,
       });
 
       setTimeout(() => {
@@ -78,7 +78,7 @@ export default function LoginPage() {
             error.response?.data?.message ||
             "이메일 또는 비밀번호가 올바르지 않습니다.",
           variant: "destructive",
-          duration: 3000,
+          duration: 500,
         });
       } else {
         console.error(error);
@@ -86,7 +86,7 @@ export default function LoginPage() {
           title: "로그인 실패 😢",
           description: "알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
           variant: "destructive",
-          duration: 3000,
+          duration: 500,
         });
       }
     } finally {

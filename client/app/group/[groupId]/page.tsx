@@ -54,8 +54,8 @@ type Schedule = {
   isChecked: boolean;
   isAttend: boolean;
   name: string;
-  subManager : boolean;
-  scheduleAccountBalance : number;
+  subManager: boolean;
+  scheduleAccountBalance: number;
 };
 
 type GroupData = {
@@ -91,7 +91,7 @@ export default function GroupDetailPage({
       console.log(response);
       response.id = parseInt(groupId);
       setGroupData(response);
-      console.log(response.schedules)
+      console.log(response.schedules);
     } catch (error) {
       console.error("그룹 상세 정보를 가져오는데 실패했습니다:", error);
       toast({
@@ -181,14 +181,12 @@ export default function GroupDetailPage({
     }
   };
 
-
-  
   // 참석 처리 함수 추가
   const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
       await authApi.post(`api/v1/schedule/${scheduleId}/attend`);
-      
+
       // 성공 시 해당 일정의 상태 업데이트
       setGroupData((prev) => {
         if (!prev) return prev;
@@ -206,7 +204,7 @@ export default function GroupDetailPage({
           }),
         };
       });
-      
+
       toast({
         title: "참석 완료",
         description: "일정 참석이 완료되었습니다.",
@@ -219,7 +217,7 @@ export default function GroupDetailPage({
       });
     }
   };
-  
+
   // 참석 취소 처리 함수 추가
   const handleCancelAttend = async (
     scheduleId: number,
@@ -228,7 +226,7 @@ export default function GroupDetailPage({
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
       await authApi.post(`api/v1/schedule/${scheduleId}/attend-cancel`);
-      
+
       // 성공 시 해당 일정의 상태 업데이트
       setGroupData((prev) => {
         if (!prev) return prev;
@@ -246,7 +244,7 @@ export default function GroupDetailPage({
           }),
         };
       });
-      
+
       toast({
         title: "참석 취소 완료",
         description: "일정 참석이 취소되었습니다.",
@@ -259,7 +257,7 @@ export default function GroupDetailPage({
       });
     }
   };
-  
+
   return (
     <>
       {/* 여기에 */}
@@ -275,10 +273,10 @@ export default function GroupDetailPage({
                 <p className="text-sm text-gray-500 mt-1">
                   {groupData.description}
                 </p>
-              <div className="text-xs text-gray-500 mb-1">모임 보증금</div>
-              <div className="font-semibold text-blue-600">
-                {groupData.accounts.groupDeposit.toLocaleString()}원
-              </div>
+                <div className="text-xs text-gray-500 mb-1">모임 보증금</div>
+                <div className="font-semibold text-blue-600">
+                  {groupData.accounts.groupDeposit.toLocaleString()}원
+                </div>
               </div>
 
               {/* 총무 정보 */}
@@ -327,7 +325,7 @@ export default function GroupDetailPage({
           </Card>
           <Card>
             <CardContent className="p-3">
-              <div className="text-xs text-gray-500 mb-1">나의 사용 가능 금액</div>
+              <div className="text-xs text-gray-500 mb-1">나의 가용 금액</div>
               <div className="font-semibold text-green-600">
                 {groupData.accounts.myBalance.toLocaleString()}원
               </div>
@@ -382,49 +380,41 @@ export default function GroupDetailPage({
                 router.push(`/group/${groupId}/schedule/${schedule.id}`)
               }
             >
-              
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div className="font-medium">{schedule.name}</div>
                   <div className="flex items-center space-x-2">
                     {schedule.subManager ? (
-                        <a></a>
+                      <a></a>
+                    ) : schedule.isAttend ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={(e) => handleCancelAttend(schedule.id, e)}
+                      >
+                        참석 취소
+                      </Button>
                     ) : (
-                       schedule.isAttend ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={(e) => handleAttend(schedule.id, e)}
+                        >
+                          참석
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           className="text-red-600 border-red-200 hover:bg-red-50"
-                          onClick={(e) => handleCancelAttend(schedule.id, e)}
+                          onClick={(e) => handleCancel(schedule.id, e)}
                         >
-                          참석 취소
+                          거절
                         </Button>
-                      ) : (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-green-600 border-green-200 hover:bg-green-50"
-                            onClick={(e) => handleAttend(schedule.id, e)}
-                          >
-                            참석
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 border-red-200 hover:bg-red-50"
-                            onClick={(e) => handleCancel(schedule.id, e)}
-                          >
-                            거절
-                          </Button>
-                        </>
-                      )
+                      </>
                     )}
-
-                    
-
-
-
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
@@ -447,14 +437,17 @@ export default function GroupDetailPage({
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-1" />
                     {new Date(schedule.date).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
                     })}
                   </div>
                   <div className="flex items-center">
-                    <Wallet className="h-4 w-4 mr-1" />
-                    총 {(schedule.scheduleAccountBalance.toLocaleString())} 원
+                    <Wallet className="h-4 w-4 mr-1" />총{" "}
+                    {typeof schedule.scheduleAccountBalance === "number"
+                      ? schedule.scheduleAccountBalance.toLocaleString()
+                      : "0"}{" "}
+                    원
                   </div>
                 </div>
               </CardContent>
