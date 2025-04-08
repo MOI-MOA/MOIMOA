@@ -1,15 +1,14 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Calendar, Clock, MapPin, Users, ChevronRight } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, ChevronRight, Bell } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Header } from "@/components/Header"
 import { useState, useEffect } from "react"
-import axios from "axios"
 import { format } from "date-fns"
 import { toast } from "@/components/ui/use-toast"
-import { publicApi, authApi } from "@/lib/api"
+import { authApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 
 type ScheduleData = {
@@ -22,7 +21,6 @@ type ScheduleData = {
   perBudget: number;
   attendeeCount: number;
 };
-
 
 export default function UncheckSchedulePage() {
   const router = useRouter()
@@ -99,60 +97,88 @@ export default function UncheckSchedulePage() {
   return (
     <>
       <Header title="미확인 일정" showBackButton />
-      <main className="flex-1 overflow-auto p-4 space-y-4 pb-16">
-        {schedules.map((schedule) => (
-          <Card
-            key={schedule.scheduleId}
-            className="hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => router.push(`/group/${schedule.gatheringId}/schedule/${schedule.scheduleId}`)}
-          >
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="font-medium text-lg">{schedule.scheduleTitle}</div>
-                  <div className="text-sm text-gray-500">{schedule.gatheringName}</div>
-                  <div className="flex items-center text-sm text-gray-600 space-x-4">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {format(new Date(schedule.scheduleStartTime), "yyyy.MM.dd")}
+      <main className="flex-1 overflow-auto p-4 space-y-4 pb-16 bg-slate-50">
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-slate-800 flex items-center">
+            <Bell className="h-5 w-5 mr-2 text-blue-600" />
+            확인이 필요한 일정 ({schedules.length}개)
+          </h2>
+          
+          {schedules.length > 0 ? (
+            <div className="space-y-3">
+              {schedules.map((schedule, index) => (
+                <Card
+                  key={schedule.scheduleId}
+                  className="border-0 shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-200 cursor-pointer hover:translate-y-[-2px]"
+                  onClick={() => router.push(`/group/${schedule.gatheringId}/schedule/${schedule.scheduleId}`)}
+                >
+                  <CardContent className="p-0">
+                    <div className={`border-l-4 ${index % 3 === 0 ? 'border-indigo-500' : index % 3 === 1 ? 'border-teal-500' : 'border-amber-500'} p-4`}>
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2.5">
+                          <div className="font-medium text-lg text-slate-800">
+                            {schedule.scheduleTitle}
+                          </div>
+                          <div className="text-sm font-medium text-blue-600">
+                            {schedule.gatheringName}
+                          </div>
+                          <div className="flex flex-wrap items-center text-sm text-slate-600 gap-3">
+                            <div className="flex items-center px-2.5 py-1 bg-slate-100 rounded-full">
+                              <Calendar className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+                              {format(new Date(schedule.scheduleStartTime), "yyyy.MM.dd")}
+                            </div>
+                            <div className="flex items-center px-2.5 py-1 bg-slate-100 rounded-full">
+                              <Clock className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+                              {format(new Date(schedule.scheduleStartTime), "HH:mm")}
+                            </div>
+                            <div className="flex items-center px-2.5 py-1 bg-slate-100 rounded-full">
+                              <MapPin className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+                              {schedule.schedulePlace}
+                            </div>
+                            <div className="flex items-center px-2.5 py-1 bg-slate-100 rounded-full">
+                              <Users className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+                              {schedule.attendeeCount}명
+                            </div>
+                          </div>
+                          
+                          <div className="flex space-x-3 mt-1">
+                            <Button 
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-4"
+                              onClick={(e) => handleAttend(schedule.scheduleId, e)}
+                            >
+                              참석
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              size="sm"
+                              className="border-slate-300 hover:bg-slate-100 text-slate-700 rounded-full px-4"
+                              onClick={(e) => handleCancel(schedule.scheduleId, e)}
+                            >
+                              거절
+                            </Button>
+                          </div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-slate-400" />
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {format(new Date(schedule.scheduleStartTime), "HH:mm")}
-                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+              <CardContent className="p-8 text-center text-slate-500 bg-white">
+                <div className="flex flex-col items-center">
+                  <div className="bg-slate-100 p-4 rounded-full mb-3">
+                    <Bell className="h-8 w-8 text-slate-400" />
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    {schedule.schedulePlace}
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <Button 
-                      variant="default"
-                      size="sm"
-                      onClick={(e) => handleAttend(schedule.scheduleId, e)}
-                    >
-                      참석
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => handleCancel(schedule.scheduleId, e)}
-                    >
-                      거절
-                    </Button>
-                  </div>
+                  <p className="font-medium">확인이 필요한 일정이 없습니다</p>
                 </div>
-                <div className="flex flex-col items-end">
-                  <Badge variant="secondary" className="mb-2">
-                    <Users className="h-3 w-3 mr-1" />
-                    {schedule.attendeeCount}명
-                  </Badge>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
     </>
   )

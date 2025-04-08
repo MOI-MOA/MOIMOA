@@ -2,7 +2,7 @@
 // 총무가 보는 페이지지
 import { useState, use, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Shield, AlertCircle, Check, X, UserPlus, Link, Copy, Share2, Crown } from "lucide-react"
+import { Shield, AlertCircle, Check, X, UserPlus, Link, Copy, Share2, Crown, Lock, Trash2, XCircle, RefreshCw, Users } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -297,63 +297,81 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
   return (
     <>
       <Header title="회원 목록" showBackButton />
-      <main className="flex-1 overflow-auto p-4 space-y-4 pb-16">
-        {/* Summary Card */}
-        <Card>
-          <CardContent className="p-4">
+      <main className="flex-1 overflow-auto p-4 space-y-4 pb-16 bg-slate-50">
+        {/* 보증금 납부 현황 카드 */}
+        <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+          <CardContent className="p-5">
             <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600">보증금 납부 현황</div>
-              <div className="text-sm font-medium">
+              <div className="flex items-center text-slate-700">
+                <Shield className="h-5 w-5 mr-2 text-blue-600" />
+                <span className="font-medium">보증금 납부 현황</span>
+              </div>
+              <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 px-3 py-1">
                 {isLoading ? (
-                  <span className="text-gray-400">로딩 중...</span>
+                  <div className="flex items-center">
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    로딩 중...
+                  </div>
                 ) : (
                   `${members.filter((m) => checkPaymentStatus(m.balance)).length + (manager && checkPaymentStatus(manager.balance) ? 1 : 0)}/${members.length + 1}명 완료`
                 )}
-              </div>
+              </Badge>
             </div>
           </CardContent>
         </Card>
 
-        {/* 초대 링크 버튼 (총무만 볼 수 있음) */}
+        {/* 초대 링크 버튼 */}
         {isManager && (
-          <Button className="w-full bg-blue-500 hover:bg-blue-600" onClick={generateInviteLink}>
-            <Link className="h-4 w-4 mr-2" />
+          <Button 
+            className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700 transition-colors"
+            onClick={generateInviteLink}
+          >
+            <Link className="h-5 w-5 mr-2" />
             초대 링크 생성하기
           </Button>
         )}
 
-        {/* 신청 인원 섹션 (총무만 볼 수 있음) */}
+        {/* 신청 인원 섹션 */}
         {isManager && pendingMembers.length > 0 && (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold flex items-center">
-                <UserPlus className="h-5 w-5 mr-2 text-blue-500" />
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center">
+                <UserPlus className="h-5 w-5 mr-2 text-blue-600" />
                 신청 인원
-                <Badge className="ml-2 bg-blue-100 text-blue-800">{pendingMembers.length}</Badge>
+                <Badge className="ml-2 bg-blue-50 text-blue-600 border-blue-200">
+                  {pendingMembers.length}
+                </Badge>
               </h2>
             </div>
 
             {pendingMembers.map((member) => (
-              <Card key={member.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
+              <Card 
+                key={member.id} 
+                className="border-0 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
+              >
+                <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
+                      <Avatar className="h-12 w-12 border-2 border-blue-100">
+                        <AvatarFallback className="bg-blue-50 text-blue-600">
+                          {member.name.slice(0, 2)}
+                        </AvatarFallback>
                       </Avatar>
-                      <div className="ml-3">
+                      <div className="ml-4">
                         <div className="flex items-center">
-                          <span className="font-medium">{member.name}</span>
+                          <span className="font-medium text-slate-800">{member.name}</span>
                         </div>
-                        <div className="text-sm text-gray-500 mt-1">{member.email}</div>
-                        <div className="text-xs text-gray-400 mt-1">신청일: {new Date(member.createdAt).toLocaleDateString()}</div>
+                        <div className="text-sm text-slate-500 mt-1">{member.email}</div>
+                        <div className="text-xs text-slate-400 mt-1">
+                          신청일: {new Date(member.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
                     <div className="flex space-x-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-green-600 border-green-200 hover:bg-green-50"
+                        className="rounded-lg text-green-600 border-green-200 hover:bg-green-50"
                         onClick={() => handleAccept(member)}
                       >
                         <Check className="h-4 w-4 mr-1" />
@@ -362,7 +380,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        className="rounded-lg text-red-600 border-red-200 hover:bg-red-50"
                         onClick={() => handleReject(member)}
                       >
                         <X className="h-4 w-4 mr-1" />
@@ -376,43 +394,48 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
           </div>
         )}
 
-        {/* Members List */}
+        {/* 회원 목록 */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">회원 목록</h2>
+          <h2 className="text-lg font-semibold text-slate-800 flex items-center">
+            <Users className="h-5 w-5 mr-2 text-blue-600" />
+            회원 목록
+          </h2>
           
           {/* 총무 정보 */}
           {manager && (
-            <Card className="hover:shadow-md transition-shadow border-blue-100">
-              <CardContent className="p-4">
+            <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-white">
+              <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center">
-                    <Avatar className="h-10 w-10 bg-blue-100">
-                      <AvatarFallback className="text-blue-600">{manager.name.slice(0, 2)}</AvatarFallback>
+                    <Avatar className="h-12 w-12 border-2 border-blue-200">
+                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                        {manager.name.slice(0, 2)}
+                      </AvatarFallback>
                     </Avatar>
-                    <div className="ml-3">
+                    <div className="ml-4">
                       <div className="flex items-center">
-                        <span className="font-medium">{manager.name}</span>
-                        <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800 border-0">
+                        <span className="font-medium text-slate-800">{manager.name}</span>
+                        <Badge className="ml-2 bg-blue-100 text-blue-700 border-0">
                           <Crown className="h-3 w-3 mr-1" />
                           총무
                         </Badge>
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">잔액: {manager.balance.toLocaleString()}원</div>
+                      <div className="text-sm text-slate-600 mt-1">
+                        잔액: {manager.balance.toLocaleString()}원
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="mt-1">
-                      <Badge
-                        variant={checkPaymentStatus(manager.balance) ? "outline" : "destructive"}
-                        className={
-                          checkPaymentStatus(manager.balance) ? "text-green-600" : "bg-red-100 text-red-800 border-0"
-                        }
-                      >
-                        {!checkPaymentStatus(manager.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
-                        {checkPaymentStatus(manager.balance) ? "완료" : "미납"}
-                      </Badge>
-                    </div>
-                  </div>
+                  <Badge
+                    variant={checkPaymentStatus(manager.balance) ? "outline" : "destructive"}
+                    className={
+                      checkPaymentStatus(manager.balance)
+                        ? "bg-green-50 text-green-600 border-green-200"
+                        : "bg-red-50 text-red-600 border-red-200"
+                    }
+                  >
+                    {!checkPaymentStatus(manager.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {checkPaymentStatus(manager.balance) ? "완료" : "미납"}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -422,34 +445,36 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
           {members.map((member, index) => (
             <Card
               key={index}
-              className="hover:shadow-md transition-shadow"
+              className="border-0 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
             >
-              <CardContent className="p-4">
+              <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
+                    <Avatar className="h-12 w-12 border-2 border-slate-100">
+                      <AvatarFallback className="bg-slate-50 text-slate-600">
+                        {member.name.slice(0, 2)}
+                      </AvatarFallback>
                     </Avatar>
-                    <div className="ml-3">
+                    <div className="ml-4">
                       <div className="flex items-center">
-                        <span className="font-medium">{member.name}</span>
+                        <span className="font-medium text-slate-800">{member.name}</span>
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">잔액: {member.balance.toLocaleString()}원</div>
+                      <div className="text-sm text-slate-600 mt-1">
+                        잔액: {member.balance.toLocaleString()}원
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="mt-1">
-                      <Badge
-                        variant={checkPaymentStatus(member.balance) ? "outline" : "destructive"}
-                        className={
-                          checkPaymentStatus(member.balance) ? "text-green-600" : "bg-red-100 text-red-800 border-0"
-                        }
-                      >
-                        {!checkPaymentStatus(member.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
-                        {checkPaymentStatus(member.balance) ? "완료" : "미납"}
-                      </Badge>
-                    </div>
-                  </div>
+                  <Badge
+                    variant={checkPaymentStatus(member.balance) ? "outline" : "destructive"}
+                    className={
+                      checkPaymentStatus(member.balance)
+                        ? "bg-green-50 text-green-600 border-green-200"
+                        : "bg-red-50 text-red-600 border-red-200"
+                    }
+                  >
+                    {!checkPaymentStatus(member.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {checkPaymentStatus(member.balance) ? "완료" : "미납"}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -459,67 +484,117 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
 
       {/* 초대 링크 다이얼로그 */}
       <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>초대 링크</DialogTitle>
-            <DialogDescription>아래 링크를 공유하여 모임에 새 회원을 초대하세요.</DialogDescription>
+            <DialogTitle className="flex items-center text-slate-800">
+              <Link className="h-5 w-5 mr-2 text-blue-600" />
+              초대 링크
+            </DialogTitle>
+            <DialogDescription>
+              아래 링크를 공유하여 모임에 새 회원을 초대하세요.
+            </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center space-x-2">
-            <Input value={inviteLink} readOnly className="flex-1" />
-            <Button variant="outline" onClick={copyInviteLink}>
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-          <DialogFooter>
-            <Button className="w-full" onClick={shareInviteLink}>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Input 
+                value={inviteLink} 
+                readOnly 
+                className="flex-1 py-5 rounded-xl border-slate-200"
+              />
+              <Button 
+                variant="outline" 
+                onClick={copyInviteLink}
+                className="rounded-xl border-slate-200 hover:bg-slate-50"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button 
+              className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
+              onClick={shareInviteLink}
+            >
               <Share2 className="h-4 w-4 mr-2" />
               공유하기
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* 총무 위임 확인 다이얼로그 */}
       <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>총무 위임</DialogTitle>
-            <DialogDescription>{selectedMember?.name}님에게 총무를 위임하시겠습니까?</DialogDescription>
+            <DialogTitle className="flex items-center text-slate-800">
+              <Crown className="h-5 w-5 mr-2 text-blue-600" />
+              총무 위임
+            </DialogTitle>
+            <DialogDescription>
+              {selectedMember?.name}님에게 총무를 위임하시겠습니까?
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-gray-500">
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+            <AlertCircle className="h-5 w-5 text-blue-600 mb-2" />
+            <p className="text-sm text-blue-700">
               총무를 위임하면 모임 관리 권한이 이전되며, 이 작업은 되돌릴 수 없습니다.
             </p>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsTransferDialogOpen(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsTransferDialogOpen(false)}
+              className="rounded-xl border-slate-200"
+            >
               취소
             </Button>
-            <Button onClick={handleTransferConfirm}>확인</Button>
+            <Button 
+              onClick={handleTransferConfirm}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700"
+            >
+              확인
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* 비밀번호 입력 다이얼로그 */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>비밀번호 확인</DialogTitle>
-            <DialogDescription>총무 위임을 위해 비밀번호를 입력해주세요.</DialogDescription>
+            <DialogTitle className="flex items-center text-slate-800">
+              <Lock className="h-5 w-5 mr-2 text-blue-600" />
+              비밀번호 확인
+            </DialogTitle>
+            <DialogDescription>
+              총무 위임을 위해 비밀번호를 입력해주세요.
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+          <div className="space-y-4">
+            <div className="relative">
+              <Input
+                type="password"
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 py-6 rounded-xl border-slate-200"
+              />
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <Lock className="h-5 w-5 text-slate-400" />
+              </div>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsPasswordDialogOpen(false)}
+              className="rounded-xl border-slate-200"
+            >
               취소
             </Button>
-            <Button onClick={handlePasswordConfirm} disabled={!password}>
+            <Button 
+              onClick={handlePasswordConfirm} 
+              disabled={!password}
+              className="rounded-xl bg-blue-600 hover:bg-blue-700"
+            >
               확인
             </Button>
           </DialogFooter>
@@ -528,37 +603,86 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
 
       {/* PIN 입력 다이얼로그 */}
       <Dialog open={isPinDialogOpen} onOpenChange={setIsPinDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>PIN 번호 입력</DialogTitle>
-            <DialogDescription>총무 위임을 완료하려면 6자리 PIN 번호를 입력해주세요.</DialogDescription>
+            <div className="text-center">
+              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-6 w-6 text-blue-600" />
+              </div>
+              <DialogTitle className="text-slate-800">PIN 번호 입력</DialogTitle>
+              <DialogDescription>
+                총무 위임을 완료하려면 6자리 PIN 번호를 입력해주세요.
+              </DialogDescription>
+            </div>
           </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              type="password"
-              placeholder="PIN 번호"
-              value={pinCode}
-              readOnly
-              className="text-center text-2xl tracking-widest"
-            />
-            <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-5">
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center gap-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center ${
+                      i < pinCode.length
+                        ? "bg-blue-100 border-blue-300"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    {i < pinCode.length ? "•" : ""}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                <Button key={num} onClick={() => handlePinInput(num.toString())} className="text-2xl py-6">
+                <Button
+                  key={num}
+                  onClick={() => handlePinInput(num.toString())}
+                  className="text-xl font-medium py-6 rounded-xl hover:bg-blue-50 border border-slate-200 bg-white text-slate-800"
+                  variant="outline"
+                >
                   {num}
                 </Button>
               ))}
-              <Button onClick={handlePinClear} className="text-lg py-6">
-                Clear
+              <Button 
+                onClick={handlePinClear} 
+                className="text-sm py-6 rounded-xl hover:bg-red-50 border border-slate-200 bg-white text-red-600"
+                variant="outline"
+              >
+                <Trash2 className="h-5 w-5" />
               </Button>
-              <Button onClick={() => handlePinInput("0")} className="text-2xl py-6">
+              <Button
+                onClick={() => handlePinInput("0")}
+                className="text-xl font-medium py-6 rounded-xl hover:bg-blue-50 border border-slate-200 bg-white text-slate-800"
+                variant="outline"
+              >
                 0
               </Button>
-              <Button onClick={handlePinDelete} className="text-lg py-6">
-                Delete
+              <Button 
+                onClick={handlePinDelete} 
+                className="text-sm py-6 rounded-xl hover:bg-slate-100 border border-slate-200 bg-white text-slate-700"
+                variant="outline"
+              >
+                <XCircle className="h-5 w-5" />
               </Button>
             </div>
-            <Button onClick={handlePinConfirm} className="w-full" disabled={pinCode.length !== 6 || isProcessing}>
-              {isProcessing ? "처리 중..." : "확인"}
+
+            <Button 
+              onClick={handlePinConfirm} 
+              className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
+              disabled={pinCode.length !== 6 || isProcessing}
+            >
+              {isProcessing ? (
+                <div className="flex items-center">
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  처리 중...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <Check className="h-5 w-5 mr-2" />
+                  확인
+                </div>
+              )}
             </Button>
           </div>
         </DialogContent>

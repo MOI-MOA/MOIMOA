@@ -1,20 +1,30 @@
 "use client"
 
-import React, { use, useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
-import { CalendarIcon, Download, Search } from "lucide-react"
+import { 
+  Search, 
+  RefreshCw, 
+  ArrowDown, 
+  ArrowUp, 
+  Calendar, 
+  CreditCard, 
+  Wallet, 
+  Filter, 
+  RotateCw, 
+  Clock,
+  AlertCircle,
+  Check
+} from "lucide-react"
 import { Header } from "@/components/Header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import axios from "axios"
 import { toast } from "@/components/ui/use-toast"
-import { publicApi, authApi } from "@/lib/api"
+import { authApi } from "@/lib/api"
 
 // 기본 데이터 타입 정의
 interface Transaction {
@@ -56,7 +66,7 @@ export default function AccountHistoryPage() {
         "api/v1/trade/account-history",
         requestData
       ) as unknown as AccountData
-      console.log(response)
+      
       if (response) {
         const tradeList = response.tradeList || []
         if (tradeList.length < currentLimit) {
@@ -123,117 +133,205 @@ export default function AccountHistoryPage() {
   }
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">로딩 중...</div>
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
+        <RefreshCw className="h-8 w-8 text-blue-600 animate-spin mb-4" />
+        <p className="text-slate-600">거래내역을 불러오는 중...</p>
+      </div>
+    )
   }
 
   if (!accountData) {
-    return <div className="flex items-center justify-center h-screen">거래 내역이 없습니다.</div>
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
+        <AlertCircle className="h-12 w-12 text-slate-400 mb-4" />
+        <p className="text-slate-600 font-medium">거래 내역이 없습니다</p>
+      </div>
+    )
   }
 
   return (
     <>
       <Header title="모임통장 내역" showBackButton />
-      <main className="flex-1 overflow-auto p-4 space-y-4 pb-16">
+      <main className="flex-1 overflow-auto p-4 space-y-5 pb-16 bg-slate-50">
         {/* 계좌 정보 */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">{accountData.name}님 계좌</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-500 mb-2">{accountData.accountNo}</p>
-            <div className="text-2xl font-bold">{accountData.accountBalance.toLocaleString()}원</div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <p className="text-sm text-gray-500">총 입금액</p>
-                <p className="text-lg font-semibold text-green-600">+{accountData.totalDeposit.toLocaleString()}원</p>
+        <h2 className="text-xl font-semibold text-slate-800 flex items-center">
+          <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
+          계좌 정보
+        </h2>
+        
+        <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+              <div className="flex items-center mb-2">
+                <Wallet className="h-5 w-5 mr-2" />
+                <h3 className="text-lg font-medium">{accountData.name}님의 계좌</h3>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">총 출금액</p>
-                <p className="text-lg font-semibold text-red-600">-{accountData.totalWithdrawal.toLocaleString()}원</p>
+              <p className="text-sm text-blue-100 mb-3">{accountData.accountNo}</p>
+              <p className="text-3xl font-bold">{accountData.accountBalance.toLocaleString()}원</p>
+            </div>
+            
+            <div className="grid grid-cols-2 divide-x">
+              <div className="p-4 text-center bg-white">
+                <div className="flex items-center justify-center mb-1 text-green-600">
+                  <ArrowDown className="h-4 w-4 mr-1" />
+                  <p className="text-sm">총 입금액</p>
+                </div>
+                <p className="text-lg font-semibold text-green-600">
+                  +{accountData.totalDeposit.toLocaleString()}원
+                </p>
+              </div>
+              <div className="p-4 text-center bg-white">
+                <div className="flex items-center justify-center mb-1 text-red-600">
+                  <ArrowUp className="h-4 w-4 mr-1" />
+                  <p className="text-sm">총 출금액</p>
+                </div>
+                <p className="text-lg font-semibold text-red-600">
+                  -{accountData.totalWithdrawal.toLocaleString()}원
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* 필터 섹션 */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">거래 내역</h2>
-            <Button variant="outline" size="sm" onClick={() => {
-              setSearchTerm("")
-              setTransactionType("all")
-            }}>
-              필터 초기화
-            </Button>
-          </div>
-
-          <div className="flex space-x-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                className="pl-9"
-                placeholder="검색"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        <h2 className="text-xl font-semibold text-slate-800 flex items-center mt-6">
+          <Clock className="h-5 w-5 mr-2 text-blue-600" />
+          거래 내역
+        </h2>
+        
+        <Card className="border-0 shadow-sm rounded-xl">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Filter className="h-4 w-4 mr-2 text-slate-500" />
+                <span className="text-sm font-medium text-slate-700">필터 옵션</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-lg border-slate-200 hover:bg-slate-100 text-slate-700"
+                onClick={() => {
+                  setSearchTerm("")
+                  setTransactionType("all")
+                }}
+              >
+                <RotateCw className="h-3.5 w-3.5 mr-1" />
+                초기화
+              </Button>
             </div>
 
-            <Select value={transactionType} onValueChange={setTransactionType}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="유형" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="deposit">입금</SelectItem>
-                <SelectItem value="withdrawal">출금</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+            <div className="flex space-x-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  className="pl-9 border-slate-200 rounded-lg focus:border-blue-400 focus:ring-blue-400"
+                  placeholder="거래내용 검색"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <Select value={transactionType} onValueChange={setTransactionType}>
+                <SelectTrigger className="w-[120px] border-slate-200 rounded-lg focus:ring-blue-400">
+                  <SelectValue placeholder="유형" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="deposit">입금</SelectItem>
+                  <SelectItem value="withdrawal">출금</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 거래 내역 목록 */}
-        <div className="space-y-3">
+        <div className="space-y-3 mt-2">
           {filteredTransactions.length > 0 ? (
             <>
-              {filteredTransactions.map((transaction, index) => (
-                <Card key={index} className="hover:shadow-sm transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-medium">{transaction.tradeDetail}</div>
-                        <div className="text-sm text-gray-500">
-                          {formatDateTime(transaction.tradeTime)}
+              {filteredTransactions.map((transaction, index) => {
+                const isPositive = transaction.tradeAmount > 0;
+                const randomColor = [
+                  "border-l-blue-500", 
+                  "border-l-green-500",
+                  "border-l-indigo-500",
+                  "border-l-purple-500"
+                ][index % 4];
+                
+                return (
+                  <Card 
+                    key={index} 
+                    className={`hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 border-0 shadow-sm rounded-xl border-l-4 ${randomColor}`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium text-slate-800 mb-1">{transaction.tradeDetail}</div>
+                          <div className="flex items-center text-sm text-slate-500">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            {formatDateTime(transaction.tradeTime)}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`font-semibold text-lg ${isPositive ? "text-green-600" : "text-red-600"}`}>
+                            {isPositive ? "+" : ""}
+                            {transaction.tradeAmount.toLocaleString()}원
+                          </div>
+                          <div className="text-sm text-slate-500 mt-1 bg-slate-100 px-2 py-0.5 rounded-full inline-block">
+                            잔액: {transaction.tradeBalance.toLocaleString()}원
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className={`font-semibold ${transaction.tradeAmount > 0 ? "text-green-600" : "text-red-600"}`}>
-                          {transaction.tradeAmount > 0 ? "+" : ""}
-                          {transaction.tradeAmount.toLocaleString()}원
-                        </div>
-                        <div className="text-sm text-gray-500 mt-1">
-                          잔액: {transaction.tradeBalance.toLocaleString()}원
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              
+              {/* 더보기 버튼 */}
+              <Button 
+                variant="outline" 
+                className="w-full mt-3 rounded-xl shadow-sm border-slate-200 hover:bg-slate-100 text-slate-700 py-6"
+                onClick={handleLoadMore}
+                disabled={!hasMore}
+              >
+                {hasMore ? (
+                  <>
+                    <RotateCw className="h-4 w-4 mr-2" />
+                    거래내역 더보기
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    모든 거래내역 불러옴
+                  </>
+                )}
+              </Button>
             </>
           ) : (
-            <div className="text-center py-8 text-gray-500">거래 내역이 없습니다.</div>
+            <div className="bg-white rounded-xl border-0 shadow-sm p-10 text-center">
+              <div className="flex flex-col items-center">
+                <AlertCircle className="h-10 w-10 text-slate-300 mb-3" />
+                <p className="text-slate-600 font-medium">검색 결과가 없습니다</p>
+                <p className="text-sm text-slate-500 mt-1">
+                  다른 검색어를 입력하거나 필터를 초기화해보세요.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-4 rounded-lg border-slate-200"
+                  onClick={() => {
+                    setSearchTerm("")
+                    setTransactionType("all")
+                  }}
+                >
+                  <RotateCw className="h-3.5 w-3.5 mr-1.5" />
+                  필터 초기화
+                </Button>
+              </div>
+            </div>
           )}
         </div>
-
-        {/* 거래내역 더보기 버튼 - 항상 표시 */}
-        {filteredTransactions.length > 0 && (
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={handleLoadMore}
-          >
-            거래내역 더보기
-          </Button>
-        )}
       </main>
     </>
   )

@@ -18,7 +18,16 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import axios from "axios";
+import {
+  User,
+  ChevronRight,
+  ChevronLeft,
+  Mail,
+  Shield,
+  Key,
+  LockKeyhole,
+  CalendarDays
+} from "lucide-react";
 import { publicApi, authApi } from "@/lib/api";
 
 export default function SignUpPage() {
@@ -214,189 +223,286 @@ export default function SignUpPage() {
     }
   };
 
+  const getStepIcon = (currentStep: number) => {
+    switch(currentStep) {
+      case 1: return <Shield className="h-8 w-8 text-blue-600" />;
+      case 2: return <User className="h-8 w-8 text-blue-600" />;
+      case 3: return <Key className="h-8 w-8 text-blue-600" />;
+      case 4: return <LockKeyhole className="h-8 w-8 text-blue-600" />;
+      default: return <User className="h-8 w-8 text-blue-600" />;
+    }
+  };
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
         return (
-          <div className="space-y-4">
-            <p>회원가입을 위해 본인인증이 필요합니다.</p>
-            <Button onClick={handleVerification} disabled={isVerified}>
-              {isVerified ? "인증 완료" : "본인인증"}
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-8 w-8 text-blue-600" />
+              </div>
+              <p className="text-slate-600">회원가입을 위한 본인인증이 필요합니다.</p>
+            </div>
+            <Button 
+              onClick={handleVerification} 
+              disabled={isVerified} 
+              className={`w-full rounded-xl py-6 ${isVerified ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+            >
+              {isVerified ? "인증 완료 ✓" : "본인인증 진행하기"}
             </Button>
           </div>
         );
       case 2:
         return (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="name">이름</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="홍길동"
-                required
-                minLength={2}
-                maxLength={20}
-                value={formData.name}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">이메일</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="example@example.com"
-                required
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="birth">생년월일</Label>
-              <Input
-                id="birth"
-                name="birth"
-                type="date"
-                required
-                value={formData.birth}
-                onChange={handleInputChange}
-                max="9999-12-31"
-                min="1900-01-01"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">비밀번호</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                minLength={4}
-                maxLength={20}
-                value={formData.password}
-                onChange={handleInputChange}
-                pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{4,20}$"
-              />
-              <p className="text-sm text-gray-500">
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <User className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="이름을 입력하세요"
+                  required
+                  minLength={2}
+                  maxLength={20}
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Mail className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="이메일 주소"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <CalendarDays className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  id="birth"
+                  name="birth"
+                  type="date"
+                  required
+                  value={formData.birth}
+                  onChange={handleInputChange}
+                  max="9999-12-31"
+                  min="1900-01-01"
+                  className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Key className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="비밀번호"
+                  required
+                  minLength={4}
+                  maxLength={20}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{4,20}$"
+                  className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
+              <p className="text-sm text-slate-500 pl-3">
                 4~20자리수, 영문 대소문자, 숫자, 특수문자 1개 이상 포함
               </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-              />
+              
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <LockKeyhole className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="비밀번호 확인"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                />
+              </div>
             </div>
           </>
         );
       case 3:
         return (
-          <div className="space-y-2">
-            <Label htmlFor="personalAccountPW">개인계좌 비밀번호 (6자리)</Label>
-            <Input
-              id="personalAccountPW"
-              name="personalAccountPW"
-              type="password"
-              maxLength={6}
-              required
-              value={formData.personalAccountPW}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                setFormData((prev) => ({
-                  ...prev,
-                  personalAccountPW: value,
-                }));
-              }}
-              pattern="[0-9]{6}"
-            />
-            <p className="text-sm text-gray-500">
-              {formData.personalAccountPW.length === 6
-                ? "다음 단계로 진행할 수 있습니다."
-                : "6자리 숫자를 입력해주세요."}
-            </p>
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Key className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-1">개인계좌 비밀번호 설정</h3>
+              <p className="text-slate-600">개인 계좌 접근을 위한 6자리 PIN 번호를 설정해주세요.</p>
+            </div>
+            
+            <div className="bg-slate-50 p-4 rounded-xl">
+              <Label htmlFor="personalAccountPW" className="text-slate-700 font-medium mb-2 block">
+                개인계좌 비밀번호 (6자리)
+              </Label>
+              <Input
+                id="personalAccountPW"
+                name="personalAccountPW"
+                type="password"
+                maxLength={6}
+                required
+                value={formData.personalAccountPW}
+                placeholder="6자리 숫자를 입력하세요"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  setFormData((prev) => ({
+                    ...prev,
+                    personalAccountPW: value,
+                  }));
+                }}
+                pattern="[0-9]{6}"
+                className="text-center py-6 text-lg rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+              />
+              <div className="mt-3 flex items-center justify-center">
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.personalAccountPW.length >= 1 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.personalAccountPW.length >= 2 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.personalAccountPW.length >= 3 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.personalAccountPW.length >= 4 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.personalAccountPW.length >= 5 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.personalAccountPW.length >= 6 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+              </div>
+            </div>
           </div>
         );
       case 4:
         return (
-          <div className="space-y-2">
-            <Label htmlFor="confirmPersonalAccountPW">
-              개인계좌 비밀번호 확인
-            </Label>
-            <Input
-              id="confirmPersonalAccountPW"
-              name="confirmPersonalAccountPW"
-              type="password"
-              maxLength={6}
-              required
-              value={formData.confirmPersonalAccountPW}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                setFormData((prev) => ({
-                  ...prev,
-                  confirmPersonalAccountPW: value,
-                }));
-              }}
-              pattern="[0-9]{6}"
-            />
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LockKeyhole className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-1">개인계좌 비밀번호 확인</h3>
+              <p className="text-slate-600">동일한 PIN 번호를 한 번 더 입력해주세요.</p>
+            </div>
+            
+            <div className="bg-slate-50 p-4 rounded-xl">
+              <Label htmlFor="confirmPersonalAccountPW" className="text-slate-700 font-medium mb-2 block">
+                개인계좌 비밀번호 확인
+              </Label>
+              <Input
+                id="confirmPersonalAccountPW"
+                name="confirmPersonalAccountPW"
+                type="password"
+                maxLength={6}
+                required
+                placeholder="6자리 숫자를 다시 입력하세요"
+                value={formData.confirmPersonalAccountPW}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  setFormData((prev) => ({
+                    ...prev,
+                    confirmPersonalAccountPW: value,
+                  }));
+                }}
+                pattern="[0-9]{6}"
+                className="text-center py-6 text-lg rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+              />
+              <div className="mt-3 flex items-center justify-center">
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.confirmPersonalAccountPW.length >= 1 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.confirmPersonalAccountPW.length >= 2 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.confirmPersonalAccountPW.length >= 3 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.confirmPersonalAccountPW.length >= 4 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.confirmPersonalAccountPW.length >= 5 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+                <div className={`w-8 h-1.5 rounded mx-1 ${formData.confirmPersonalAccountPW.length >= 6 ? 'bg-blue-500' : 'bg-slate-200'}`}></div>
+              </div>
+            </div>
           </div>
         );
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <Toaster />
       <Header title="회원가입" showBackButton />
       <main className="flex-1 overflow-auto p-4 flex items-center justify-center">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md border-0 shadow-sm rounded-xl overflow-hidden">
           <form onSubmit={handleSubmit}>
-            <CardHeader>
-              <CardTitle>회원가입 - 단계 {step}/4</CardTitle>
-              <CardDescription>
-                새 계정을 만들어 서비스를 이용하세요.
+            <CardHeader className="pb-3">
+              <div className="flex items-center">
+                <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 rounded-full mr-2 text-sm font-bold">
+                  {step}
+                </span>
+                <CardTitle className="text-xl text-slate-800">회원가입</CardTitle>
+              </div>
+              <CardDescription className="text-slate-500">
+                {step}/4단계 - {
+                  step === 1 ? '본인인증' : 
+                  step === 2 ? '개인정보 입력' : 
+                  step === 3 ? '개인계좌 비밀번호 설정' : 
+                  '개인계좌 비밀번호 확인'
+                }
               </CardDescription>
             </CardHeader>
+            
             <CardContent className="space-y-4">
               {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="w-full bg-slate-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2.5 rounded-full"
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out"
                   style={{ width: `${(step / 4) * 100}%` }}
                 ></div>
               </div>
               {renderStepContent()}
             </CardContent>
-            <CardFooter className="flex justify-between">
-              {step > 1 && step !== 4 && (
+            
+            <CardFooter className="flex justify-between pt-4">
+              {step > 1 ? (
                 <Button
                   type="button"
                   onClick={handlePrevStep}
                   variant="outline"
+                  className="rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100"
                 >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
                   이전
                 </Button>
+              ) : (
+                <div></div>
               )}
+              
               {step < 4 ? (
                 <Button
                   type="button"
                   onClick={handleNextStep}
                   disabled={step === 1 && !isVerified}
-                  className="ml-auto"
+                  className="ml-auto rounded-xl bg-blue-600 hover:bg-blue-700"
                 >
                   다음
+                  <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
                 <Button
                   type="submit"
-                  className="ml-auto"
+                  className="ml-auto rounded-xl bg-blue-600 hover:bg-blue-700"
                   disabled={
                     isLoading ||
                     formData.confirmPersonalAccountPW.length !== 6 ||
