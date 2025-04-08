@@ -239,18 +239,55 @@ export default function ScheduleDetailPage() {
               </p>
             </div>
 
-            {/* 송금 버튼 */}
-            {scheduleData.subManager && (
-              <Button
-                onClick={() =>
-                  router.push(`/group/${groupId}/schedule/${scheduleId}/send`)
-                }
-                className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
-              >
-                <SendHorizontal className="h-4 w-4 mr-2" />
-                송금하기
-              </Button>
-            )}
+            <div className="space-y-2">
+              <div className="flex items-center text-gray-600">
+                <Calendar className="h-5 w-5 mr-2" />
+                <span>{formatDate(scheduleData.scheduleStartTime)}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Clock className="h-5 w-5 mr-2" />
+                <span>{formatTime(scheduleData.scheduleStartTime)}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <MapPin className="h-5 w-5 mr-2" />
+                <span>{scheduleData.schedulePlace}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Users className="h-5 w-5 mr-2" />
+                <span>{scheduleData.attendeeCount}명 참석 예정</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <DollarSign className="h-5 w-5 mr-2" />
+                <span>
+                  1인당 예산 {scheduleData.perBudget.toLocaleString()}원
+                </span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Wallet className="h-5 w-5 mr-2" />
+                <span>
+                  총 금액 {scheduleData.scheduleAccountBalance.toLocaleString()}원
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">설명</h3>
+              <p className="text-gray-600">{scheduleData.scheduleDetail}</p>
+            </div>
+
+            {scheduleData.subManager?
+            (<Button
+              onClick={() =>
+                router.push(`/group/${groupId}/schedule/${scheduleId}/send`)
+              }
+              className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
+            >
+              <SendHorizontal className="h-4 w-4 mr-2" />
+              송금하기
+            </Button>) :(
+              <a></a>
+            )}   
+
           </CardContent>
         </Card>
       </main>
