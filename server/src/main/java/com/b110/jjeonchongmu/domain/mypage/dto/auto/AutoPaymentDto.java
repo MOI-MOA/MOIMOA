@@ -21,6 +21,7 @@ public class AutoPaymentDto {
     private Long deposit; // 보증금
     private String groupName; // 모임이름
     private Long myBalance; // 잔액
+    private boolean paymentStatus;
 
     public AutoPaymentDto(Long userId, GatheringMember gatheringMember) {
         Gathering gathering = gatheringMember.getGathering();

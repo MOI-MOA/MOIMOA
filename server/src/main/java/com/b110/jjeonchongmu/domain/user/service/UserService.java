@@ -15,9 +15,11 @@ import com.b110.jjeonchongmu.global.component.ExternalBankApiComponent;
 import com.b110.jjeonchongmu.global.exception.CustomException;
 import com.b110.jjeonchongmu.global.exception.ErrorCode;
 import com.b110.jjeonchongmu.global.security.JwtTokenProvider;
+import com.b110.jjeonchongmu.global.security.RefreshTokenService;
 import com.b110.jjeonchongmu.global.security.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +42,7 @@ public class UserService {
 	private final PersonalAccountRepo accountRepo; //추가.
 	private final ExternalBankApiComponent externalBankApiComponent;
 	private final PersonalAccountService personalAccountService;
+	private final RefreshTokenService refreshTokenService;
 	@Value("${external.bank.api.accountType}")
 	private String externalAccountType;
 	/**
@@ -89,6 +92,9 @@ public class UserService {
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
+		// Refresh Token을 Redis에 저장
+		refreshTokenService.saveRefreshToken(user.getUserId(), refreshToken, jwtTokenProvider.getExpirationTime(refreshToken));
+
 		return TokenResponseDTO.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
@@ -106,12 +112,50 @@ public class UserService {
 			long expirationTime = jwtTokenProvider.getExpirationTime(token);
 			tokenBlacklistService.addToBlacklist(token, expirationTime);
 
-			// 리프레시 토큰 블랙리스트 추가.
-			long userId = jwtTokenProvider.getUserId(token);
-			String refreshToken = jwtTokenProvider.createRefreshToken(userId); //현재 유효한 리프레시 토큰 조회 로직 필요
-			tokenBlacklistService.addToBlacklist(refreshToken,
-					jwtTokenProvider.getExpirationTime(refreshToken));
+			// Refresh Token 삭제
+			Long userId = jwtTokenProvider.getUserId(token);
+			refreshTokenService.deleteRefreshTokenByUserId(userId);
 		}
+	}
+
+	/**
+	 * 토큰 재발급
+	 * Refresh Token을 검증하고 새로운 Access Token을 발급합니다.
+	 */
+	public TokenResponseDTO refreshToken(String refreshToken) {
+		// Refresh Token이 비어있는지 확인
+		if (refreshToken == null || refreshToken.isEmpty()) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// Refresh Token 유효성 검사
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// Refresh Token이 Redis에 존재하는지 확인
+		if (!refreshTokenService.existsRefreshToken(refreshToken)) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// Refresh Token에서 사용자 ID 추출
+		Long userId = refreshTokenService.getUserIdByRefreshToken(refreshToken);
+		if (userId == null) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+
+		// 사용자가 존재하는지 확인
+		if (!userRepo.existsById(userId)) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		// 새로운 Access Token 발급
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId);
+
+		return TokenResponseDTO.builder()
+				.accessToken(newAccessToken)
+				.refreshToken(refreshToken)
+				.build();
 	}
 
 	/**

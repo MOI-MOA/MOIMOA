@@ -12,8 +12,10 @@ public class GatheringProjection {
 	private final Long gatheringDeposit;
 	private final String accountNo;
 	private final Long accountBalance;
+	private final Long accountDeposit;
+	private final boolean paymentStatus;
 	public GatheringProjection(Long gatheringId, String gatheringName, String depositDate,
-			Long basicFee, Long gatheringDeposit, String accountNo, Long accountBalance) {
+			Long basicFee, Long gatheringDeposit, String accountNo, Long accountBalance, Long accountDeposit, boolean paymentStatus) {
 		this.gatheringId = gatheringId;
 		this.gatheringName = gatheringName;
 		this.depositDate = depositDate;
@@ -21,5 +23,7 @@ public class GatheringProjection {
 		this.gatheringDeposit = gatheringDeposit;
 		this.accountNo = accountNo;
 		this.accountBalance = accountBalance;
+		this.accountDeposit = accountDeposit;
+		this.paymentStatus = paymentStatus;
 	}
 }
