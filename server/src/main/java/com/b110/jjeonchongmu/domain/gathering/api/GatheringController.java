@@ -102,8 +102,6 @@ public class GatheringController {
 //        GatheringListResponseDTO response = gatheringService.getMyGatherings(userId);
 //        return ResponseEntity.status(201).body(response);
 //    }
-//    /**
-
     /**
      * 모임 상세 조회
      */

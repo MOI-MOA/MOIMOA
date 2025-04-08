@@ -23,6 +23,8 @@ public class ScheduleDetailDTO {
     private Long perBudget;
     private String scheduleDetail;
     private int attendeeCount;
+    private boolean isSubManager;
+    private Long scheduleAccountBalance;
     // 참여자 몇명인지만 파악하고 참여자 리스트는 클릭했을때 보여주기
 
     public static ScheduleDetailDTO from(Schedule schedule){
@@ -39,4 +41,8 @@ public class ScheduleDetailDTO {
                 .attendeeCount(schedule.getAttendees().size())
                 .build();
     }
+    public void updateIsSubManger(boolean isSubManager){this.isSubManager = isSubManager;}
+
+    public void updateScheduleAccountBalance(Long scheduleAccountBalance){this.scheduleAccountBalance = scheduleAccountBalance;}
+
 }
