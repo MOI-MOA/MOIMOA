@@ -54,8 +54,8 @@ type Schedule = {
   isChecked: boolean;
   isAttend: boolean;
   name: string;
-  subManager: boolean;
-  scheduleAccountBalance: number;
+  subManager : boolean;
+  scheduleAccountBalance : number;
 };
 
 type GroupData = {
@@ -91,7 +91,7 @@ export default function GroupDetailPage({
       console.log(response);
       response.id = parseInt(groupId);
       setGroupData(response);
-      console.log(response.schedules);
+      console.log(response.schedules)
     } catch (error) {
       console.error("그룹 상세 정보를 가져오는데 실패했습니다:", error);
       toast({
@@ -179,12 +179,14 @@ export default function GroupDetailPage({
     }
   };
 
+
+  
   // 참석 처리 함수 추가
   const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
       await authApi.post(`api/v1/schedule/${scheduleId}/attend`);
-
+      
       // 성공 시 해당 일정의 상태 업데이트
       setGroupData((prev) => {
         if (!prev) return prev;
@@ -202,7 +204,7 @@ export default function GroupDetailPage({
           }),
         };
       });
-
+      
       toast({
         title: "참석 완료",
         description: "일정 참석이 완료되었습니다.",
@@ -215,7 +217,7 @@ export default function GroupDetailPage({
       });
     }
   };
-
+  
   // 참석 취소 처리 함수 추가
   const handleCancelAttend = async (
     scheduleId: number,
@@ -224,7 +226,7 @@ export default function GroupDetailPage({
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
       await authApi.post(`api/v1/schedule/${scheduleId}/attend-cancel`);
-
+      
       // 성공 시 해당 일정의 상태 업데이트
       setGroupData((prev) => {
         if (!prev) return prev;
@@ -242,7 +244,7 @@ export default function GroupDetailPage({
           }),
         };
       });
-
+      
       toast({
         title: "참석 취소 완료",
         description: "일정 참석이 취소되었습니다.",
@@ -255,7 +257,7 @@ export default function GroupDetailPage({
       });
     }
   };
-
+  
   return (
     <>
       <Header title={groupData.name} showBackButton />
@@ -276,6 +278,7 @@ export default function GroupDetailPage({
                     {groupData.accounts.groupDeposit.toLocaleString()}원
                   </div>
                 </div>
+
               </div>
 
               <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
@@ -337,6 +340,7 @@ export default function GroupDetailPage({
               <div className="text-xs text-slate-600 mb-1.5">나의 가용 금액</div>
               <div className="font-semibold text-green-600 flex items-center">
                 <DollarSign className="h-4 w-4 mr-1.5" />
+
                 {groupData.accounts.myBalance.toLocaleString()}원
               </div>
             </CardContent>
@@ -393,6 +397,7 @@ export default function GroupDetailPage({
             </Button>
           </div>
 
+
           <div className="space-y-3">
             {groupData.schedules.map((schedule) => (
               <Card
@@ -415,6 +420,7 @@ export default function GroupDetailPage({
                           size="sm"
                           variant="outline"
                           className="rounded-lg text-red-600 border-red-200 hover:bg-red-50"
+
                           onClick={(e) => handleCancelAttend(schedule.id, e)}
                         >
                           참석 취소
@@ -425,6 +431,7 @@ export default function GroupDetailPage({
                             size="sm"
                             variant="outline"
                             className="rounded-lg text-green-600 border-green-200 hover:bg-green-50"
+
                             onClick={(e) => handleAttend(schedule.id, e)}
                           >
                             참석

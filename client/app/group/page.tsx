@@ -40,7 +40,7 @@ type Gathering = {
   gatheringIntroduction: string;
   memberCount: number;
   penaltyRate: number;
-  depositDate: string;
+  depositDate: number;
   basicFee: number;
   gatheringDeposit: number;
 }
@@ -63,6 +63,7 @@ export default function GroupsPage() {
     try {
       setIsLoading(true);
       const response = await authApi.get<ApiResponse>("api/v1/gathering") as unknown as ApiResponse;
+      console.log(response);
       setGroups(response.gatherings);
     } catch (error) {
       console.error("그룹 목록을 가져오는데 실패했습니다:", error);
@@ -215,7 +216,7 @@ export default function GroupsPage() {
                           </Badge>
                           <Badge variant="secondary" className="bg-green-100 text-green-800 rounded-full py-1 flex items-center">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {new Date(group.depositDate).getDate()}일
+                            {group.depositDate}일
                           </Badge>
                         </div>
                       </div>
