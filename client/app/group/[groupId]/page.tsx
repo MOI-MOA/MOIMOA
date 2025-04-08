@@ -36,6 +36,7 @@ type Manager = {
 
 type Accounts = {
   groupBalance: number;
+  groupDeposit: number;
   myBalance: number;
   myDeposit: number;
 };
@@ -266,6 +267,10 @@ export default function GroupDetailPage({
                 <p className="text-sm text-gray-500 mt-1">
                   {groupData.description}
                 </p>
+              <div className="text-xs text-gray-500 mb-1">모임 보증금</div>
+              <div className="font-semibold text-blue-600">
+                {groupData.accounts.groupDeposit.toLocaleString()}원
+              </div>
               </div>
 
               {/* 총무 정보 */}
@@ -314,7 +319,7 @@ export default function GroupDetailPage({
           </Card>
           <Card>
             <CardContent className="p-3">
-              <div className="text-xs text-gray-500 mb-1">내 계좌 잔액</div>
+              <div className="text-xs text-gray-500 mb-1">나의 사용 가능 금액</div>
               <div className="font-semibold text-green-600">
                 {groupData.accounts.myBalance.toLocaleString()}원
               </div>
@@ -322,7 +327,7 @@ export default function GroupDetailPage({
           </Card>
           <Card>
             <CardContent className="p-3">
-              <div className="text-xs text-gray-500 mb-1">보증금</div>
+              <div className="text-xs text-gray-500 mb-1">내 보증금</div>
               <div className="font-semibold">
                 {groupData.accounts.myDeposit.toLocaleString()}원
               </div>
