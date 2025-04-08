@@ -9,6 +9,7 @@ import {
   DollarSign,
   MessageSquare,
   SendHorizontal,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +42,8 @@ interface ScheduleData {
   perBudget: number; // Long
   scheduleDetail: string; // String
   attendeeCount: number; // int
+  subManager : boolean; // boolean
+  scheduleAccountBalance : number // Long
 }
 
 export default function ScheduleDetailPage() {
@@ -141,7 +144,13 @@ export default function ScheduleDetailPage() {
               <div className="flex items-center text-gray-600">
                 <DollarSign className="h-5 w-5 mr-2" />
                 <span>
-                  1인당 예산: {scheduleData.perBudget.toLocaleString()}원
+                  1인당 예산 {scheduleData.perBudget.toLocaleString()}원
+                </span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Wallet className="h-5 w-5 mr-2" />
+                <span>
+                  총 금액 {scheduleData.scheduleAccountBalance.toLocaleString()}원
                 </span>
               </div>
             </div>
@@ -151,7 +160,8 @@ export default function ScheduleDetailPage() {
               <p className="text-gray-600">{scheduleData.scheduleDetail}</p>
             </div>
 
-            <Button
+            {scheduleData.subManager?
+            (<Button
               onClick={() =>
                 router.push(`/group/${groupId}/schedule/${scheduleId}/send`)
               }
@@ -159,7 +169,11 @@ export default function ScheduleDetailPage() {
             >
               <SendHorizontal className="h-4 w-4 mr-2" />
               송금하기
-            </Button>
+            </Button>) :(
+              <a></a>
+            )
+            }   
+
           </CardContent>
         </Card>
       </main>
