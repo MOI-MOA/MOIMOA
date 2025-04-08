@@ -129,14 +129,13 @@ export default function AutoTransferPage() {
     };
   }, []);
 
-  // 활성 자동이체 개수 계산 수정 - autoTransfers 배열의 전체 길이 사용
-  const activeTransfers = autoTransfers.length;
+  // 활성 자동이체 개수 계산 수정 - status가 true인 자동이체만 필터링
+  const activeTransfers = autoTransfers.filter(transfer => transfer.status === true).length;
 
-  // 월 총액 계산 수정 - 모든 자동이체의 amount 합계
-  const monthlyTotal = autoTransfers.reduce(
-    (sum, transfer) => sum + transfer.amount,
-    0
-  );
+  // 월 총액 계산 수정 - 활성화된 자동이체의 amount 합계
+  const monthlyTotal = autoTransfers
+    .filter(transfer => transfer.status === true) //필터 추가 
+    .reduce((sum, transfer) => sum + transfer.amount, 0);
 
   // 자동이체 수정 페이지로 이동
   const handleEdit = (transfer: {
