@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,10 +25,24 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import axios from "axios";
-import { authApi, publicApi } from "@/lib/api";
+import { authApi } from "@/lib/api";
 import SockJS from "sockjs-client";
 import { Stomp } from "@stomp/stompjs";
+import {
+  Send,
+  Wallet,
+  MessageSquare,
+  CreditCard,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Lock,
+  Trash2,
+  RefreshCcw,
+  Info,
+  AlertTriangle,
+} from "lucide-react";
 
 interface AccountCheckResponse {
   toAccountNo: string;
@@ -38,7 +53,6 @@ interface AccountCheckResponse {
 interface TransferResponse {
   transactionId: string;
   status: string;
-  // 필요한 다른 필드들 추가
 }
 
 export default function SendMoneyPage() {
@@ -52,8 +66,7 @@ export default function SendMoneyPage() {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
   const [accountName, setAccountName] = useState("");
-  const [isAccountCheckDialogOpen, setIsAccountCheckDialogOpen] =
-    useState(false);
+  const [isAccountCheckDialogOpen, setIsAccountCheckDialogOpen] = useState(false);
   const [showPinInput, setShowPinInput] = useState(false);
   const [accountOwner, setAccountOwner] = useState("");
   const [transferStatus, setTransferStatus] = useState<string>("");
@@ -67,61 +80,40 @@ export default function SendMoneyPage() {
     const type = searchParams.get("type");
     const userIdParam = searchParams.get("userId");
 
-    console.log("Received URL parameters:", {
-      account,
-      cost,
-      type,
-      userId: userIdParam,
-      allParams: Object.fromEntries(searchParams.entries()),
-    });
-
-    if (account) {
-      setAccountNumber(account);
-    }
-    if (cost) {
-      setAmount(cost);
-    }
-    if (type) {
-      setToAccountType(type);
-      console.log("Setting toAccountType to:", type);
-    }
-    if (userIdParam) {
-      setUserId(userIdParam);
-      console.log("Setting userId to:", userIdParam);
-    }
+    if (account) setAccountNumber(account);
+    if (cost) setAmount(cost);
+    if (type) setToAccountType(type);
+    if (userIdParam) setUserId(userIdParam);
   }, [searchParams]);
 
   useEffect(() => {
     if (!userId) return;
-
-    // const socket = new SockJS("http://localhost:8080/ws", null, {
-    //   transports: ["xhr-streaming", "xhr-polling"],
-    // });
     
     // // 상대 경로 사용
     // const socket = new SockJS("/ws", null, {
     //     transports: ['xhr-streaming', 'xhr-polling']
     // });
-    const socket = new SockJS("https://j12b110.p.ssafy.io/ws"); // 절대 경로 사용
+    // const socket = new SockJS("https://j12b110.p.ssafy.io/ws"); // 절대 경로 사용
+    const socket = new SockJS("http://localhost:8080/ws", null, {
+      transports: ["xhr-streaming", "xhr-polling"],
+    });
+    
     const client = Stomp.over(socket);
     const accessToken = localStorage.getItem("accessToken");
 
     client.connect({ Authorization: `Bearer ${accessToken}` }, () => {
-      console.log("WebSocke    t Connected");
-      // 송금 결과 구독
+      console.log("WebSocket Connected");
       const subscriptionPath = `/queue/transfer-results/${userId}`;
-      console.log("Subscribing to:", subscriptionPath);
+
+
 
       client.subscribe(subscriptionPath, (message) => {
         const result = message.body;
-        console.log("Received WebSocket message:", result);
 
         if (result === "true") {
           toast({
             title: "송금 완료",
-            description: `${accountNumber}로 ${Number(
-              amount
-            ).toLocaleString()}원이 성공적으로 송금되었습니다.`,
+            description: `${accountNumber}로 ${Number(amount).toLocaleString()}원이 성공적으로 송금되었습니다.`,
           });
           router.back();
         } else if (result === "송금중 오류가 발생") {
@@ -138,9 +130,7 @@ export default function SendMoneyPage() {
     setStompClient(client);
 
     return () => {
-      if (client) {
-        client.disconnect();
-      }
+      if (client) client.disconnect();
     };
   }, [userId]);
 
@@ -151,8 +141,6 @@ export default function SendMoneyPage() {
       const response = await authApi.get<AccountCheckResponse>(
         `/api/v1/personal-account/${accountNumber}/${amount}/check`
       );
-
-      console.log("API Response:", response);
 
       if (response.isAccount) {
         setAccountName(response.toAccountNo);
@@ -165,7 +153,6 @@ export default function SendMoneyPage() {
         });
       }
     } catch (error: any) {
-      console.error("API Error:", error);
       if (error.response?.status === 404) {
         toast({
           title: "계좌 확인 실패",
@@ -182,11 +169,6 @@ export default function SendMoneyPage() {
     }
   };
 
-  const handleAccountCheckConfirm = () => {
-    setIsAccountCheckDialogOpen(false);
-    setIsConfirmDialogOpen(true);
-  };
-
   const handleConfirm = () => {
     setIsConfirmDialogOpen(false);
     setIsPinDialogOpen(true);
@@ -197,23 +179,16 @@ export default function SendMoneyPage() {
     setIsPinDialogOpen(false);
     setTransferStatus("송금 처리 중...");
 
-    console.log("Submitting transfer with toAccountType:", toAccountType);
-
     try {
-      const response: TransferResponse = await authApi.post(
-        `/api/v1/personal-account/transfer`,
-        {
-          fromAccountType: "PERSONAL",
-          toAccountType: toAccountType,
-          toAccountNo: accountNumber,
-          tradeDetail: message || "",
-          transferAmount: Number(amount),
-          accountPw: pinCode,
-        }
-      );
-
+      await authApi.post(`/api/v1/personal-account/transfer`, {
+        fromAccountType: "PERSONAL",
+        toAccountType: toAccountType,
+        toAccountNo: accountNumber,
+        tradeDetail: message || "",
+        transferAmount: Number(amount),
+        accountPw: pinCode,
+      });
       // WebSocket을 통해 결과를 받을 때까지 대기
-      // 결과는 WebSocket 구독 핸들러에서 처리됨
     } catch (error: any) {
       if (error.response?.status === 400) {
         toast({
@@ -249,173 +224,245 @@ export default function SendMoneyPage() {
   return (
     <>
       <Header title="송금하기" showBackButton />
-      <main className="flex-1 overflow-auto p-4 pb-16">
-        <Card>
-          <CardHeader>
-            <CardTitle>송금하기</CardTitle>
-            <CardDescription>
-              송금할 계좌와 금액을 입력해주세요.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountNumber">계좌번호</Label>
-                  <Input
-                    id="accountNumber"
-                    placeholder="계좌번호를 입력하세요"
-                    value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
-                    required
-                  />
+      <main className="flex-1 overflow-auto p-4 pb-16 bg-slate-50">
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-slate-800 flex items-center">
+            <Send className="h-5 w-5 mr-2 text-blue-600" />
+            송금하기
+          </h2>
+          
+          <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="accountNumber" className="text-slate-700 font-medium block">
+                      계좌번호
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <CreditCard className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <Input
+                        id="accountNumber"
+                        placeholder="계좌번호를 입력하세요"
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        required
+                        className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="amount" className="text-slate-700 font-medium block">
+                      송금 금액
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <Wallet className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="0"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        required
+                        className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <span className="text-slate-400">원</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-slate-700 font-medium block">
+                      메시지 (선택사항)
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <MessageSquare className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <Input
+                        id="message"
+                        placeholder="상대방에게 보여질 메시지를 입력하세요"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        maxLength={50}
+                        className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="amount">송금 금액</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="0"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">메시지</Label>
-                  <Input
-                    id="message"
-                    placeholder="상대방에게 보여질 메시지를 입력하세요"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    maxLength={50}
-                  />
-                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700 transition-colors"
+                  disabled={isLoading || !accountNumber || !amount}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                      {transferStatus}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <Send className="h-5 w-5 mr-2" />
+                      송금하기
+                    </div>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          
+          <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-4">
+            <div className="flex">
+              <div className="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-blue-600" />
               </div>
-              <Button
-                type="submit"
-                className="w-full mt-4"
-                disabled={isLoading}
-              >
-                {isLoading ? transferStatus : "송금하기"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+              <div>
+                <h3 className="text-sm font-medium text-blue-800 mb-1">송금 주의사항</h3>
+                <p className="text-xs text-blue-700">
+                  계좌번호를 정확히 입력해주세요. 송금은 즉시 처리되며 취소가 불가능합니다.
+                  송금 완료 후 상대방의 계좌로 즉시 이체됩니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
 
-      <Dialog
-        open={isAccountCheckDialogOpen}
-        onOpenChange={setIsAccountCheckDialogOpen}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>계좌 확인</DialogTitle>
-            <DialogDescription>아래 계좌로 송금하시겠습니까?</DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-2">
-            <p className="text-lg font-semibold text-center">
-              {accountName}에게 보냅니다
-            </p>
-            <p className="text-sm text-center text-gray-500">
-              계좌번호: <span className="font-semibold">{accountNumber}</span>
-            </p>
-            {message && (
-              <p className="text-sm text-center text-gray-500 mt-2">
-                메시지: <span className="font-semibold">{message}</span>
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAccountCheckDialogOpen(false)}
-            >
-              취소
-            </Button>
-            <Button onClick={handleAccountCheckConfirm}>확인</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
+      {/* 송금 정보 확인 다이얼로그 */}
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <DialogContent>
+        <DialogContent className="border-0 shadow-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>송금 정보 확인</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-center text-xl">송금 정보 확인</DialogTitle>
+            <DialogDescription className="text-center">
               아래 정보가 맞는지 확인해주세요.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-2">
-            <p className="text-sm">
-              계좌번호: <span className="font-semibold">{accountNumber}</span>
-            </p>
-            <p className="text-lg font-semibold text-center">
-              {Number(amount).toLocaleString()}원
-            </p>
-            {message && (
-              <p className="text-sm text-center text-gray-500">
-                메시지: <span className="font-semibold">{message}</span>
+          <div className="py-4 space-y-4">
+            <div className="bg-blue-50 p-5 rounded-xl text-center">
+              <p className="text-2xl font-bold text-blue-700">
+                {Number(amount).toLocaleString()}원
               </p>
-            )}
+            </div>
+            
+            <div className="bg-slate-50 p-4 rounded-xl">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">계좌번호:</span>
+                <span className="font-medium text-slate-800">{accountNumber}</span>
+              </div>
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-slate-600">수취인:</span>
+                <span className="font-medium text-slate-800">{accountName || '확인 중...'}</span>
+              </div>
+              {message && (
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-slate-600">메시지:</span>
+                  <span className="font-medium text-slate-800">{message}</span>
+                </div>
+              )}
+            </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex space-x-2">
             <Button
               variant="outline"
               onClick={() => setIsConfirmDialogOpen(false)}
+              className="flex-1 rounded-lg border-slate-200"
             >
+              <XCircle className="h-4 w-4 mr-2" />
               취소
             </Button>
-            <Button onClick={handleConfirm}>확인</Button>
+            <Button 
+              onClick={handleConfirm}
+              className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+            >
+              <ArrowRight className="h-4 w-4 mr-2" />
+              다음
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* PIN 입력 다이얼로그 */}
       <Dialog open={isPinDialogOpen} onOpenChange={setIsPinDialogOpen}>
-        <DialogContent>
+        <DialogContent className="border-0 shadow-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>PIN 번호 입력</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-center text-xl">
+              <div className="flex items-center justify-center mb-1">
+                <Lock className="h-6 w-6 mr-2 text-blue-600" />
+                PIN 번호 입력
+              </div>
+            </DialogTitle>
+            <DialogDescription className="text-center">
               송금을 완료하려면 6자리 PIN 번호를 입력해주세요.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              type="password"
-              placeholder="PIN 번호"
-              value={pinCode}
-              readOnly
-              className="text-center text-2xl tracking-widest"
-            />
-            <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-6 py-2">
+            <div className="flex justify-center mb-4">
+              <div className="flex items-center gap-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center ${
+                      i < pinCode.length
+                        ? "bg-blue-100 border-blue-300"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    {i < pinCode.length ? "•" : ""}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                 <Button
                   key={num}
                   onClick={() => handlePinInput(num.toString())}
-                  className="text-2xl py-6"
+                  className="text-xl font-medium py-6 rounded-xl hover:bg-blue-50 border border-slate-200 bg-white text-slate-800"
+                  variant="outline"
                 >
                   {num}
                 </Button>
               ))}
-              <Button onClick={handlePinClear} className="text-lg py-6">
-                Clear
+              <Button 
+                onClick={handlePinClear} 
+                className="text-sm py-6 rounded-xl hover:bg-red-50 border border-slate-200 bg-white text-red-600"
+                variant="outline"
+              >
+                <Trash2 className="h-5 w-5" />
               </Button>
               <Button
                 onClick={() => handlePinInput("0")}
-                className="text-2xl py-6"
+                className="text-xl font-medium py-6 rounded-xl hover:bg-blue-50 border border-slate-200 bg-white text-slate-800"
+                variant="outline"
               >
                 0
               </Button>
-              <Button onClick={handlePinDelete} className="text-lg py-6">
-                Delete
+              <Button 
+                onClick={handlePinDelete} 
+                className="text-sm py-6 rounded-xl hover:bg-slate-100 border border-slate-200 bg-white text-slate-700"
+                variant="outline"
+              >
+                <XCircle className="h-5 w-5" />
               </Button>
             </div>
+            
             <Button
               onClick={handlePinSubmit}
-              className="w-full"
+              className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
               disabled={pinCode.length !== 6}
             >
-              확인
+              <div className="flex items-center justify-center">
+                <Send className="h-5 w-5 mr-2" />
+                송금 완료
+              </div>
             </Button>
           </div>
         </DialogContent>
