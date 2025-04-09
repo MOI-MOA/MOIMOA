@@ -171,11 +171,6 @@ export default function ScheduleDetailPage() {
                 {scheduleData.scheduleTitle}
               </h2>
               <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-                    {scheduleData.subManagerName.slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
                 <span className="text-slate-600 text-sm">
                   {scheduleData.subManagerName} 주최
                 </span>

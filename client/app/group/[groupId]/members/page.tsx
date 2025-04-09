@@ -240,14 +240,14 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
       // 신청 인원 목록에서 제거
       setPendingMembers((prev) => prev.filter((m) => m.id !== member.id))
 
-      // 회원 목록에 추가
+      // 회원 목록에 추가 - balance를 -1로 설정하여 미납 상태로 표시
       setMembers((prev) => [
         ...prev,
         {
           name: member.name,
           email: member.email,
           createdAt: member.createdAt,
-          balance: 0,
+          balance: -1, // 0에서 -1로 변경하여 미납 상태로 표시
           gatheringPaymentStatus: false,
         },
       ])
@@ -291,7 +291,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
 
   // 회원 상태 체크 함수
   const checkPaymentStatus = (balance: number) => {
-    return balance >= myDeposit
+    return balance >= 0
   }
 
   return (
@@ -421,20 +421,20 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                         </Badge>
                       </div>
                       <div className="text-sm text-slate-600 mt-1">
-                        잔액: {manager.balance.toLocaleString()}원
+                        잔액: {manager.balance < 0 ? 0 : manager.balance.toLocaleString()}원
                       </div>
                     </div>
                   </div>
                   <Badge
-                    variant={checkPaymentStatus(manager.balance) ? "outline" : "destructive"}
+                    variant={manager.balance >= 0 ? "outline" : "destructive"}
                     className={
-                      checkPaymentStatus(manager.balance)
+                      manager.balance >= 0
                         ? "bg-green-50 text-green-600 border-green-200"
                         : "bg-red-50 text-red-600 border-red-200"
                     }
                   >
-                    {!checkPaymentStatus(manager.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
-                    {checkPaymentStatus(manager.balance) ? "완료" : "미납"}
+                    {manager.balance < 0 && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {manager.balance >= 0 ? "완료" : "미납"}
                   </Badge>
                 </div>
               </CardContent>
@@ -460,20 +460,20 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                         <span className="font-medium text-slate-800">{member.name}</span>
                       </div>
                       <div className="text-sm text-slate-600 mt-1">
-                        잔액: {member.balance.toLocaleString()}원
+                        잔액: {member.balance < 0 ? 0 : member.balance.toLocaleString()}원
                       </div>
                     </div>
                   </div>
                   <Badge
-                    variant={checkPaymentStatus(member.balance) ? "outline" : "destructive"}
+                    variant={member.balance >= 0 ? "outline" : "destructive"}
                     className={
-                      checkPaymentStatus(member.balance)
+                      member.balance >= 0
                         ? "bg-green-50 text-green-600 border-green-200"
                         : "bg-red-50 text-red-600 border-red-200"
                     }
                   >
-                    {!checkPaymentStatus(member.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
-                    {checkPaymentStatus(member.balance) ? "완료" : "미납"}
+                    {member.balance < 0 && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {member.balance >= 0 ? "완료" : "미납"}
                   </Badge>
                 </div>
               </CardContent>

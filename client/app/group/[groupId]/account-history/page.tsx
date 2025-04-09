@@ -30,6 +30,7 @@ import { publicApi, authApi } from "@/lib/api"
 
 // 기본 데이터 타입 정의
 interface Transaction {
+  tradeName : string
   tradeDetail: string
   tradeTime: string
   tradeAmount: number
@@ -186,7 +187,7 @@ export default function AccountHistoryPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-green-50 p-4 rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
-                    <ArrowUpRight className="h-4 w-4 text-green-600" />
+                    <ArrowDownRight className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-green-700">총 입금액</span>
                   </div>
                   <p className="text-lg font-semibold text-green-700">
@@ -195,7 +196,7 @@ export default function AccountHistoryPage() {
                 </div>
                 <div className="bg-red-50 p-4 rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
-                    <ArrowDownRight className="h-4 w-4 text-red-600" />
+                    <ArrowUpRight className="h-4 w-4 text-red-600" />
                     <span className="text-sm text-red-700">총 출금액</span>
                   </div>
                   <p className="text-lg font-semibold text-red-700">
@@ -268,13 +269,16 @@ export default function AccountHistoryPage() {
                               : "bg-red-50"
                           }`}>
                             {transaction.tradeAmount > 0 
-                              ? <ArrowUpRight className="h-4 w-4 text-green-600" />
-                              : <ArrowDownRight className="h-4 w-4 text-red-600" />
+                              ? <ArrowDownRight className="h-4 w-4 text-green-600" />
+                              : <ArrowUpRight className="h-4 w-4 text-red-600" />
                             }
                           </div>
                           <div>
                             <div className="font-medium text-slate-800">
                               {transaction.tradeDetail}
+                            </div>
+                            <div className="text-xs text-slate-400 mt-0.5">
+                              {transaction.tradeName}
                             </div>
                             <div className="text-sm text-slate-500 flex items-center mt-1">
                               <Clock className="h-3.5 w-3.5 mr-1" />
