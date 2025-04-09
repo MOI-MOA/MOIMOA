@@ -64,20 +64,47 @@ public class ScheduleMemberService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         // 일정 참석할때 돈 확인하는 로직
         Long gatheringId = schedule.getGathering().getGatheringId();
-        GatheringMember gatheringMember = gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, userId)
-                .orElseThrow(() -> new RuntimeException("userId와 gatheringId로 gatheringMember를 찾을 수 없습니다."));
-        if (gatheringMember.getGatheringMemberAccountBalance() < schedule.getPerBudget()) {
-            throw new RuntimeException("돈이 부족해 참석할 수 없습니다.");
+        // 일정 멤버인지 체크
+        boolean isMember = gatheringMemberRepo.existsByUserIdAndGatheringId(userId, gatheringId);
+        if (!isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
-        // 참석 true로 바꿔줌.
+
         ScheduleMember scheduleMember = scheduleMemberRepo.getScheduleMemberByUserIdAndScheduleId(userId, scheduleId)
                 .orElseThrow(() -> new RuntimeException("userId와 scheduleId로 scheduleMember를 찾을 수 없습니다."));
+        GatheringMember gatheringMember = gatheringMemberRepo.getGatheringMemberByGatheringIdAndUserId(gatheringId, userId)
+                .orElseThrow(() -> new RuntimeException("userId와 gatheringId로 gatheringMember를 찾을 수 없습니다."));
+
+        if(scheduleMember.isPenaltyApply()){
+            // 페이백때문에 일정 탈퇴할때 돈을 차감해서 받은사람
+            if(gatheringMember.getGatheringMemberAccountBalance() < (schedule.getPerBudget()*schedule.getPenaltyRate())/100){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"돈이 부족해 참석할 수 없습니다.");
+            }
+
+            // 개인돈에서 인당예산 만큼 차감
+            gatheringMember.decreaseGatheringMemberAccountBalance((schedule.getPerBudget()*schedule.getPenaltyRate())/100);
+            // 일정계좌 잔액 인당예산 만큼 증가
+            schedule.getScheduleAccount().increaseBalance((schedule.getPerBudget()*schedule.getPenaltyRate())/100);
+
+
+
+        } else {
+            if (gatheringMember.getGatheringMemberAccountBalance() < schedule.getPerBudget()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"돈이 부족해 참석할 수 없습니다.");
+            }
+            // 개인돈에서 인당예산 만큼 차감
+            gatheringMember.decreaseGatheringMemberAccountBalance(schedule.getPerBudget());
+            // 일정계좌 잔액 인당예산 만큼 증가
+            schedule.getScheduleAccount().increaseBalance(schedule.getPerBudget());
+        }
+
+
+
+
+
+        // 참석 true로 바꿔줌.
         scheduleMember.updateScheduleIsCheckToTrue();
         scheduleMember.updateIsAttenedToTrue();
-        // 개인돈에서 인당예산 만큼 차감
-        gatheringMember.decreaseGatheringMemberAccountBalance(schedule.getPerBudget());
-        // 일정계좌 잔액 인당예산 만큼 증가
-        schedule.getScheduleAccount().increaseBalance(schedule.getPerBudget());
 
     }
 
@@ -106,12 +133,17 @@ public class ScheduleMemberService {
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
-
         Schedule schedule = scheduleRepo.findById(scheduleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule not found"));
+        User currentUser = userRepo.getUserByUserId(userId);
+        if(currentUser.equals(schedule.getSubManager())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"SubManger can not cancel schedule");
+        };
+
+
+
 
         GatheringMember gatheringMember = gatheringMemberRepo.findGatheringMemberByScheduleIdAndUserId(scheduleId,userId);
-
         ScheduleMember scheduleMember = scheduleMemberRepo.findByScheduleIdAndScheduleMemberUserIdAndIsAttendTrue(scheduleId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Schedule member not found"));
 
@@ -123,7 +155,7 @@ public class ScheduleMemberService {
             scheduleMember.updateIsAttenedToFalse();
 
         } else {
-            Long paybackAmount = schedule.getPerBudget() * schedule.getPenaltyRate();
+            Long paybackAmount = schedule.getPerBudget() * schedule.getPenaltyRate()/100;
 
             schedule.getScheduleAccount().decreaseBalance(paybackAmount);
             gatheringMember.increaseGatheringMemberAccountBalance(paybackAmount);

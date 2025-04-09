@@ -20,6 +20,7 @@ import com.b110.jjeonchongmu.domain.gathering.repo.GatheringMemberRepo;
 import com.b110.jjeonchongmu.domain.gathering.repo.GatheringRepo;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
 import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
+import com.b110.jjeonchongmu.domain.schedule.repo.ScheduleRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
 import com.b110.jjeonchongmu.domain.user.service.UserService;
@@ -33,10 +34,13 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -53,6 +57,7 @@ public class GatheringService {
 	private final UserService userService;
 	private final GatheringAccountService gatheringAccountService;
 	private final AutoPaymentService autoPaymentService;
+	private final ScheduleRepo scheduleRepo;
 
 	@Value("${external.bank.api.accountType}")
 	private String externalAccountType;
@@ -244,7 +249,13 @@ public class GatheringService {
 		for (Schedule schedule : schedules) {
 			Boolean isChecked = false;
 			Boolean isAttend = false;
+			boolean isSubManger = false;
 			Integer numberOfParticipant = 0;
+
+			User currentUser = userRepo.getUserByUserId(userId);
+			isSubManger = schedule.getSubManager().equals(currentUser);
+
+
 			for (ScheduleMember sm : schedule.getAttendees()) {
 				if (sm.getIsAttend()) {
 					numberOfParticipant++;
@@ -264,6 +275,8 @@ public class GatheringService {
 					.location(schedule.getPlace())
 					.isChecked(isChecked)
 					.isAttend(isAttend)
+					.isSubManager(isSubManger)
+					.scheduleAccountBalance(schedule.getScheduleAccount().getAccountBalance())
 					.build());
 		}
 
