@@ -210,7 +210,7 @@ export default function GroupDetailPage({
     } catch (error) {
       toast({
         title: "참석 실패",
-        description: "알 수 없는 오류가 발생했습니다.",
+        description: "돈이 부족해 참석할 수 없습니다.",
         variant: "destructive",
       });
     }
@@ -273,6 +273,13 @@ export default function GroupDetailPage({
                     {groupData.description}
                   </p>
                 </div>
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                  <div className="text-xs text-slate-600 mb-1">모임 보증금</div>
+                  <div className="font-semibold text-blue-600 flex items-center">
+                    <Coins className="h-4 w-4 mr-1.5" />
+                    {groupData.accounts.groupDeposit.toLocaleString()}원
+                  </div>
+                </div>
               </div>
 
               <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
@@ -312,21 +319,26 @@ export default function GroupDetailPage({
           </CardContent>
         </Card>
 
-        {/* 계좌 정보 그리드 - 모임 보증금 카드 제거하고 나머지만 유지 */}
-        <div className="space-y-3">
-          <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-green-50 to-white">
-            <CardContent className="p-4 flex justify-between items-center">
-              <div>
-                <div className="text-xs text-slate-600 mb-1">
-                  나의 가용 금액
-                </div>
-                <div className="font-semibold text-green-600 flex items-center">
-                  <DollarSign className="h-4 w-4 mr-1.5" />
-                  {groupData.accounts.myBalance.toLocaleString()}원
-                </div>
+        {/* 계좌 정보 그리드 */}
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-white">
+            <CardContent className="p-4">
+              <div className="text-xs text-slate-600 mb-1.5">모임계좌 잔액</div>
+              <div className="font-semibold text-blue-600 flex items-center">
+                <Wallet className="h-4 w-4 mr-1.5" />
+                {groupData.accounts.groupBalance.toLocaleString()}원
               </div>
-              <div className="bg-green-100 p-2 rounded-lg">
-                <DollarSign className="h-5 w-5 text-green-600" />
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-green-50 to-white">
+            <CardContent className="p-4">
+              <div className="text-xs text-slate-600 mb-1.5">
+                나의 가용 금액
+              </div>
+              <div className="font-semibold text-green-600 flex items-center">
+                <DollarSign className="h-4 w-4 mr-1.5" />
+                {groupData.accounts.myBalance.toLocaleString()}원
               </div>
             </CardContent>
           </Card>
