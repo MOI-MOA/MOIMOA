@@ -210,7 +210,7 @@ export default function GroupDetailPage({
     } catch (error) {
       toast({
         title: "참석 실패",
-        description: "알 수 없는 오류가 발생했습니다.",
+        description: "돈이 부족해 참석할 수 없습니다.",
         variant: "destructive",
       });
     }
