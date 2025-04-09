@@ -20,24 +20,30 @@ import {
   CheckCircle2,
   SendHorizontal,
   AlertTriangle,
+  CreditCard,
+  Wallet,
+  ChevronRight,
+  Clock,
+  Edit,
+  Banknote,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 interface AutoTransfer {
-  id: number; // Long
-  amount: number; // int
-  day: number; // int
-  status: boolean; // boolean
-  account: string; // String
-  deposit: number; // Long
-  groupName: string; // String
-  myBalance: number; // int
-  paymentStatus: boolean; // boolean
+  id: number;
+  amount: number;
+  day: number;
+  status: boolean;
+  account: string;
+  deposit: number;
+  groupName: string;
+  myBalance: number;
+  paymentStatus: boolean;
 }
 
 interface AutoTransferResponse {
   userId: number;
-  accountBalance: number; // Long
+  accountBalance: number;
   autoTransfers: AutoTransfer[];
 }
 
@@ -129,14 +135,13 @@ export default function AutoTransferPage() {
     };
   }, []);
 
-  // 활성 자동이체 개수 계산 수정 - autoTransfers 배열의 전체 길이 사용
-  const activeTransfers = autoTransfers.length;
+  // 활성 자동이체 개수 계산 수정 - status가 true인 자동이체만 필터링
+  const activeTransfers = autoTransfers.filter(transfer => transfer.status === true).length;
 
-  // 월 총액 계산 수정 - 모든 자동이체의 amount 합계
-  const monthlyTotal = autoTransfers.reduce(
-    (sum, transfer) => sum + transfer.amount,
-    0
-  );
+  // 월 총액 계산 수정 - 활성화된 자동이체의 amount 합계
+  const monthlyTotal = autoTransfers
+    .filter(transfer => transfer.status === true)
+    .reduce((sum, transfer) => sum + transfer.amount, 0);
 
   // 자동이체 수정 페이지로 이동
   const handleEdit = (transfer: {
@@ -158,13 +163,6 @@ export default function AutoTransferPage() {
       });
       return;
     }
-
-    if (!transfer.id) console.log("id가 없습니다.");
-    if (!transfer.groupName) console.log("groupName이 없습니다.");
-    if (!transfer.amount) console.log("amount가 없습니다.");
-    if (!transfer.day) console.log("day가 없습니다.");
-    if (!transfer.account) console.log("account가 없습니다.");
-    if (!transfer.status) console.log("status가 없습니다.");
 
     const params = new URLSearchParams({
       id: transfer.id.toString(),
@@ -196,7 +194,7 @@ export default function AutoTransferPage() {
         {
           id: id,
           amount: cost,
-          day: 1, // TODO: 실제 날짜로 변경 필요
+          day: 1,
           status: true,
           account: account,
           deposit: deposit,
@@ -211,206 +209,274 @@ export default function AutoTransferPage() {
 
   return (
     <>
-      <Header title="" showBackButton />
-      <main className="flex-1 overflow-auto p-4 space-y-6 pb-16">
+      <Header title="자동이체 현황" showBackButton />
+      <main className="flex-1 overflow-auto p-4 space-y-6 pb-16 bg-slate-50">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
           </div>
         ) : (
           <>
-            <Card>
-              <CardHeader>
-                <CardTitle>자동이체 요약</CardTitle>
-                <CardDescription>
-                  현재 설정된 자동이체 현황입니다
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-gray-500">활성 자동이체</p>
-                    <p className="text-xl font-bold text-blue-600">
-                      {activeTransfers}건
-                    </p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-sm text-gray-500">월 총액</p>
-                    <p className="text-xl font-bold text-green-600">
-                      {monthlyTotal.toLocaleString()}원
-                    </p>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-lg col-span-2 flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-gray-500">내 계좌 잔액</p>
-                      <p className="text-xl font-bold text-purple-600">
-                        {accountBalance ? accountBalance.toLocaleString() : "0"}
-                        원
-                      </p>
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold text-slate-800 flex items-center">
+                <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
+                자동이체 요약
+              </h2>
+              
+              <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-blue-50 rounded-xl flex items-center">
+                      <div className="bg-blue-100 p-2 rounded-full mr-4">
+                        <Calendar className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">활성 자동이체</p>
+                        <p className="text-xl font-bold text-blue-700">
+                          {activeTransfers}건
+                        </p>
+                      </div>
                     </div>
-                    <Button
-                      onClick={() =>
-                        router.push(
-                          `/profile/auto-transfer/send?type=PERSONAL&userId=${userId}`
-                        )
-                      }
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      <SendHorizontal className="h-4 w-4 mr-2" />
-                      송금하기
-                    </Button>
+                    
+                    <div className="p-4 bg-teal-50 rounded-xl flex items-center">
+                      <div className="bg-teal-100 p-2 rounded-full mr-4">
+                        <Banknote className="h-6 w-6 text-teal-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">월 총액</p>
+                        <p className="text-xl font-bold text-teal-700">
+                          {monthlyTotal.toLocaleString()}원
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="p-5 bg-indigo-50 rounded-xl col-span-1 md:col-span-2 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                      <div className="flex items-center">
+                        <div className="bg-indigo-100 p-2 rounded-full mr-4">
+                          <Wallet className="h-6 w-6 text-indigo-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">내 계좌 잔액</p>
+                          <p className="text-xl font-bold text-indigo-700">
+                            {accountBalance ? accountBalance.toLocaleString() : "0"}원
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() =>
+                          router.push(
+                            `/profile/auto-transfer/send?type=PERSONAL&userId=${userId}`
+                          )
+                        }
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-5 py-2"
+                      >
+                        <SendHorizontal className="h-4 w-4 mr-2" />
+                        송금하기
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* 잔액 비교 */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">
-                    이번 달 자동이체 후 예상 잔액
-                  </span>
-                  <span className="text-lg font-bold text-green-600">
-                    {(accountBalance - monthlyTotal).toLocaleString()}원
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className="bg-green-600 h-2.5 rounded-full"
-                    style={{
-                      width: `${
-                        ((accountBalance - monthlyTotal) / accountBalance) * 100
-                      }%`,
-                    }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {monthlyTotal > accountBalance
-                    ? `잔액이 ${(
-                        monthlyTotal - accountBalance
-                      ).toLocaleString()}원 부족합니다.`
-                    : `자동이체 후 ${(
-                        accountBalance - monthlyTotal
-                      ).toLocaleString()}원이 남습니다.`}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 기존 코드 ... */}
-
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold mb-4">자동이체 목록</h2>
-
-              {autoTransfers.map((transfer) => (
-                <Card key={transfer.id} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-medium">{transfer.groupName}</h3>
-                          <p className="text-sm text-gray-500">
-                            {transfer.account}
-                          </p>
-                        </div>
-                        <Badge
-                          variant={transfer.status ? "outline" : "secondary"}
-                          className={
-                            transfer.status
-                              ? "text-green-600 bg-green-50"
-                              : "text-gray-500 bg-gray-100"
-                          }
-                        >
-                          {transfer.status ? "활성" : "비활성"}
-                        </Badge>
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold text-slate-800 flex items-center">
+                <Wallet className="h-5 w-5 mr-2 text-blue-600" />
+                예상 잔액
+              </h2>
+              
+              <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-medium text-slate-700">
+                      이번 달 자동이체 후 예상 잔액
+                    </span>
+                    <span className="text-lg font-bold text-teal-600">
+                      {(accountBalance - monthlyTotal).toLocaleString()}원
+                    </span>
+                  </div>
+                  
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div
+                      className="bg-teal-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.max(
+                          Math.min(
+                            ((accountBalance - monthlyTotal) / accountBalance) * 100,
+                            100
+                          ),
+                          0
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  
+                  <div className="mt-3 flex items-center">
+                    {monthlyTotal > accountBalance ? (
+                      <div className="flex items-center text-red-600 text-sm bg-red-50 px-3 py-1.5 rounded-full">
+                        <AlertTriangle className="h-4 w-4 mr-1.5" />
+                        잔액이 {(monthlyTotal - accountBalance).toLocaleString()}원 부족합니다
                       </div>
-                      <div className="flex items-center text-sm text-gray-600 mb-2">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        <span>
-                          매월 {transfer.day}일 / 다음 결제:{" "}
-                          {transfer.paymentStatus
-                            ? new Date(
-                                new Date().getFullYear(),
-                                new Date().getMonth(),
-                                transfer.day
-                              ).toLocaleDateString()
-                            : new Date(
-                                new Date().getFullYear(),
-                                new Date().getMonth() + 1,
-                                transfer.day
-                              ).toLocaleDateString()}
-                        </span>
+                    ) : (
+                      <div className="flex items-center text-teal-600 text-sm bg-teal-50 px-3 py-1.5 rounded-full">
+                        <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                        자동이체 후 {(accountBalance - monthlyTotal).toLocaleString()}원이 남습니다
                       </div>
-                      <div className="text-lg font-semibold mb-2">
-                        {(transfer.amount ?? 0).toLocaleString()}원
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <p className="text-gray-500">보증금</p>
-                          <p className="font-medium">
-                            {transfer.deposit.toLocaleString()}원
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">나의 잔액</p>
-                          <div className="flex items-center">
-                            <p
-                              className={`font-medium ${
-                                transfer.myBalance < transfer.deposit
-                                  ? "text-red-500"
-                                  : ""
-                              }`}
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 자동이체 목록 */}
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold text-slate-800 flex items-center">
+                <CreditCard className="h-5 w-5 mr-2 text-blue-600" />
+                자동이체 목록
+              </h2>
+
+              {autoTransfers.length > 0 ? (
+                <div className="space-y-3">
+                  {autoTransfers.map((transfer, index) => (
+                    <Card 
+                      key={transfer.id} 
+                      className="border-0 shadow-sm hover:shadow-md rounded-xl overflow-hidden transition-all duration-200"
+                    >
+                      <CardContent className="p-0">
+                        <div className={`border-l-4 ${
+                          transfer.status 
+                            ? transfer.myBalance < transfer.deposit
+                              ? 'border-amber-500'
+                              : 'border-teal-500'
+                            : 'border-slate-300'
+                        } p-5`}>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-medium text-lg text-slate-800">{transfer.groupName}</h3>
+                              <p className="text-sm text-slate-500 mt-0.5">
+                                {transfer.account}
+                              </p>
+                            </div>
+                            <Badge
+                              variant={transfer.status ? "outline" : "secondary"}
+                              className={
+                                transfer.status
+                                  ? "text-teal-600 bg-teal-50 border-teal-200"
+                                  : "text-slate-500 bg-slate-100"
+                              }
                             >
-                              {transfer.myBalance?.toLocaleString() ?? "0"}원
-                            </p>
-                            {transfer.myBalance < transfer.deposit && (
-                              <AlertTriangle className="h-4 w-4 ml-1 text-red-500" />
-                            )}
+                              {transfer.status ? "활성" : "비활성"}
+                            </Badge>
                           </div>
-                          {transfer.myBalance < transfer.deposit && (
-                            <p className="text-xs text-red-500 mt-1">
-                              보증금보다{" "}
-                              {(
-                                transfer.deposit - transfer.myBalance
-                              ).toLocaleString()}
-                              원 부족
-                            </p>
-                          )}
+                          
+                          <div className="flex items-center text-sm text-slate-600 mb-3 bg-slate-50 px-3 py-2 rounded-lg">
+                            <Calendar className="h-4 w-4 mr-2 text-slate-500" />
+                            <span>
+                              매월 {transfer.day}일 · 다음 결제:{" "}
+                              <span className="font-medium">
+                                {transfer.paymentStatus
+                                  ? new Date(
+                                      new Date().getFullYear(),
+                                      new Date().getMonth(),
+                                      transfer.day
+                                    ).toLocaleDateString()
+                                  : new Date(
+                                      new Date().getFullYear(),
+                                      new Date().getMonth() + 1,
+                                      transfer.day
+                                    ).toLocaleDateString()}
+                              </span>
+                            </span>
+                          </div>
+                          
+                          <div className="text-lg font-bold text-indigo-700 mb-3">
+                            {(transfer.amount ?? 0).toLocaleString()}원
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="bg-slate-50 p-3 rounded-lg">
+                              <p className="text-sm text-slate-500 mb-1">보증금</p>
+                              <p className="font-medium text-slate-800">
+                                {transfer.deposit.toLocaleString()}원
+                              </p>
+                            </div>
+                            
+                            <div className={`p-3 rounded-lg ${
+                              transfer.myBalance < transfer.deposit
+                                ? 'bg-red-50'
+                                : 'bg-slate-50'
+                            }`}>
+                              <p className="text-sm text-slate-500 mb-1">나의 잔액</p>
+                              <div className="flex items-center">
+                                <p
+                                  className={`font-medium ${
+                                    transfer.myBalance < transfer.deposit
+                                      ? "text-red-600"
+                                      : "text-slate-800"
+                                  }`}
+                                >
+                                  {transfer.myBalance?.toLocaleString() ?? "0"}원
+                                </p>
+                                {transfer.myBalance < transfer.deposit && (
+                                  <AlertTriangle className="h-4 w-4 ml-1.5 text-red-500" />
+                                )}
+                              </div>
+                              {transfer.myBalance < transfer.deposit && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  보증금보다 {(transfer.deposit - transfer.myBalance).toLocaleString()}원 부족
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-end space-x-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-lg border-slate-200 hover:bg-slate-100 text-slate-700"
+                              onClick={() => handleEdit(transfer)}
+                            >
+                              <Edit className="h-4 w-4 mr-1.5" />
+                              수정
+                            </Button>
+                            
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-none"
+                              onClick={() =>
+                                handleTransfer(
+                                  transfer.id,
+                                  transfer.groupName,
+                                  transfer.account,
+                                  transfer.amount,
+                                  transfer.deposit,
+                                  transfer.myBalance
+                                )
+                              }
+                            >
+                              <SendHorizontal className="h-4 w-4 mr-1.5" />
+                              송금
+                            </Button>
+                          </div>
                         </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
+                  <CardContent className="p-8 text-center text-slate-500 bg-white">
+                    <div className="flex flex-col items-center">
+                      <div className="bg-slate-100 p-4 rounded-full mb-3">
+                        <CreditCard className="h-8 w-8 text-slate-400" />
                       </div>
-                    </div>
-                    <div className="border-t p-3 bg-gray-50 flex justify-between items-center">
-                      <div className="flex items-center"></div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(transfer)}
-                        >
-                          수정
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() =>
-                            handleTransfer(
-                              transfer.id,
-                              transfer.groupName,
-                              transfer.account,
-                              transfer.amount,
-                              transfer.deposit,
-                              transfer.myBalance
-                            )
-                          }
-                        >
-                          <SendHorizontal className="h-4 w-4 mr-2" />
-                          송금
-                        </Button>
-                      </div>
+                      <p className="font-medium">등록된 자동이체가 없습니다</p>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
           </>
         )}
