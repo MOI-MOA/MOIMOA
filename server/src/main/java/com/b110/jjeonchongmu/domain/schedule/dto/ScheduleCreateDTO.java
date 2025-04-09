@@ -1,12 +1,10 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -25,5 +23,9 @@ public class ScheduleCreateDTO {
 
     public void updateSubManagerId(Long id) {
         this.subManagerId = id;
+    }
+    public void updateScheduleDate(LocalDateTime scheduleStartTime, LocalDateTime penaltyApplyDate) {
+        this.penaltyApplyDate = penaltyApplyDate;
+        this.scheduleStartTime = scheduleStartTime;
     }
 }

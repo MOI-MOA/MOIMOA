@@ -1,9 +1,11 @@
 package com.b110.jjeonchongmu.domain.gathering.repo;
 
 import com.b110.jjeonchongmu.domain.gathering.dto.GatheringDTO;
+import com.b110.jjeonchongmu.domain.gathering.entity.Gathering;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMember;
 import com.b110.jjeonchongmu.domain.gathering.entity.GatheringMemberStatus;
 import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -68,7 +70,9 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
             "JOIN g.schedules s " +
             "JOIN s.attendees sm " +
             "WHERE s.id = :scheduleId " +
-            "AND sm.isPenaltyApply = TRUE AND sm.isAttend = FALSE")
+            "AND sm.isPenaltyApply = TRUE " +
+            "AND sm.isAttend = FALSE " +
+            "AND sm.scheduleMember.userId = gm.gatheringMemberUser.userId")
     List<GatheringMember> findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(@Param("scheduleId") Long scheduleId);
 
 
@@ -77,7 +81,9 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
             "JOIN g.schedules s " +
             "JOIN s.attendees sm " +
             "WHERE s.id = :scheduleId " +
-            "AND sm.isPenaltyApply = FALSE AND sm.isAttend=true")
+            "AND sm.isPenaltyApply = FALSE " +
+            "AND sm.isAttend = TRUE " +
+            "AND sm.scheduleMember.userId = gm.gatheringMemberUser.userId")
     List<GatheringMember> findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(@Param("scheduleId") Long scheduleId);
 
     @Query("SELECT gm FROM GatheringMember gm " +
@@ -87,4 +93,6 @@ public interface GatheringMemberRepo extends JpaRepository<GatheringMember, Long
     GatheringMember findGatheringMemberByScheduleIdAndUserId(
             @Param("scheduleId") Long scheduleId,
             @Param("userId") Long userId);
+
+    Optional<GatheringMember> findByGatheringAndGatheringMemberUser(Gathering gathering, User user);
 }
