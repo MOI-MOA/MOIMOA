@@ -10,8 +10,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MOIMO",
-  description: "MOIMO - 간편한 모임비 관리",
+  title: "MOIMOA",
+  description: "MOIMOA - 간편한 모임비 관리",
   icons: {
     icon: "/우리어플 아이콘.png",
     shortcut: "/우리어플 아이콘.png",
