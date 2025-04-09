@@ -57,7 +57,7 @@ export default function AutoTransferPage() {
       amount: number;
       day: number;
       nextDate: string;
-      status: string;
+      status: boolean;
       account: string;
       deposit: number;
       myBalance: number;
@@ -94,9 +94,7 @@ export default function AutoTransferPage() {
             setAutoTransfers(
               autoTransfers.map((transfer: AutoTransfer) => ({
                 ...transfer,
-                status: transfer.status ? "active" : "inactive",
                 nextDate: new Date().toISOString().split("T")[0],
-                paymentStatus: transfer.paymentStatus,
               }))
             );
           } else {
@@ -131,13 +129,11 @@ export default function AutoTransferPage() {
     };
   }, []);
 
-  // 활성 자동이체 개수 계산
-  const activeTransfers = autoTransfers.filter(
-    (transfer) => transfer.status === "active"
-  );
+  // 활성 자동이체 개수 계산 수정 - autoTransfers 배열의 전체 길이 사용
+  const activeTransfers = autoTransfers.length;
 
-  // 월 총액 계산
-  const monthlyTotal = activeTransfers.reduce(
+  // 월 총액 계산 수정 - 모든 자동이체의 amount 합계
+  const monthlyTotal = autoTransfers.reduce(
     (sum, transfer) => sum + transfer.amount,
     0
   );
@@ -149,7 +145,7 @@ export default function AutoTransferPage() {
     amount: number;
     day: number;
     account: string;
-    status: string;
+    status: boolean;
   }) => {
     console.log("수정하려는 자동이체 데이터:", transfer);
 
@@ -176,7 +172,7 @@ export default function AutoTransferPage() {
       amount: transfer.amount.toString(),
       day: transfer.day.toString(),
       account: transfer.account,
-      status: transfer.status,
+      status: transfer.status.toString(),
     });
     router.push(`/profile/auto-transfer/edit?${params.toString()}`);
   };
@@ -235,7 +231,7 @@ export default function AutoTransferPage() {
                   <div className="p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-gray-500">활성 자동이체</p>
                     <p className="text-xl font-bold text-blue-600">
-                      {activeTransfers.length}건
+                      {activeTransfers}건
                     </p>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg">
@@ -318,18 +314,14 @@ export default function AutoTransferPage() {
                           </p>
                         </div>
                         <Badge
-                          variant={
-                            transfer.status === "active"
-                              ? "outline"
-                              : "secondary"
-                          }
+                          variant={transfer.status ? "outline" : "secondary"}
                           className={
-                            transfer.status === "active"
+                            transfer.status
                               ? "text-green-600 bg-green-50"
                               : "text-gray-500 bg-gray-100"
                           }
                         >
-                          {transfer.status === "active" ? "활성" : "비활성"}
+                          {transfer.status ? "활성" : "비활성"}
                         </Badge>
                       </div>
                       <div className="flex items-center text-sm text-gray-600 mb-2">

@@ -12,14 +12,17 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    generate-ddl: false
     hibernate:
-
       ddl-auto: none
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+#        show-sql: true
         format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+#        hbm2ddl:
+#          auto: update
 
   data:
     redis:
@@ -28,15 +31,16 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT}
       password: ${SPRING_DATA_REDIS_PASSWORD}
 
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.type: trace
-    org.springframework:
-      security: DEBUG
-      web.socket: DEBUG
-      messaging: DEBUG
-    com.b110.jjeonchongmu: DEBUG
+logging.level:
+  org.hibernate.SQL: DEBUG
+  org.hibernate.type.descriptor.sql: TRACE  # 바인딩되는 파라미터 값 표시
+  org.springframework.orm.jpa: DEBUG         # JPA 관련 더 자세한 로그
+  org.hibernate.tool.hbm2ddl: DEBUG         # 스키마 생성 관련 로그
+  org.springframework:
+    security: DEBUG
+    web.socket: DEBUG
+    messaging: DEBUG
+  com.b110.jjeonchongmu: DEBUG
 
 paging:
   default-page-size: 10
@@ -65,6 +69,7 @@ external:
   user:
     api:
       url: ${EXTERNAL_USER_API_URL}
+
 
 server:
   port: 8080

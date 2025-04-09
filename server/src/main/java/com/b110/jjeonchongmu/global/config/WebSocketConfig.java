@@ -18,7 +18,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws")
-				.setAllowedOriginPatterns("*")  // "*" 대신 패턴을 사용
+				.setAllowedOriginPatterns(      
+				"https://j12b110.p.ssafy.io",
+         		"http://localhost:3000")
 				.withSockJS();
 	}
 }
