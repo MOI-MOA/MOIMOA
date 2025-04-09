@@ -31,7 +31,7 @@ public class ScheduleDTO {
                 .scheduleId(schedule.getId())
                 .scheduleTitle(schedule.getTitle())
                 .schedulePlace(schedule.getPlace())
-                .scheduleStartTime(schedule.getStartTime())
+                .scheduleStartTime(schedule.getStartTime().plusHours(9))
                 .perBudget(schedule.getPerBudget())
                 .attendeeCount(schedule.getAttendees().size())
                 .build();
