@@ -238,7 +238,7 @@ public class GatheringMemberService {
 				.name(manager.getName())
 				.email(manager.getEmail())
 				.createdAt(manager.getCreatedAt())
-				.balance(gatheringMember.getGatheringMemberAccountBalance())
+				.balance(gatheringMember.getGatheringMemberAccountBalance() + gatheringMember.getGatheringMemberAccountDeposit() - gathering.getGatheringDeposit())
 				.gatheringPaymentStatus(true)
 				.build();
 
@@ -260,7 +260,7 @@ public class GatheringMemberService {
 							.name(user.getName())
 							.email(user.getEmail())
 							.createdAt(user.getCreatedAt())
-							.balance(member.getGatheringMemberAccountBalance())
+							.balance(member.getGatheringMemberAccountBalance() + member.getGatheringMemberAccountDeposit() - gathering.getGatheringDeposit())
 							.gatheringPaymentStatus(member.getGatheringPaymentStatus())
 							.build();
 				})

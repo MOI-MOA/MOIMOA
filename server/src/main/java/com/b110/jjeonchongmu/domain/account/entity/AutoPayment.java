@@ -38,7 +38,7 @@ public class AutoPayment {
     }
 
     public void updateAutoPaymentDate(Integer date) {
-        if (date < 1 || date > 28) {
+        if (date < 1 || date > 31) {
             throw new IllegalArgumentException("자동이체 날짜는 1-28일 사이여야 합니다.");
         }
         this.autoPaymentDate = date;
