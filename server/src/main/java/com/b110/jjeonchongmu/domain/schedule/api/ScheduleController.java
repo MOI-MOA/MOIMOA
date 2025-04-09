@@ -64,9 +64,6 @@ public class ScheduleController {
     @PostMapping({"/{gatheringId}"})
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleCreateDTO scheduleCreateDTO, @PathVariable Long gatheringId) {
         Long userId = jwtTokenProvider.getUserId();
-//        Long userId = 5L;
-        scheduleCreateDTO.updateScheduleDate(scheduleCreateDTO.getScheduleStartTime().plusHours(9)
-            , scheduleCreateDTO.getPenaltyApplyDate().plusHours(9));
         System.out.println(scheduleCreateDTO.getScheduleStartTime());
         System.out.println(scheduleCreateDTO.getPenaltyApplyDate());
         Long scheduleId;
