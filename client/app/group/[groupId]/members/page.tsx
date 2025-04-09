@@ -240,14 +240,14 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
       // 신청 인원 목록에서 제거
       setPendingMembers((prev) => prev.filter((m) => m.id !== member.id))
 
-      // 회원 목록에 추가
+      // 회원 목록에 추가 - balance를 -1로 설정하여 미납 상태로 표시
       setMembers((prev) => [
         ...prev,
         {
           name: member.name,
           email: member.email,
           createdAt: member.createdAt,
-          balance: 0,
+          balance: -1, // 0에서 -1로 변경하여 미납 상태로 표시
           gatheringPaymentStatus: false,
         },
       ])
