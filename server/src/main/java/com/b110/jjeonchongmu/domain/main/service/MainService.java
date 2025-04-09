@@ -130,7 +130,7 @@ public class MainService {
      */
     public List<ScheduleDTO> getDaySchedules(Long userId, int year, int month, int date) {
         log.debug("===== getDaySchedules 시작 - 사용자 ID: {}, 날짜: {}/{}/{} =====", userId, year, month, date);
-        LocalDate targetDate = LocalDate.of(year, month, date);
+        LocalDate targetDate = LocalDate.of(year, month, date + 1);
         List<Object[]> data = mainRepo.findDaySchedules(userId, targetDate);
         log.debug("일별 일정 원본 데이터 개수: {}", data.size());
         List<ScheduleDTO> result = convertToScheduleListDTO(data);
