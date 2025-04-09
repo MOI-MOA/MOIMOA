@@ -124,11 +124,13 @@ public class MypageService {
 
 		List<AutoPayment> autoPayments = autoPaymentRepo.findByUserId(user.getUserId());
 
-		List<GatheringProjection> gatheringProjections = customMyPageRepository.getAutoPaymentDtos(user.getUserId());
+		List<GatheringProjection> gatheringProjections = customMyPageRepository.getAutoPaymentDtos(
+				user.getUserId());
 		List<AutoPaymentDto> autoPaymentDtos = autoPayments.stream().flatMap(
 				autoPayment -> {
 					return gatheringProjections.stream()
-							.filter(projection -> projection.getGatheringId().equals(autoPayment.getGatheringAccount().getGathering().getGatheringId()))
+							.filter(projection -> projection.getGatheringId()
+									.equals(autoPayment.getGatheringAccount().getGathering().getGatheringId()))
 							.map(matchedProjection -> new AutoPaymentDto(
 									autoPayment.getAutoPaymentId(),
 									matchedProjection.getBasicFee(),
@@ -138,12 +140,13 @@ public class MypageService {
 									matchedProjection.getGatheringDeposit(),
 									matchedProjection.getGatheringName(),
 									matchedProjection.getAccountBalance() + matchedProjection.getAccountDeposit(),
-									true// 이부분 수정
+									matchedProjection.isPaymentStatus()
 							));
 				}).collect(Collectors.toList());
 
 		return new AutoPaymentResponse(user, personalAccountRepo.findByUserId(user.getUserId()).map(
-				PersonalAccount::getAccountBalance).orElse(0L), autoPaymentDtos);
+						PersonalAccount::getAccountBalance)
+				.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")), autoPaymentDtos);
 	}
 
 	public ProfileDefaultResponse getProfileDefaultByUserId(Long id) {
@@ -172,7 +175,8 @@ public class MypageService {
 
 	@Transactional
 	public UpdateUserResponseDto updateUserProfile(UpdateUserRequestDto requestDto, Long userId) {
-		User user = userRepo.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("회원 정보 조회 오류"));
+		User user = userRepo.findByUserId(userId)
+				.orElseThrow(() -> new IllegalArgumentException("회원 정보 조회 오류"));
 		user.updateName(requestDto.getName());
 		return new UpdateUserResponseDto(true);
 	}

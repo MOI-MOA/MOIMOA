@@ -23,4 +23,9 @@ public class GatheringDetailSchedules {
     private String location;
     private Boolean isChecked;
     private Boolean isAttend;
+    private boolean isSubManager;
+    private Long scheduleAccountBalance;
+
+
+    public void updateIsSubManager(boolean isSubmanager){this.isSubManager = isSubmanager;}
 }

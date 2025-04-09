@@ -53,10 +53,16 @@ public class ScheduleService {
         if (!isMember) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this gathering");
         }
+        User currentUser = userRepo.getUserByUserId(userId);
 
         return scheduleRepo.findByGatheringGatheringId(gatheringId)
                 .stream()
                 .map(ScheduleDTO::from)
+                .peek(dto -> dto.updateIsSubManager(
+                        scheduleRepo.findById(dto.getScheduleId())
+                                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Schedule Not Found"))
+                                .getSubManager().equals(currentUser)
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -73,7 +79,14 @@ public class ScheduleService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
 
-        return ScheduleDetailDTO.from(schedule);
+
+
+        ScheduleDetailDTO savedScheduleDetailDTO = ScheduleDetailDTO.from(schedule);
+        savedScheduleDetailDTO.updateIsSubManger(userId.equals(schedule.getSubManager().getUserId()));
+        savedScheduleDetailDTO.updateScheduleAccountBalance(schedule.getScheduleAccount().getAccountBalance());
+
+
+        return savedScheduleDetailDTO;
     }
 
     @Transactional
@@ -139,14 +152,11 @@ public class ScheduleService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this schedule");
         }
 
-
         Schedule schedule = scheduleRepo.findById(scheduleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "schedule not found"));
-
         schedule.updateTitle(scheduleUpdateDTO.getScheduleTitle());
         schedule.updateDetail(scheduleUpdateDTO.getScheduleDetail());
         schedule.updatePlace(scheduleUpdateDTO.getSchedulePlace());
-
     }
 
     // 일정 삭제(부총무만)
@@ -176,7 +186,6 @@ public class ScheduleService {
         List<GatheringMember> penaltyAppliedMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyAppliedIsAttendFalse(scheduleId);
         List<GatheringMember> attendeeMembers = gatheringMemberRepo.findGatheringMembersByScheduleIdAndPenaltyNotAppliedIsAttendTrue(scheduleId);
 
-
         // 일정 멤버 삭제
         scheduleMemberRepo.deleteAllByScheduleId(scheduleId);
         System.out.println("일정 멤버 삭제");
@@ -189,13 +198,40 @@ public class ScheduleService {
         System.out.println("일정 아이디 : " + scheduleId);
 
 
-        // 돈을 1원도 안썻으면 그냥 페널티 대상자들까지 전부다 인당예산만큼 나눠주기
-        if(perBudget*attendeeCount + perBudget*((100-penaltyRate)/100)*penaltyApplyCount == scheduleAccount.getAccountBalance()){
-            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget*((100-penaltyRate)/100)));
-            attendeeMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget));
+        for(ScheduleMember attend : schedule.getAttendees()) {
+            System.out.println(attend.getScheduleMember().getName());
         }
 
-        else {
+        penaltyAppliedMembers.forEach(member ->
+                System.out.println(member));
+        attendeeMembers.forEach(member ->
+                System.out.println(member));
+
+
+        // 돈을 1원도 안썻으면 그냥 페널티 대상자들까지 전부다 인당예산만큼 나눠주기
+        if((perBudget*attendeeCount) + ((perBudget*penaltyApplyCount*(100-penaltyRate))/100) == scheduleAccount.getAccountBalance()){
+
+
+                penaltyAppliedMembers.forEach(member ->
+                    System.out.println("패널티 적용자들 잔액 : " +  member.getGatheringMemberAccountBalance()));
+                attendeeMembers.forEach(member ->
+                     System.out.println("참석자들 잔액 : " +  member.getGatheringMemberAccountBalance()));
+
+
+            penaltyAppliedMembers.forEach(member -> member.increaseGatheringMemberAccountBalance((perBudget*(100-penaltyRate))/100));
+            attendeeMembers.forEach(member -> member.increaseGatheringMemberAccountBalance(perBudget));
+
+                penaltyAppliedMembers.forEach(member ->
+                    System.out.println("패널티 적용자들 잔액 : " +  member.getGatheringMemberAccountBalance()));
+                attendeeMembers.forEach(member ->
+                     System.out.println("참석자들 잔액 : " +  member.getGatheringMemberAccountBalance()));
+
+
+            System.out.println("perBudget : " + perBudget);
+            System.out.println("(perBudget*(100-penaltyRate))/100) : " + (perBudget*(100-penaltyRate))/100);
+
+
+        } else {
 
             Long attendeeMembersAmount = remainingAmount / attendeeCount; // 참여자가 한명당 받아야하는 금액
             Long smallChangeAmount = remainingAmount % attendeeCount; // 1원 단위로 남은 금액
@@ -209,14 +245,10 @@ public class ScheduleService {
                 smallChangeAmount--;
             }
         }
-
-
         // 일정계좌에 남은 금액을 0으로 만듬 (사실 필요없는데 일단 넣어놈)
         scheduleAccount.decreaseBalance(scheduleAccount.getAccountBalance());
         ///////////////////////////////////////////////////////
 
             scheduleAccountRepo.deleteById(scheduleAccountId);
-
-
         }
     }

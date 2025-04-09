@@ -22,6 +22,7 @@ public class ScheduleDTO {
     private LocalDateTime scheduleStartTime;
     private Long perBudget;
     private Integer attendeeCount;
+    private boolean isSubManager;
 
     public static ScheduleDTO from(Schedule schedule) {
         return ScheduleDTO.builder()
@@ -35,4 +36,6 @@ public class ScheduleDTO {
                 .attendeeCount(schedule.getAttendees().size())
                 .build();
     }
+
+    public void updateIsSubManager(boolean isSubManager){this.isSubManager = isSubManager;}
 }
