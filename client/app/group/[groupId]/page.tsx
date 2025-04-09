@@ -271,29 +271,15 @@ export default function GroupDetailPage({
                   <h2 className="text-xl font-semibold text-slate-800">{groupData.name}</h2>
                   <p className="text-sm text-slate-500 mt-1">{groupData.description}</p>
                 </div>
-                <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                  <div className="text-xs text-slate-600 mb-1">모임 보증금</div>
-                  <div className="font-semibold text-blue-600 flex items-center">
-                    <Coins className="h-4 w-4 mr-1.5" />
-                    {groupData.accounts.groupDeposit.toLocaleString()}원
-                  </div>
-                </div>
-
               </div>
 
               <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
-                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                  <AvatarImage src={groupData.manager.avatar} />
-                  <AvatarFallback>
-                    {groupData.manager.name.slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
                 <div>
                   <div className="text-sm text-slate-600 flex items-center">
                     <User className="h-3.5 w-3.5 mr-1" />
                     <span className="font-medium">총무</span>
                   </div>
-                  <div className="text-sm font-medium text-slate-800">
+                  <div className="text-sm font-medium text-slate-800 text-right">
                     {groupData.manager.name}
                   </div>
                 </div>
@@ -327,10 +313,10 @@ export default function GroupDetailPage({
         <div className="grid grid-cols-3 gap-3">
           <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-white">
             <CardContent className="p-4">
-              <div className="text-xs text-slate-600 mb-1.5">모임계좌 잔액</div>
+              <div className="text-xs text-slate-600 mb-1.5">모임 보증금</div>
               <div className="font-semibold text-blue-600 flex items-center">
                 <Wallet className="h-4 w-4 mr-1.5" />
-                {groupData.accounts.groupBalance.toLocaleString()}원
+                {groupData.accounts.groupDeposit.toLocaleString()}원
               </div>
             </CardContent>
           </Card>
@@ -537,3 +523,4 @@ export default function GroupDetailPage({
     </>
   );
 }
+
