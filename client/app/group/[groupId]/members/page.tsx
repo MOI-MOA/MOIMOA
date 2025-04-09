@@ -291,7 +291,7 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
 
   // 회원 상태 체크 함수
   const checkPaymentStatus = (balance: number) => {
-    return balance >= myDeposit
+    return balance >= 0
   }
 
   return (

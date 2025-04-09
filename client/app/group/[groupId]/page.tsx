@@ -265,7 +265,7 @@ export default function GroupDetailPage({
         {/* 그룹 정보 카드 */}
         <Card className="border-0 shadow-sm rounded-xl overflow-hidden">
           <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-4">
               <div className="space-y-4">
                 <div>
                   <h2 className="text-xl font-semibold text-slate-800">{groupData.name}</h2>
@@ -286,6 +286,7 @@ export default function GroupDetailPage({
               </div>
             </div>
 
+            {/* 모임 보증금 추가 */}
             <div className="space-y-2">
               {groupData.isManager && (
                 <Button
@@ -309,35 +310,34 @@ export default function GroupDetailPage({
           </CardContent>
         </Card>
 
-        {/* 계좌 정보 그리드 */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-white">
-            <CardContent className="p-4">
-              <div className="text-xs text-slate-600 mb-1.5">모임 보증금</div>
-              <div className="font-semibold text-blue-600 flex items-center">
-                <Wallet className="h-4 w-4 mr-1.5" />
-                {groupData.accounts.groupDeposit.toLocaleString()}원
-              </div>
-            </CardContent>
-          </Card>
-          
+        {/* 계좌 정보 그리드 - 모임 보증금 카드 제거하고 나머지만 유지 */}
+        <div className="space-y-3">
           <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-green-50 to-white">
-            <CardContent className="p-4">
-              <div className="text-xs text-slate-600 mb-1.5">나의 가용 금액</div>
-              <div className="font-semibold text-green-600 flex items-center">
-                <DollarSign className="h-4 w-4 mr-1.5" />
-
-                {groupData.accounts.myBalance.toLocaleString()}원
+            <CardContent className="p-4 flex justify-between items-center">
+              <div>
+                <div className="text-xs text-slate-600 mb-1">나의 가용 금액</div>
+                <div className="font-semibold text-green-600 flex items-center">
+                  <DollarSign className="h-4 w-4 mr-1.5" />
+                  {groupData.accounts.myBalance.toLocaleString()}원
+                </div>
+              </div>
+              <div className="bg-green-100 p-2 rounded-lg">
+                <DollarSign className="h-5 w-5 text-green-600" />
               </div>
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-white">
-            <CardContent className="p-4">
-              <div className="text-xs text-slate-600 mb-1.5">내 보증금</div>
-              <div className="font-semibold text-slate-700 flex items-center">
-                <Coins className="h-4 w-4 mr-1.5" />
-                {groupData.accounts.myDeposit.toLocaleString()}원
+            <CardContent className="p-4 flex justify-between items-center">
+              <div>
+                <div className="text-xs text-slate-600 mb-1">모임 보증금 / 내 보증금</div>
+                <div className="font-semibold text-slate-700 flex items-center">
+                  <Coins className="h-4 w-4 mr-1.5" />
+                  {groupData.accounts.groupDeposit.toLocaleString()}원 / {groupData.accounts.myDeposit.toLocaleString()}원
+                </div>
+              </div>
+              <div className="bg-slate-200 p-2 rounded-lg">
+                <Coins className="h-5 w-5 text-slate-700" />
               </div>
             </CardContent>
           </Card>
