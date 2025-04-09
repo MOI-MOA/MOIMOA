@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 @EnableBatchProcessing
 @EnableScheduling
 @SpringBootApplication
-@EntityScan("com.b110.jjeonchongmu.domain")
+@EntityScan(basePackages = "com.b110.jjeonchongmu.domain")
 public class JjeonchongmuApplication {
 
 	public static void main(String[] args) {
