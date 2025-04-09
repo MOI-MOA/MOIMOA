@@ -54,8 +54,8 @@ type Schedule = {
   isChecked: boolean;
   isAttend: boolean;
   name: string;
-  subManager : boolean;
-  scheduleAccountBalance : number;
+  subManager: boolean;
+  scheduleAccountBalance: number;
 };
 
 type GroupData = {
@@ -91,7 +91,7 @@ export default function GroupDetailPage({
       console.log(response);
       response.id = parseInt(groupId);
       setGroupData(response);
-      console.log(response.schedules)
+      console.log(response.schedules);
     } catch (error) {
       console.error("그룹 상세 정보를 가져오는데 실패했습니다:", error);
       toast({
@@ -179,14 +179,12 @@ export default function GroupDetailPage({
     }
   };
 
-
-  
   // 참석 처리 함수 추가
   const handleAttend = async (scheduleId: number, e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
       await authApi.post(`api/v1/schedule/${scheduleId}/attend`);
-      
+
       // 성공 시 해당 일정의 상태 업데이트
       setGroupData((prev) => {
         if (!prev) return prev;
@@ -204,7 +202,7 @@ export default function GroupDetailPage({
           }),
         };
       });
-      
+
       toast({
         title: "참석 완료",
         description: "일정 참석이 완료되었습니다.",
@@ -217,7 +215,7 @@ export default function GroupDetailPage({
       });
     }
   };
-  
+
   // 참석 취소 처리 함수 추가
   const handleCancelAttend = async (
     scheduleId: number,
@@ -226,7 +224,7 @@ export default function GroupDetailPage({
     e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
     try {
       await authApi.post(`api/v1/schedule/${scheduleId}/attend-cancel`);
-      
+
       // 성공 시 해당 일정의 상태 업데이트
       setGroupData((prev) => {
         if (!prev) return prev;
@@ -244,7 +242,7 @@ export default function GroupDetailPage({
           }),
         };
       });
-      
+
       toast({
         title: "참석 취소 완료",
         description: "일정 참석이 취소되었습니다.",
@@ -257,7 +255,7 @@ export default function GroupDetailPage({
       });
     }
   };
-  
+
   return (
     <>
       <Header title={groupData.name} showBackButton />
@@ -268,8 +266,12 @@ export default function GroupDetailPage({
             <div className="flex items-start justify-between mb-4">
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-800">{groupData.name}</h2>
-                  <p className="text-sm text-slate-500 mt-1">{groupData.description}</p>
+                  <h2 className="text-xl font-semibold text-slate-800">
+                    {groupData.name}
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {groupData.description}
+                  </p>
                 </div>
               </div>
 
@@ -315,7 +317,9 @@ export default function GroupDetailPage({
           <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-green-50 to-white">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <div className="text-xs text-slate-600 mb-1">나의 가용 금액</div>
+                <div className="text-xs text-slate-600 mb-1">
+                  나의 가용 금액
+                </div>
                 <div className="font-semibold text-green-600 flex items-center">
                   <DollarSign className="h-4 w-4 mr-1.5" />
                   {groupData.accounts.myBalance.toLocaleString()}원
@@ -326,14 +330,17 @@ export default function GroupDetailPage({
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-0 shadow-sm rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-white">
             <CardContent className="p-4 flex justify-between items-center">
               <div>
-                <div className="text-xs text-slate-600 mb-1">모임 보증금 / 내 보증금</div>
+                <div className="text-xs text-slate-600 mb-1">
+                  모임 보증금 / 내 보증금
+                </div>
                 <div className="font-semibold text-slate-700 flex items-center">
                   <Coins className="h-4 w-4 mr-1.5" />
-                  {groupData.accounts.groupDeposit.toLocaleString()}원 / {groupData.accounts.myDeposit.toLocaleString()}원
+                  {groupData.accounts.groupDeposit.toLocaleString()}원 /{" "}
+                  {groupData.accounts.myDeposit.toLocaleString()}원
                 </div>
               </div>
               <div className="bg-slate-200 p-2 rounded-lg">
@@ -360,7 +367,10 @@ export default function GroupDetailPage({
                 <CoinsIcon className="h-4 w-4 mr-2" />
                 <span className="font-medium">이번 달 모임비</span>
               </div>
-              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 px-3 py-1 rounded-lg">
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-600 border-green-200 px-3 py-1 rounded-lg"
+              >
                 {groupData.monthlyFee.toLocaleString()}원
               </Badge>
             </div>
@@ -378,35 +388,39 @@ export default function GroupDetailPage({
               onClick={() => router.push(`/group/${groupId}/create-schedule`)}
               className="bg-blue-600 hover:bg-blue-700 rounded-xl"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              새 일정 만들기
+              <Plus className="h-4 w-4 mr-2" />새 일정 만들기
             </Button>
           </div>
-
 
           <div className="space-y-3">
             {groupData.schedules.map((schedule) => (
               <Card
                 key={schedule.id}
                 className="border-0 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
-                onClick={() => router.push(`/group/${groupId}/schedule/${schedule.id}`)}
+                onClick={() =>
+                  router.push(`/group/${groupId}/schedule/${schedule.id}`)
+                }
               >
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-4">
                     <div className="space-y-1">
-                      <div className="font-medium text-slate-800">{schedule.name}</div>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                      <div className="font-medium text-slate-800">
+                        {schedule.name}
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-600 border-blue-200"
+                      >
                         {schedule.participants}명 참여
                       </Badge>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       {schedule.subManager ? null : schedule.isAttend ? (
                         <Button
                           size="sm"
                           variant="outline"
                           className="rounded-lg text-red-600 border-red-200 hover:bg-red-50"
-
                           onClick={(e) => handleCancelAttend(schedule.id, e)}
                         >
                           참석 취소
@@ -417,7 +431,6 @@ export default function GroupDetailPage({
                             size="sm"
                             variant="outline"
                             className="rounded-lg text-green-600 border-green-200 hover:bg-green-50"
-
                             onClick={(e) => handleAttend(schedule.id, e)}
                           >
                             참석
@@ -460,11 +473,14 @@ export default function GroupDetailPage({
 
                   <div className="mt-3 pt-3 border-t border-slate-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">일정 계좌 잔액</span>
+                      <span className="text-sm text-slate-600">
+                        일정 계좌 잔액
+                      </span>
                       <span className="font-medium text-blue-600">
                         {typeof schedule.scheduleAccountBalance === "number"
                           ? schedule.scheduleAccountBalance.toLocaleString()
-                          : "0"} 원
+                          : "0"}{" "}
+                        원
                       </span>
                     </div>
                   </div>
@@ -494,10 +510,15 @@ export default function GroupDetailPage({
               모임 탈퇴
             </DialogTitle>
             <DialogDescription className="text-slate-600">
-              정말로 <span className="font-medium text-slate-700">{groupData.name}</span> 모임을 탈퇴하시겠습니까?
+              정말로{" "}
+              <span className="font-medium text-slate-700">
+                {groupData.name}
+              </span>{" "}
+              모임을 탈퇴하시겠습니까?
               <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-100">
                 <p className="text-red-600 text-sm">
-                  탈퇴 시 모임 내역과 보증금이 삭제되며, 이 작업은 되돌릴 수 없습니다.
+                  탈퇴 시 모임 내역과 보증금이 삭제되며, 이 작업은 되돌릴 수
+                  없습니다.
                 </p>
               </div>
             </DialogDescription>
@@ -510,8 +531,8 @@ export default function GroupDetailPage({
             >
               취소
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleLeaveGroup}
               className="rounded-xl bg-red-600 hover:bg-red-700"
             >
@@ -523,4 +544,3 @@ export default function GroupDetailPage({
     </>
   );
 }
-
