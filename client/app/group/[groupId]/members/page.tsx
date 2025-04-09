@@ -421,20 +421,20 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                         </Badge>
                       </div>
                       <div className="text-sm text-slate-600 mt-1">
-                        잔액: {manager.balance.toLocaleString()}원
+                        잔액: {manager.balance < 0 ? 0 : manager.balance.toLocaleString()}원
                       </div>
                     </div>
                   </div>
                   <Badge
-                    variant={checkPaymentStatus(manager.balance) ? "outline" : "destructive"}
+                    variant={manager.balance >= 0 ? "outline" : "destructive"}
                     className={
-                      checkPaymentStatus(manager.balance)
+                      manager.balance >= 0
                         ? "bg-green-50 text-green-600 border-green-200"
                         : "bg-red-50 text-red-600 border-red-200"
                     }
                   >
-                    {!checkPaymentStatus(manager.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
-                    {checkPaymentStatus(manager.balance) ? "완료" : "미납"}
+                    {manager.balance < 0 && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {manager.balance >= 0 ? "완료" : "미납"}
                   </Badge>
                 </div>
               </CardContent>
@@ -460,20 +460,20 @@ export default function GroupMembersPage({ params }: { params: Promise<{ groupId
                         <span className="font-medium text-slate-800">{member.name}</span>
                       </div>
                       <div className="text-sm text-slate-600 mt-1">
-                        잔액: {member.balance.toLocaleString()}원
+                        잔액: {member.balance < 0 ? 0 : member.balance.toLocaleString()}원
                       </div>
                     </div>
                   </div>
                   <Badge
-                    variant={checkPaymentStatus(member.balance) ? "outline" : "destructive"}
+                    variant={member.balance >= 0 ? "outline" : "destructive"}
                     className={
-                      checkPaymentStatus(member.balance)
+                      member.balance >= 0
                         ? "bg-green-50 text-green-600 border-green-200"
                         : "bg-red-50 text-red-600 border-red-200"
                     }
                   >
-                    {!checkPaymentStatus(member.balance) && <AlertCircle className="h-3 w-3 mr-1" />}
-                    {checkPaymentStatus(member.balance) ? "완료" : "미납"}
+                    {member.balance < 0 && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {member.balance >= 0 ? "완료" : "미납"}
                   </Badge>
                 </div>
               </CardContent>
