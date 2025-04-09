@@ -1,5 +1,7 @@
 package com.b110.jjeonchongmu.domain.schedule.dto;
 import com.b110.jjeonchongmu.domain.schedule.entity.Schedule;
+import com.b110.jjeonchongmu.domain.schedule.entity.ScheduleMember;
+import com.b110.jjeonchongmu.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +31,13 @@ public class ScheduleDetailDTO {
     // 참여자 몇명인지만 파악하고 참여자 리스트는 클릭했을때 보여주기
 
     public static ScheduleDetailDTO from(Schedule schedule){
-        return ScheduleDetailDTO.builder()
+        int size = 0;
+        for (ScheduleMember sm : schedule.getAttendees()) {
+            if (sm.getScheduleIsCheck() && sm.getIsAttend()) {
+                size++;
+            }
+        }
+        ScheduleDetailDTO scheduleDetailDTO = ScheduleDetailDTO.builder()
                 .gatheringId(schedule.getGathering().getGatheringId())
                 .gatheringName(schedule.getGathering().getGatheringName())
                 .scheduleId(schedule.getId())
@@ -39,8 +47,9 @@ public class ScheduleDetailDTO {
                 .schedulePlace(schedule.getTitle())
                 .perBudget(schedule.getPerBudget())
                 .scheduleDetail(schedule.getDetail())
-                .attendeeCount(schedule.getAttendees().size())
+                .attendeeCount(size)
                 .build();
+        return scheduleDetailDTO;
     }
     public void updateIsSubManger(boolean isSubManager){this.isSubManager = isSubManager;}
     public void updateScheduleAccountBalance(Long scheduleAccountBalance){this.scheduleAccountBalance = scheduleAccountBalance;}

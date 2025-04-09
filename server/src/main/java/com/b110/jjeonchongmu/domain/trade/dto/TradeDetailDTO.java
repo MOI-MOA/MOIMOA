@@ -14,6 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class TradeDetailDTO {
+    private String tradeName;
     private String tradeDetail;
     private LocalDateTime tradeTime;
     private Long tradeAmount;

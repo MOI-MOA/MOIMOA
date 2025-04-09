@@ -1,5 +1,6 @@
 package com.b110.jjeonchongmu.domain.trade.service;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.b110.jjeonchongmu.domain.account.dto.AccountType;
 import com.b110.jjeonchongmu.domain.account.entity.GatheringAccount;
 import com.b110.jjeonchongmu.domain.account.entity.PersonalAccount;
@@ -13,6 +14,8 @@ import com.b110.jjeonchongmu.domain.trade.entity.Trade;
 import com.b110.jjeonchongmu.domain.trade.repo.TradeRepo;
 import com.b110.jjeonchongmu.domain.user.entity.User;
 import com.b110.jjeonchongmu.domain.user.repo.UserRepo;
+import jakarta.persistence.EntityManager;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +53,7 @@ public class  TradeService {
     private final TradeRepo tradeRepo;
     private final UserRepo userRepo;
     private final GatheringRepo gatheringRepo;
+    private final EntityManager em;
 
     public TradeResponseDTO getTradeHistory(Long userId, TradeHistoryRequestDTO tradeHistoryRequestDTO) {
         User user = userRepo.getUserByUserId(userId);
@@ -89,15 +93,23 @@ public class  TradeService {
         List<TradeDetailDTO> tradeDetailDTOs = new ArrayList<>();
         // totalDeposit(입금)이랑 totalWithdrawal(송금) 계산하는 로직
         for (Trade trade : trades) {
+            String tradeName;
             Long tradeAmount = trade.getTradeAmount();
             if (Objects.equals(trade.getFromAccount().getAccountId(), targetAccountId)) {
-                // tradeAmount가 -(송금) 이면 totalWithdrawal에서 뺴줘야 값 증가함.
+                if (Hibernate.unproxy(trade.getToAccount()) instanceof GatheringAccount ga) {
+                    tradeName = ga.getGathering().getGatheringName() + " 모임계좌";
+                } else {
+                    tradeName = trade.getFromAccount().getUser().getName();
+                };
+                // tradeAmount가 송금 이면 totalWithdrawal에서 뺴줘야 값 증가함.
                 totalWithdrawal += tradeAmount;
                 tradeAmount *= -1;
             } else {
+                tradeName = trade.getFromAccount().getUser().getName();
                 totalDeposit += tradeAmount;
             }
             TradeDetailDTO tradeDetailDTO = TradeDetailDTO.builder()
+                    .tradeName(tradeName)
                     .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
                     .tradeTime(trade.getTradeTime())
                     .tradeAmount(tradeAmount)
