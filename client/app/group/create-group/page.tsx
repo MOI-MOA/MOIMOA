@@ -77,11 +77,29 @@ export default function CreateGroupPage() {
   ) => {
     const { name, value } = e.target;
 
-    // monthlyDepositDay 입력값 검증
-    if (name === "monthlyDepositDay") {
-      const numValue = parseInt(value);
-      if (numValue < 1 || numValue > 31) {
+    // 수치 입력 필드에 대한 검증 추가
+    if (["memberCount", "gatheringDeposit", "depositDate", "basicFee", "paybackPercent"].includes(name)) {
+      // 빈 값은 허용 (사용자가 지우고 다시 입력할 수 있도록)
+      if (value === "") {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        return;
+      }
+      
+      const numValue = parseFloat(value);
+      
+      // 음수 입력 방지
+      if (numValue < 0) {
         return; // 유효하지 않은 값이면 상태 업데이트하지 않음
+      }
+      
+      // depositDate 특별 처리 (1-31 사이 값만)
+      if (name === "depositDate" && (numValue < 1 || numValue > 31)) {
+        return;
+      }
+      
+      // paybackPercent 특별 처리 (0-100 사이 값만)
+      if (name === "paybackPercent" && numValue > 100) {
+        return;
       }
     }
 
@@ -333,8 +351,10 @@ export default function CreateGroupPage() {
                   id="memberCount"
                   name="memberCount"
                   type="number"
+                  min="1"
                   value={formData.memberCount}
                   onChange={handleInputChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="참여 인원 수를 입력하세요"
                   required
                   className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
@@ -358,8 +378,10 @@ export default function CreateGroupPage() {
                   id="gatheringDeposit"
                   name="gatheringDeposit"
                   type="number"
+                  min="0"
                   value={formData.gatheringDeposit}
                   onChange={handleInputChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="보증금을 입력하세요"
                   required
                   className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
@@ -387,6 +409,7 @@ export default function CreateGroupPage() {
                   max="31"
                   value={formData.depositDate}
                   onChange={handleInputChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="매월 입금일을 입력하세요 (1-31)"
                   required
                   className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
@@ -418,8 +441,10 @@ export default function CreateGroupPage() {
                   id="basicFee"
                   name="basicFee"
                   type="number"
+                  min="0"
                   value={formData.basicFee}
                   onChange={handleInputChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   placeholder="기본 회비를 입력하세요"
                   required
                   className="pl-10 py-6 rounded-xl border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
@@ -452,6 +477,7 @@ export default function CreateGroupPage() {
                   step="1"
                   value={formData.paybackPercent}
                   onChange={handleInputChange}
+                  onWheel={(e) => e.currentTarget.blur()}
                   onKeyDown={(e) => {
                     if (
                       !/[\d\b]/.test(e.key) &&
