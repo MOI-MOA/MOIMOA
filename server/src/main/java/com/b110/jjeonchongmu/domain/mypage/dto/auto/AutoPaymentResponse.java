@@ -15,10 +15,12 @@ import lombok.NoArgsConstructor;
 public class AutoPaymentResponse {
     private Long userId;
     private Long accountBalance;
+    private String myAccountNo;
     private List<AutoPaymentDto> autoTransfers = new ArrayList<>();
-    public AutoPaymentResponse(User user, Long accountBalance, List<AutoPaymentDto> autoPaymentDtos) {
+    public AutoPaymentResponse(User user, Long accountBalance, String myAccountNo, List<AutoPaymentDto> autoPaymentDtos) {
         this.userId = user.getUserId();
         this.accountBalance = accountBalance;
+        this.myAccountNo = myAccountNo;
         this.autoTransfers = autoPaymentDtos;
     }
 }

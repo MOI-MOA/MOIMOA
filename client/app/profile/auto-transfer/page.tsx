@@ -44,16 +44,17 @@ interface AutoTransfer {
 interface AutoTransferResponse {
   userId: number;
   accountBalance: number;
+   myAccountNo: string;
   autoTransfers: AutoTransfer[];
 }
 
 export default function AutoTransferPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   // 사용자의 계좌 잔액
   const [accountBalance, setAccountBalance] = useState<number>(0);
   const [userId, setUserId] = useState<number>(0);
+  const [myAccountNo, setMyAccountNo] = useState<string>("");
 
   // 자동이체 데이터
   const [autoTransfers, setAutoTransfers] = useState<
@@ -90,7 +91,7 @@ export default function AutoTransferPage() {
 
         // API 응답 데이터를 상태에 설정
         if (response) {
-          const { accountBalance, autoTransfers, userId } = response;
+          const { accountBalance, autoTransfers, userId, myAccountNo } = response;
           if (
             typeof accountBalance === "number" &&
             Array.isArray(autoTransfers)
@@ -103,6 +104,7 @@ export default function AutoTransferPage() {
                 nextDate: new Date().toISOString().split("T")[0],
               }))
             );
+            setMyAccountNo(myAccountNo);
           } else {
             console.error("데이터 타입이 올바르지 않습니다:", {
               accountBalance: typeof accountBalance,
@@ -257,6 +259,9 @@ export default function AutoTransferPage() {
                         </div>
                         <div>
                           <p className="text-sm text-slate-600 mb-1">내 계좌 잔액</p>
+                          <p className="text-sm text-slate-600 mb-1">
+                            {myAccountNo}
+                          </p>
                           <p className="text-xl font-bold text-indigo-700">
                             {accountBalance ? accountBalance.toLocaleString() : "0"}원
                           </p>

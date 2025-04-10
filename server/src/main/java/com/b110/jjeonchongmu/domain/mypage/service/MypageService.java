@@ -146,7 +146,7 @@ public class MypageService {
 
 		return new AutoPaymentResponse(user, personalAccountRepo.findByUserId(user.getUserId()).map(
 						PersonalAccount::getAccountBalance)
-				.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")), autoPaymentDtos);
+				.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")), personalAccount.getAccountNo(), autoPaymentDtos);
 	}
 
 	public ProfileDefaultResponse getProfileDefaultByUserId(Long id) {
