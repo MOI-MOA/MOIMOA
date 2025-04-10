@@ -21,7 +21,9 @@ public class AutoPaymentScheduler {
      * 매일 특정시간에  자동이체 배치 작업을 실행
      */
 //    @Scheduled(cron = "0 * * * * ?")  // 매 분마다 실행 (테스트용)
-    @Scheduled(cron = "0 30 15 * * ?")  // 15시 30분 실행 (테스트용)
+    @Scheduled(cron = "*/1 * * * * *")  // 매 15초 마다 실행 (테스트용)
+//    @Scheduled(cron = "0 */5 * * * ?")  // 5분마다 실행 (테스트용)
+//    @Scheduled(cron = "0 30 15 * * ?")  // 15시 30분 실행 (테스트용)
 
     public void runAutoPaymentJob() {
         try {
