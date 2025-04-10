@@ -19,7 +19,7 @@ spring:
     properties:
       hibernate:
 #        show-sql: true
-        format_sql: true
+        # format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 #        hbm2ddl:
 #          auto: update
