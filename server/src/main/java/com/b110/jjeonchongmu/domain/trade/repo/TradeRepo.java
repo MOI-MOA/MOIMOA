@@ -26,9 +26,13 @@ public interface TradeRepo extends JpaRepository<Trade, Long> {
     SELECT t
     FROM Trade t
     WHERE
-        (t.fromAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.GATHERING
-         OR t.toAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.GATHERING)
-      AND (t.fromAccount.accountId = :accountId OR t.toAccount.accountId = :accountId)
+        (
+            (t.fromAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.GATHERING
+            AND t.fromAccount.accountId = :accountId)
+            OR
+            (t.toAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.GATHERING
+            AND t.toAccount.accountId = :accountId)
+        )
     ORDER BY t.tradeTime DESC
 """)
     List<Trade> getGatheringTradesByAccountIdOrderByTradeTimeDesc(
@@ -36,13 +40,26 @@ public interface TradeRepo extends JpaRepository<Trade, Long> {
 			Pageable pageable);
 
 
-	@Query("""
+//	@Query("""
+//    SELECT t
+//    FROM Trade t
+//    WHERE
+//        (t.fromAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.PERSONAL
+//         OR t.toAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.PERSONAL)
+//      AND (t.fromAccount.accountId = :accountId OR t.toAccount.accountId = :accountId)
+//    ORDER BY t.tradeTime DESC
+//""")
+@Query("""
     SELECT t
     FROM Trade t
     WHERE
-        (t.fromAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.PERSONAL
-         OR t.toAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.PERSONAL)
-      AND (t.fromAccount.accountId = :accountId OR t.toAccount.accountId = :accountId)
+        (
+            (t.fromAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.PERSONAL
+            AND t.fromAccount.accountId = :accountId)
+            OR
+            (t.toAccountType = com.b110.jjeonchongmu.domain.account.dto.AccountType.PERSONAL
+            AND t.toAccount.accountId = :accountId)
+        )
     ORDER BY t.tradeTime DESC
 """)
 	List<Trade> getPersonalTradesByAccountIdOrderByTradeTimeDesc(
