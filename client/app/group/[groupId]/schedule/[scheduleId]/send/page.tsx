@@ -104,7 +104,7 @@ export default function SendMoneyPage({
 
     client.connect({ Authorization: `Bearer ${accessToken}` }, () => {
       console.log("WebSocket Connected");
-      const subscriptionPath = `/queue/transfer-results/${userId}`;
+      const subscriptionPath = `/queue/transfer-results/schedule/${userId}`;
 
 
       client.subscribe(subscriptionPath, (message) => {

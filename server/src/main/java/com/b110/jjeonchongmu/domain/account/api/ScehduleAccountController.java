@@ -56,15 +56,15 @@ public class ScehduleAccountController {
                 boolean isCompleted = scheduleAccountService.processTransfer(response);
 
                 simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results/" + userId,
+                        "/queue/transfer-results/schedule/" + userId,
                         isCompleted
                 );
             } catch (Exception e) {
 
                 TransferResponseDTO result = new TransferResponseDTO();
                 simpMessagingTemplate.convertAndSend(
-                        "/queue/transfer-results/" + userId,
-                        "송금중 오류가 발생"
+                        "/queue/transfer-results/schedule/" + userId,
+                        false
                 );
             }
         });
