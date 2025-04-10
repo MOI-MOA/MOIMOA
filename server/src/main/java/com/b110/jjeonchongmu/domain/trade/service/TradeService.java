@@ -94,6 +94,7 @@ public class  TradeService {
         // totalDeposit(입금)이랑 totalWithdrawal(송금) 계산하는 로직
         for (Trade trade : trades) {
             String tradeName;
+            TradeDetailDTO tradeDetailDTO;
             Long tradeAmount = trade.getTradeAmount();
             if (Objects.equals(trade.getFromAccount().getAccountId(), targetAccountId)) {
                 if (Hibernate.unproxy(trade.getToAccount()) instanceof GatheringAccount ga) {
@@ -104,17 +105,24 @@ public class  TradeService {
                 // tradeAmount가 송금 이면 totalWithdrawal에서 뺴줘야 값 증가함.
                 totalWithdrawal += tradeAmount;
                 tradeAmount *= -1;
+                tradeDetailDTO = TradeDetailDTO.builder()
+                        .tradeName(tradeName)
+                        .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
+                        .tradeTime(trade.getTradeTime())
+                        .tradeAmount(tradeAmount)
+                        .tradeBalance(trade.getTradeBalance())
+                        .build();
             } else {
                 tradeName = trade.getFromAccount().getUser().getName();
                 totalDeposit += tradeAmount;
+                tradeDetailDTO = TradeDetailDTO.builder()
+                        .tradeName(tradeName)
+                        .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
+                        .tradeTime(trade.getTradeTime())
+                        .tradeAmount(tradeAmount)
+                        .tradeBalance(trade.getToTradeBalance())
+                        .build();
             }
-            TradeDetailDTO tradeDetailDTO = TradeDetailDTO.builder()
-                    .tradeName(tradeName)
-                    .tradeDetail(trade.getTradeDetail()) //얘가 받는통장표시
-                    .tradeTime(trade.getTradeTime())
-                    .tradeAmount(tradeAmount)
-                    .tradeBalance(trade.getTradeBalance())
-                    .build();
             tradeDetailDTOs.add(tradeDetailDTO);
         }
 
