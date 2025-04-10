@@ -54,6 +54,7 @@ public interface MainRepo extends JpaRepository<Schedule, Long> {
             "JOIN schedule_member sm ON s.schedule_id = sm.schedule_id " +
             "WHERE sm.user_id = :userId " +
             "AND sm.schedule_is_check = true " +
+            "AND sm.is_attend = true " +
             "AND YEAR(s.schedule_start_time) = :year AND MONTH(s.schedule_start_time) = :month " +
             "GROUP BY DAY(s.schedule_start_time) " +
             "ORDER BY DAY(s.schedule_start_time)", nativeQuery = true)
@@ -69,6 +70,7 @@ public interface MainRepo extends JpaRepository<Schedule, Long> {
             "JOIN schedule_member sm ON s.schedule_id = sm.schedule_id " +
             "WHERE sm.user_id = :userId " +
             "AND sm.schedule_is_check = true " +
+            "AND sm.is_attend = true " +
             "AND DATE(s.schedule_start_time) = :targetDate " +
             "GROUP BY s.schedule_id, g.gathering_id " +
             "ORDER BY s.schedule_start_time", nativeQuery = true)
@@ -84,6 +86,7 @@ public interface MainRepo extends JpaRepository<Schedule, Long> {
             "JOIN schedule_member sm ON s.schedule_id = sm.schedule_id " +
             "WHERE sm.user_id = :userId " +
             "AND DATE(s.schedule_start_time) = CURRENT_DATE " +
+            "AND sm.is_attend = true " +
             "GROUP BY s.schedule_id, g.gathering_id " +
             "ORDER BY s.schedule_start_time", nativeQuery = true)
     List<Object[]> findTodaySchedules(@Param("userId") Long userId);
