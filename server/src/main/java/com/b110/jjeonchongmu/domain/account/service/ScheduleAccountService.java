@@ -210,7 +210,7 @@ public class ScheduleAccountService {
                     transferTransactionHistoryDTO.getAmount(),
                     LocalDateTime.now(),
                     transferTransactionHistoryDTO.getDetail(),
-                    fromAccount.getAccountBalance(),
+                    fromGatheringAccount.getAccountBalance(),
                     toAccount.getAccountBalance()
             );
             tradeRepo.save(trade);
