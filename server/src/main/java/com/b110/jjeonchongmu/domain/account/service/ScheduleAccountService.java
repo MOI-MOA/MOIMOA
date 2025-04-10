@@ -29,11 +29,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
-//@Transactional
+@Transactional
 public class ScheduleAccountService {
 
     private final ScheduleAccountRepo scheduleAccountRepo;
@@ -218,12 +219,15 @@ public class ScheduleAccountService {
             transferTransactionHistoryDTO.getToAccountId();
 
             BankTransferRequestDTO bankTransferRequestDTO = new BankTransferRequestDTO(
-                    toAccount.getUser().getUserKey(),
+                    fromAccount.getUser().getUserKey(),
                     accountNo,
                     fromAccount.getSchedule().getGathering().getGatheringAccount().getAccountNo(),
                     transferTransactionHistoryDTO.getAmount()
             );
-
+            System.out.println("***************" + bankTransferRequestDTO.getToAccountNo());
+            System.out.println("***************" + bankTransferRequestDTO.getFromAccountNo());
+            System.out.println("***************" + bankTransferRequestDTO.getUserKey());
+            System.out.println("***************" + bankTransferRequestDTO.getAmount());
             externalBankApiComponent.sendTransferWithRetry(bankTransferRequestDTO);
             transferTransactionHistoryDTO.updateStatus(TransactionStatus.COMPLETED);
 
@@ -284,6 +288,7 @@ public boolean deleteAccount(DeleteRequestDTO requestDTO) {
         }
     }
     public AccountCheckResponseDTO checkAccountNo(String toAccountNo, Long amount) {
+        System.out.println("***************" + toAccountNo);
         Boolean isAccountNo = personalAccountRepo.existsByAccountNo(toAccountNo);
         if(!isAccountNo) {
             isAccountNo = gatheringAccountRepo.existsByAccountNo(toAccountNo);
