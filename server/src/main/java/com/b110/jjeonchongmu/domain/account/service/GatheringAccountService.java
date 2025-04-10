@@ -182,7 +182,7 @@ public class GatheringAccountService {
 			Trade trade = new Trade(
 					null,
 					fromAccount,
-					AccountType.PERSONAL,
+					AccountType.GATHERING,
 					toAccount,
 					transferTransactionHistoryDTO.getToAccountType(),
 					transferTransactionHistoryDTO.getAmount(),
