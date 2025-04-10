@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/Header";
 import {
@@ -58,7 +57,7 @@ interface TransferResponse {
 export default function SendMoneyPage({
   params,
 }: {
-  params: { groupId: string; scheduleId: string }
+  params: Promise<{ groupId: string; scheduleId: string }>
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,7 +77,8 @@ export default function SendMoneyPage({
   const [toAccountType, setToAccountType] = useState<string>("PERSONAL");
   const [userId, setUserId] = useState<string>("");
 
-  const { scheduleId } = params;
+  const resolvedParams = use(params);
+  const { scheduleId } = resolvedParams;
 
   useEffect(() => {
     const account = searchParams.get("account");
@@ -209,7 +209,7 @@ export default function SendMoneyPage({
   };
 
   const handlePinInput = (digit: string) => {
-    if (pinCode.length < 6) {
+    if (pinCode.length < 4) {
       setPinCode((prev) => prev + digit);
     }
   };
@@ -400,13 +400,13 @@ export default function SendMoneyPage({
               </div>
             </DialogTitle>
             <DialogDescription className="text-center">
-              송금을 완료하려면 6자리 PIN 번호를 입력해주세요.
+              송금을 완료하려면 4자리 PIN 번호를 입력해주세요.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-2">
             <div className="flex justify-center mb-4">
               <div className="flex items-center gap-2">
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
                     className={`w-10 h-10 border-2 rounded-lg flex items-center justify-center ${
@@ -458,7 +458,7 @@ export default function SendMoneyPage({
             <Button
               onClick={handlePinSubmit}
               className="w-full py-6 rounded-xl bg-blue-600 hover:bg-blue-700"
-              disabled={pinCode.length !== 6}
+              disabled={pinCode.length !== 4}
             >
               <div className="flex items-center justify-center">
                 <Send className="h-5 w-5 mr-2" />
