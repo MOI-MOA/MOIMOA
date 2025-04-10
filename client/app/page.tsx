@@ -162,6 +162,7 @@ export default function HomePage() {
 
   // 날짜 선택 핸들러
   const handleDateSelect = async (date: Date | undefined) => {
+    console.log(date)
     setSelectedDate(date);
     if (date) {
       await fetchSelectedDateSchedules(date);
