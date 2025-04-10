@@ -55,7 +55,11 @@ interface TransferResponse {
   status: string;
 }
 
-export default function SendMoneyPage() {
+export default function SendMoneyPage({
+  params,
+}: {
+  params: { groupId: string; scheduleId: string }
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [amount, setAmount] = useState("");
@@ -73,6 +77,8 @@ export default function SendMoneyPage() {
   const [stompClient, setStompClient] = useState<any>(null);
   const [toAccountType, setToAccountType] = useState<string>("PERSONAL");
   const [userId, setUserId] = useState<string>("");
+
+  const { scheduleId } = params;
 
   useEffect(() => {
     const account = searchParams.get("account");
@@ -181,6 +187,7 @@ export default function SendMoneyPage() {
         tradeDetail: message || "",
         transferAmount: Number(amount),
         accountPw: pinCode,
+        scheduleId: scheduleId,
       });
       // WebSocket을 통해 결과를 받을 때까지 대기
     } catch (error: any) {
