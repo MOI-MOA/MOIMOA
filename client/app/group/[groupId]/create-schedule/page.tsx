@@ -244,12 +244,14 @@ export default function CreateSchedulePage({
               </Label>
               <div className="space-y-4">
                 <Card className="border border-slate-200 rounded-xl overflow-hidden">
-                  <Calendar
-                    mode="single"
-                    selected={formData.date}
-                    onSelect={(date) => setFormData((prev) => ({ ...prev, date }))}
-                    className="rounded-xl [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
-                  />
+                  <div className="p-2">
+                    <Calendar
+                      mode="single"
+                      selected={formData.date}
+                      onSelect={(date) => setFormData((prev) => ({ ...prev, date }))}
+                      className="rounded-xl [&_.rdp-caption]:px-4 [&_.rdp-caption]:py-2 [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
+                    />
+                  </div>
                 </Card>
                 <div className="relative">
                   <Input
@@ -431,12 +433,14 @@ export default function CreateSchedulePage({
               </Label>
               <div className="space-y-4">
                 <Card className="border border-slate-200 rounded-xl overflow-hidden">
-                  <Calendar
-                    mode="single"
-                    selected={formData.paybackDate}
-                    onSelect={(date) => setFormData((prev) => ({ ...prev, paybackDate: date }))}
-                    className="rounded-xl [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
-                  />
+                  <div className="p-2">
+                    <Calendar
+                      mode="single"
+                      selected={formData.paybackDate}
+                      onSelect={(date) => setFormData((prev) => ({ ...prev, paybackDate: date }))}
+                      className="rounded-xl [&_.rdp-caption]:px-4 [&_.rdp-caption]:py-2 [&_.rdp-caption]:text-sm [&_.rdp-cell]:text-sm [&_.rdp-head_cell]:text-sm [&_.rdp]:scale-75"
+                    />
+                  </div>
                 </Card>
                 <div className="relative">
                   <Input
