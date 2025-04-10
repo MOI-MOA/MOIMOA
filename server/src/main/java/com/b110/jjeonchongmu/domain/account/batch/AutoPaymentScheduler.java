@@ -23,7 +23,7 @@ public class AutoPaymentScheduler {
 //    @Scheduled(cron = "0 * * * * ?")  // 매 분마다 실행 (테스트용)
     @Scheduled(cron = "*/1 * * * * *")  // 매 15초 마다 실행 (테스트용)
 //    @Scheduled(cron = "0 */5 * * * ?")  // 5분마다 실행 (테스트용)
-//    @Scheduled(cron = "0 30 15 * * ?")  // 15시 30분 실행 (테스트용)
+//    @Scheduled(cron = "0 00 14 * * ?")  // 15시 30분 실행 (테스트용)
 
     public void runAutoPaymentJob() {
         try {
