@@ -1,20 +1,19 @@
-<img src="우리 어플 아이콘" />
+<img src="/docs/로고.png" alt="로고" />
 
 # 1. 프로젝트 개요
 
 ### 📋 서비스 개요
 
-- 모임 공금관리 서비스스
-- SSAFY 은행 API를 사용하여 **선거를 온라인으로 진행**할 수 있도록 돕는
-  서비스입니다.
-- **프로젝트 기간:** 2025/03/03 ~ 2025/04/11 (총총40일간)
+- 모임 공금관리 서비스
+- SSAFY 은행 API를 활용한 모임 공금 투명성 확보 및 효율적 관리
+- 프로젝트 기간: 2025/03/03 ~ 2025/04/11 (총 40일간)
 
 ### 💰 **서비스 특징**
 
-1.
-2.
-3.
-4.
+1. **투명한 공금 관리** : 모든 거래내역 공개 및 실시간 잔액 확인
+2. **공정한 페이백 시스템**: 참석 여부에 따른 합리적인 비용 분배
+3. **자동 정산 기능**: 모임 종료 후 남은 금액 자동 정산
+4. **직관적 UI/UX**: 손쉬운 모임 생성 및 관리
 
 ### 👭팀원 정보 및 업무 분담 내역
 
@@ -24,11 +23,30 @@
 | 🟩함동건(팀원) | **Backend**<br><br><br>              |
 | 🟦배한진(팀원) | **FullStack**<br><br><br>            |
 | 🟥이동영(팀원) | **FullStack**<br><br><br>            |
-| 🟨이다영(팀원) | **Infra**<br><br><br>                |
+| 🟨이다영(팀원) | **Infra**<br>- CI/CD 파이프라인 구축<br>- Docker 컨테이너화<br>- AWS 배포 관리                |
 
 <br>
 
-# 2. 설계 및 구현
+# 2. 기획 배경
+### 문제 상황 및 해결 방안
+
+1. **공금 관리의 어려움** (회비 미납, 불투명 운영, 총무의 횡령)
+  - 정해진 날짜, 시간에만 출금 및 결제 가능
+  - 정해진 금액만 출금 가능 (모임 참여자 납입분만 출금 가능)
+  - 투명한 거래내역 공개로 신뢰성 확보
+
+
+2. **모임 불참자의 금전 이해관계 문제**
+- 사전 불참 의사 표명 시 회비 환급
+- 참석 의사 표명 후 불참 시, 투표로 정한 비율에 따라 회비 환급
+- 예시:
+  - 총 인원 100명 / 참여 의사 인원 50명 / 실 참여 인원 30명
+  - 총 비용: 320만 원 (예약금 포함)
+  - 30명 기준 300만 원이 아닌 320만 원 사용 필요
+  - 180만 원을 정해진 비율대로 20명에게 환불
+
+
+# 3. 설계 및 구현
 
 ### 🛠 기술 스택
 
@@ -71,13 +89,13 @@
 
 ### 🖼️아키텍쳐 설계
 
-<img src="우리깃헙이미지주소" alt="아키텍쳐 설계" />
+<img src="/docs/아키텍처 설계도.png" alt="아키텍처 설계도" />
 
 <br>
 
 ### 💾데이터베이스 모델링(ERD)
 
-<img src="우리깃헙이미지주소" alt="ERD" />
+<img src="/docs/ERD.png" alt="ERD" />
 
 <br>
 
@@ -201,12 +219,44 @@ server/
 
 <br>
 
-<img src='우리이미지 주소' alt='모임상세화면' width='200' /> <img src='./images/내정보, 자동이체 목록.gif' alt='자동이체 목록' width='200' /> <img src='./images/메인에서 일정' alt='메인 일정 보여주기기' width='200' />
-
 # 3. 기능 상세 설명
+### 1.영희의 모임 생성
+<img src="/docs/1.영희의_모임생성.gif" alt="1.영희의_모임생성" />
+<!-- ![1 영희의_모임생성](https://github.com/user-attachments/assets/fb55f8f5-254e-4a7e-b825-ba688747f3c8) -->
 
+### 2.모임 초대코드 생성
+<img src="/docs/2.초대코드_생성.gif" alt="2.초대코드_생성" />
+<!-- ![2 초대코드_생성](https://github.com/user-attachments/assets/68f0a6d8-2716-4a61-930a-6c9d88a14382) -->
+
+### 3.모임 참여하기
+<img src="/docs/3.모임참여.gif" alt="3.모임참여" />
+<!-- ![3 모임참여](https://github.com/user-attachments/assets/00af69e0-cda7-420e-8507-ac99104bb27a) -->
+
+### 4.모임 수락하기
+<img src="/docs/4.모임수락.gif" alt="4.모임수락" />
+<!-- ![4 모임수락](https://github.com/user-attachments/assets/b184a1f4-dba6-4392-9964-2a8c6c5864e9) -->
+
+### 5.모임통장에 입금
+<img src="/docs/5.모임에_돈넣기.gif" alt="5.모임에_돈넣기" />
+<!-- ![5 모임에_돈넣기](https://github.com/user-attachments/assets/27554c0c-61ba-44af-9943-d6777b50e707) -->
+
+### 6.모임 일정 생성
+<img src="/docs/6.일정생성.gif" alt="6.일정생성" />
+<!-- ![6 일정생성](https://github.com/user-attachments/assets/3e94f1e8-ac5d-4a91-8789-6fc84c1a42bb) -->
+
+### 7.일정참여시 돈 부족으로 입금 후 다시 시도
+<img src="/docs/7.일정참여_돈없어서_돈넣고_다시시도.gif" alt="7.일정참여_돈없어서_돈넣고_다시시도" />
+<!-- ![7 일정참여_돈없어서_돈넣고_다시시도](https://github.com/user-attachments/assets/8d7f632e-d927-4622-b40c-0f1afcbbbbac) -->
+
+### 8.모임 탈퇴시 납입한 금액 입금
+<img src="/docs/8.모임탈퇴시_돈들어옴.gif" alt="8.모임탈퇴시_돈들어옴" />
+<!-- ![8 모임탈퇴시_돈들어옴](https://github.com/user-attachments/assets/da06c931-db1f-454d-b2cb-c242541b652e) -->
+
+### 9.패널티 적용되는 일정에 대한 참석 취소
+<img src="/docs/9.페널티적용_일정참석취소.gif" alt="9.페널티적용_일정참석취소" />
+<!-- ![9 페널티적용_일정참석취소](https://github.com/user-attachments/assets/257d199f-2da6-4832-a266-6ac979f63913) -->
 <br>
-<br>
+
 
 # Front-End
 
@@ -257,39 +307,46 @@ server/
 
 <br>
 
-**Infra**
-
-- 웹서버: NginX
-- 실행환경: Docker, Docker-compose
-- CI/CD: Jenkins
-- 배포: AWS EC2
+# Infra
 
 ## ✅ 배포 환경 구축 (담당: 이다영)
 
 ### 1️⃣ 웹서버
-
-- **NGINX**
+- **NGINX**를 사용하여 블루/그린 무중단 배포 구현
+- HTTPS 적용 및 라우팅 설정
 
 ### 2️⃣ 배포 환경 구축과 CI/CD
-
 - **Docker, Docker-compose**
-
-  - `docker`를 이용하여 실행환경을 컨테이너화.
-  - 배포에 사용되는 컨테이너 6개를 `docker-compose`로 묶어서 배포.
+  - 프론트엔드, 백엔드, DB, Redis 등 각 서비스 컨테이너화
+  - 블루/그린 환경을 위한 별도 compose 파일 관리
 
 - **Jenkins**
+  - GitLab 웹훅을 통한 자동 빌드 및 배포 파이프라인 구축
+  - 배포 과정: 코드 체크아웃 → 환경 구성 → 컨테이너 배포 → 헬스체크 → 트래픽 전환
 
-  - Docker에서 Jenkins image를 pull 받아서 실행
-  - 파이프라인 스크립트를 작성하여 배포
+- **Mattermost 알림 연동**
+  - Jenkins 배포 결과를 Mattermost 채널로 자동 알림
+  - 성공 시: 빌드 정보, 커밋 내역, 작성자, 배포 서버 정보 표시
+  - 실패 시: 오류 원인 및 로그 확인 링크 제공
+  - 팀 전체가 배포 상황을 실시간으로 모니터링 가능
+
+  <img src="/docs/mm연동.png" alt="MM배포성공" />
+  <img src="/docs/mm연동x.png" alt="MM배포실패" />
+
+- **블루/그린 무중단 배포**
+  - 두 개의 동일한 환경(블루/그린) 간 트래픽 전환으로 무중단 배포
+  - 프론트엔드: 3001/3002 포트, 백엔드: 8081/8082 포트
+  - 문제 발생 시 즉시 이전 환경으로 롤백 가능
 
 - **AWS EC2**
-  - 제공받은 AWS EC2 사용
+  - 모든 서비스 AWS EC2 인스턴스에서 운영
 
 <br>
 
 # 4. 팀원 소개
 
 <div align="center">
+  <!-- 첫 번째 줄 - 2명 -->
   <table>
     <tr>
       <th align="center" width="50%">Backend</th>
@@ -297,19 +354,19 @@ server/
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/동영.png" alt="동영 프로필 이미지" width="200px" height="150px">
+        <img src="/api/placeholder/200/150" alt="종수 프로필 이미지" width="200px" height="150px">
         <br>
-        <a href="https://github.com/dongschiken">dongs</a> ✨
+        <a href="https://github.com/doros508">종수</a> ✨
       </td>
       <td align="center">
-        <img src="docs/민석이형.png" alt="민석 프로필 이미지" width="200px" height="150px">
+        <img src="/api/placeholder/200/150" alt="동영 프로필 이미지" width="200px" height="150px">
         <br>
-        <a href="https://github.com/KOOMINSEOK9">민석</a> 🐿️
+        <a href="https://github.com/dongschiken">동영</a> 🐿️
       </td>
     </tr>
     <tr>
       <td align="center">
-        <div>~본 동영 이미지는?</div>
+        <div>~본 종수 이미지는?</div>
       </td>
       <td align="center">
         <div>~본 동영 이미지는?</div>
@@ -319,7 +376,7 @@ server/
       <td align="center">
         <ul>
           <li>🫀 책임감 있고 팀에 주인의식을 가지는 리더</li>
-          <li>⭐️ 다양한 오류에 대한 문제해결 능력 </li>
+          <li>⭐️ 다양한 오류에 대한 문제해결 능력</li>
           <li>👩🏻‍💻 학습속도가 빠르고 기본기가 탄탄합니다.</li>
         </ul>
       </td>
@@ -332,89 +389,160 @@ server/
       </td>
     </tr>
   </table>
-    <table>
+
+  <!-- 두 번째 줄 - 3명 -->
+  <table style="margin-top: 20px;">
     <tr>
-      <th align="center" width="50%">Backend</th>
-      <th align="center" width="50%">Backend</th>
+      <th align="center" width="33.33%">Backend</th>
+      <th align="center" width="33.33%">Backend</th>
+      <th align="center" width="33.33%">Backend</th>
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/동영.png" alt="동영 프로필 이미지" width="200px" height="150px">
+        <img src="/api/placeholder/200/150" alt="한진 프로필 이미지" width="200px" height="150px">
         <br>
-        <a href="https://github.com/dongschiken">dongs</a> ✨
+        <a href="https://github.com/baebaebaeh">한진</a> ✨
       </td>
       <td align="center">
-        <img src="docs/민석이형.png" alt="민석 프로필 이미지" width="200px" height="150px">
+        <img src="/api/placeholder/200/150" alt="동건 프로필 이미지" width="200px" height="150px">
         <br>
-        <a href="https://github.com/KOOMINSEOK9">민석</a> 🐿️
+        <a href="https://github.com/">동건</a> 🐿️
+      </td>
+      <td align="center">
+        <img src="/docs/daram.jpg" alt="다영 프로필 이미지" width="200px" height="150px">
+        <br>
+        <a href="https://github.com/solveDayLee">다영</a> 🌟
       </td>
     </tr>
-        <tr>
+    <tr>
       <td align="center">
-        <div>~본 동영 이미지는?</div>
+        <div>~본 한진 이미지는?</div>
       </td>
       <td align="center">
-        <div>~본 동영 이미지는?</div>
+        <div>~본 동건 이미지는?</div>
+      </td>
+      <td align="center">
+        <div>~본 다영 이미지는?</div>
       </td>
     </tr>
     <tr>
       <td align="center">
         <ul>
-          <li>🫀 책임감 있고 팀에 주인의식을 가지는 리더</li>
-          <li>⭐️ 다양한 오류에 대한 문제해결 능력 </li>
-          <li>👩🏻‍💻 학습속도가 빠르고 기본기가 탄탄합니다.</li>
+          <li>🔍 문제해결 능력이 뛰어납니다</li>
+          <li>💪 끈기있게 도전하는 자세</li>
+          <li>👨‍💻 코드 최적화에 대한 열정</li>
         </ul>
       </td>
       <td align="center">
         <ul>
-          <li>👀 다양한 영역에 대한 통찰력과 이해력</li>
-          <li>😎 맡은 일을 책임감 있게 해냅니다.</li>
-          <li>🧑‍💻 기술 도입에 신중하며 합리적인 판단능력</li>
-        </ul>
-      </td>
-    </tr>
-  </table>
-    <table>
-    <tr>
-      <th align="center" width="50%">Backend</th>
-      <th align="center" width="50%">Backend</th>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="docs/동영.png" alt="동영 프로필 이미지" width="200px" height="150px">
-        <br>
-        <a href="https://github.com/dongschiken">dongs</a> ✨
-      </td>
-      <td align="center">
-        <img src="docs/민석이형.png" alt="민석 프로필 이미지" width="200px" height="150px">
-        <br>
-        <a href="https://github.com/KOOMINSEOK9">민석</a> 🐿️
-      </td>
-    </tr>
-        <tr>
-      <td align="center">
-        <div>~본 동영 이미지는?</div>
-      </td>
-      <td align="center">
-        <div>~본 동영 이미지는?</div>
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <ul>
-          <li>🫀 책임감 있고 팀에 주인의식을 가지는 리더</li>
-          <li>⭐️ 다양한 오류에 대한 문제해결 능력 </li>
-          <li>👩🏻‍💻 학습속도가 빠르고 기본기가 탄탄합니다.</li>
+          <li>👀 세심한 코드 리뷰 능력</li>
+          <li>😎 맡은 일을 책임감 있게 해냅니다</li>
+          <li>🧠 논리적인 사고와 체계적인 접근</li>
         </ul>
       </td>
       <td align="center">
         <ul>
-          <li>👀 다양한 영역에 대한 통찰력과 이해력</li>
-          <li>😎 맡은 일을 책임감 있게 해냅니다.</li>
-          <li>🧑‍💻 기술 도입에 신중하며 합리적인 판단능력</li>
+          <li>🌱 지속적인 학습과 성장</li>
+          <li>⚡ 빠른 적응력과 실행력</li>
+          <li>🤝 원활한 소통과 협업 능력</li>
         </ul>
       </td>
     </tr>
   </table>
 </div>
 
+---
+# Git 브랜치 전략 가이드
+
+Git 브랜치 전략은 팀 협업 시 코드 관리를 체계적으로 하기 위한 중요한 요소입니다. 아래에 GitHub Flow 기반의 브랜치 전략을 정리했습니다.
+
+## 브랜치 구조
+
+```
+master
+  └── develop
+       ├── front
+       │    └── fe/feature/19-login
+       └── back
+            └── be/feature/18-login
+```
+
+## 브랜치 명명 규칙
+
+브랜치 이름은 작업 타입과 내용을 명확히 표현해야 합니다:
+
+- `[팀]/[타입]/[이슈번호]-[작업명]`
+  - 예: `fe/feature/19-login`, `be/fix/32-signup-validation`
+
+### 브랜치 타입
+- `feature`: 새로운 기능 개발
+- `fix`: 버그 수정
+- `style`: UI/UX 변경
+- `refactor`: 코드 리팩토링
+- `docs`: 문서 작업
+- `hotfix`: develop 브랜치에서 발생한 긴급 버그 수정
+
+## 작업 흐름
+
+1. **브랜치 생성 전 확인**
+   - 항상 최신 develop 브랜치에서 새 브랜치를 생성합니다
+   - `git checkout develop`
+   - `git pull origin develop`
+   - `git checkout -b [브랜치명]`
+
+2. **작업 및 커밋**
+   - 규칙에 맞는 커밋 메시지 작성
+   - 작은 단위로 자주 커밋하기
+
+3. **원격 저장소와 동기화**
+   - 커밋 전 항상 pull 먼저 수행
+   - 충돌 발생 시 stash 활용하여 해결
+
+4. **Pull Request 및 Merge**
+   - 작업 완료 후 GitHub/GitLab에서 PR 생성
+   - 코드 리뷰 후 승인받은 PR만 merge
+   - merge 후 해당 브랜치는 삭제 (브랜치 정리)
+
+## 주의사항
+
+### 브랜치 확인
+- 작업 시작 전 항상 현재 브랜치 확인: `git branch`
+- 다른 브랜치 작업 내용과 충돌이 없는지 확인
+
+### Merge 시 브랜치 삭제 여부
+- 기본적으로 feature, fix, style 등의 작업용 브랜치는 merge 후 삭제 권장
+- master, develop, front, back과 같은 주요 브랜치는 유지
+
+### Master 브랜치 Push 정책
+- master 브랜치는 직접 푸시하지 않고, PR을 통해서만 코드 반영
+- master에 병합하기 전 develop 브랜치에서 충분한 테스트 진행
+
+## Pull/Fetch 사용 가이드
+
+### Pull 방식
+```bash
+# 커밋 전 항상 pull 먼저 실행
+git pull origin [브랜치명]
+
+# 충돌 발생 시
+git stash push [충돌난 파일전체 경로]
+git pull origin [브랜치명]
+git stash apply
+
+# 작업 후 커밋 및 푸시
+git add .
+git commit -m "feat: 회원가입 기능 추가"
+git push origin [브랜치명]
+
+# GitHub/GitLab에서 PR 생성 후 merge
+```
+
+### Fetch 사용
+```bash
+# 원격 저장소 변경사항 확인만 하기
+git fetch origin
+git diff [로컬브랜치] origin/[원격브랜치]
+
+# 변경사항 확인 후 merge 결정
+git merge origin/[브랜치명]
+```
