@@ -220,92 +220,51 @@ server/
 <br>
 
 # 3. 기능 상세 설명
-### 1.영희의 모임 생성
-<img src="/docs/1.영희의_모임생성.gif" alt="1.영희의_모임생성" />
-<!-- ![1 영희의_모임생성](https://github.com/user-attachments/assets/fb55f8f5-254e-4a7e-b825-ba688747f3c8) -->
 
-### 2.모임 초대코드 생성
-<img src="/docs/2.초대코드_생성.gif" alt="2.초대코드_생성" />
-<!-- ![2 초대코드_생성](https://github.com/user-attachments/assets/68f0a6d8-2716-4a61-930a-6c9d88a14382) -->
-
-### 3.모임 참여하기
-<img src="/docs/3.모임참여.gif" alt="3.모임참여" />
-<!-- ![3 모임참여](https://github.com/user-attachments/assets/00af69e0-cda7-420e-8507-ac99104bb27a) -->
-
-### 4.모임 수락하기
-<img src="/docs/4.모임수락.gif" alt="4.모임수락" />
-<!-- ![4 모임수락](https://github.com/user-attachments/assets/b184a1f4-dba6-4392-9964-2a8c6c5864e9) -->
-
-### 5.모임통장에 입금
-<img src="/docs/5.모임에_돈넣기.gif" alt="5.모임에_돈넣기" />
-<!-- ![5 모임에_돈넣기](https://github.com/user-attachments/assets/27554c0c-61ba-44af-9943-d6777b50e707) -->
-
-### 6.모임 일정 생성
-<img src="/docs/6.일정생성.gif" alt="6.일정생성" />
-<!-- ![6 일정생성](https://github.com/user-attachments/assets/3e94f1e8-ac5d-4a91-8789-6fc84c1a42bb) -->
-
-### 7.일정참여시 돈 부족으로 입금 후 다시 시도
-<img src="/docs/7.일정참여_돈없어서_돈넣고_다시시도.gif" alt="7.일정참여_돈없어서_돈넣고_다시시도" />
-<!-- ![7 일정참여_돈없어서_돈넣고_다시시도](https://github.com/user-attachments/assets/8d7f632e-d927-4622-b40c-0f1afcbbbbac) -->
-
-### 8.모임 탈퇴시 납입한 금액 입금
-<img src="/docs/8.모임탈퇴시_돈들어옴.gif" alt="8.모임탈퇴시_돈들어옴" />
-<!-- ![8 모임탈퇴시_돈들어옴](https://github.com/user-attachments/assets/da06c931-db1f-454d-b2cb-c242541b652e) -->
-
-### 9.패널티 적용되는 일정에 대한 참석 취소
-<img src="/docs/9.페널티적용_일정참석취소.gif" alt="9.페널티적용_일정참석취소" />
-<!-- ![9 페널티적용_일정참석취소](https://github.com/user-attachments/assets/257d199f-2da6-4832-a266-6ac979f63913) -->
-<br>
-
-
-# Front-End
-
-## ✅ 로그인/회원가입/개인계좌생성
-
-### 진행 순서 및 핵심 기능
-
-1. 기능 설명
-
-## ✅ 모임
-
-### 1️⃣
-
-## ✅ 일정
-
-### 1️⃣ 일정 생성
-
-- **React State Management**
-
-  - `useState`를 활용하여 선거 정보를 상태로 관리.
-  - 날짜 및 시간을 별도의 상태(`dateState`)로 분리하여 입력값 유효성 검사 수행.
-
-### 2️⃣ 일정 정산
-
-- **상태 관리**
-
-## ✅ 계좌 관리
-
-### 1️⃣
-
-<br>
-
-# Back-End
-
-## ✅ 로그인/회원가입/계좌생성
-
-## ✅ 모임
-
-### 1️⃣ 외부~~
-
-## ✅ 일정
-
-### 1️⃣ 채팅 기능
-
-## ✅ 외부 API
-
-### 1️⃣ 외부~~
-
-<br>
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <h4>1. 영희의 모임 생성</h4>
+      <img src="/docs/1.영희의_모임생성.gif" alt="1.영희의_모임생성" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <h4>2. 모임 초대코드 생성</h4>
+      <img src="/docs/2.초대코드_생성.gif" alt="2.초대코드_생성" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <h4>3. 모임 참여하기</h4>
+      <img src="/docs/3.모임참여.gif" alt="3.모임참여" width="100%" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <h4>4. 모임 수락하기</h4>
+      <img src="/docs/4.모임수락.gif" alt="4.모임수락" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <h4>5. 모임통장에 입금</h4>
+      <img src="/docs/5.모임에_돈넣기.gif" alt="5.모임에_돈넣기" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <h4>6. 모임 일정 생성</h4>
+      <img src="/docs/6.일정생성.gif" alt="6.일정생성" width="100%" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <h4>7. 일정참여시 돈 부족으로 입금 후 다시 시도</h4>
+      <img src="/docs/7.일정참여_돈없어서_돈넣고_다시시도.gif" alt="7.일정참여_돈없어서_돈넣고_다시시도" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <h4>8. 모임 탈퇴시 납입한 금액 입금</h4>
+      <img src="/docs/8.모임탈퇴시_돈들어옴.gif" alt="8.모임탈퇴시_돈들어옴" width="100%" />
+    </td>
+    <td align="center" width="33%">
+      <h4>9. 패널티 적용되는 일정에 대한 참석 취소</h4>
+      <img src="/docs/9.페널티적용_일정참석취소.gif" alt="9.페널티적용_일정참석취소" width="100%" />
+    </td>
+  </tr>
+</table>
 
 # Infra
 
