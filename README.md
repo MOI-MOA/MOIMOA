@@ -22,7 +22,7 @@
 | 🟧진종수(팀장) | **Backend**<br>- ERD설계<br><br><br> |
 | 🟩함동건(팀원) | **Backend**<br>- 일정 관리 기능<br>- 일정 통장 관리 기능<br>- 일정 통장 페이백 로직 구현              |
 | 🟦배한진(팀원) | **FullStack**<br><br><br>            |
-| 🟥이동영(팀원) | **FullStack**<br><br><br>            |
+| 🟥이동영(팀원) | **FullStack**<br>- 계좌 관리 기능<br>- 거래 관련 기능<br>- SSAFY BANK 외부 API 연동       |
 | 🟨이다영(팀원) | **Infra**<br>- CI/CD 파이프라인 구축<br>- Docker 컨테이너화<br>- AWS 배포 관리                |
 
 <br>
