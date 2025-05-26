@@ -318,7 +318,7 @@ server/
         <a href="https://github.com/doros508">종수</a> ✨
       </td>
       <td align="center">
-        <img src="/api/placeholder/200/150" alt="동영 프로필 이미지" width="200px" height="150px">
+        <img src="/docs/동영.png" alt="동영 프로필 이미지" width="200px" height="150px">
         <br>
         <a href="https://github.com/dongschiken">동영</a> 🐿️
       </td>
